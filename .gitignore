@@ -1,0 +1,7 @@
+*.json
+*.tsv
+*.csv
+*.zip
+*.pickle
+
+__pycache__/
