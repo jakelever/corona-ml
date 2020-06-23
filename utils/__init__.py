@@ -50,7 +50,7 @@ def get_annotations(mydb,task_ids=None):
 	return annotations_by_cord, annotations_by_pubmed_id
 	
 def load_documents(filename):
-	with open('alldocuments.json') as f:
+	with open(filename) as f:
 		documents = json.load(f)
 	return documents
 	
