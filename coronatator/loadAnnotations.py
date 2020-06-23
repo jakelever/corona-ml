@@ -68,7 +68,7 @@ if __name__ == '__main__':
 	print(sql)
 	mycursor.execute(sql)
 	myresult = mycursor.fetchall()
-	entity_name_to_id = { entity_name:entity_id for entity_id,entity_name,entitytype_id in myresult }
+	entity_nametype_to_id = { (entity_name,entitytype_id):entity_id for entity_id,entity_name,entitytype_id in myresult }
 
 	sql = "SELECT entitytype_id,entitytype_name FROM entitytypes"
 	print(sql)
@@ -105,15 +105,15 @@ if __name__ == '__main__':
 		entity_name = anno['entity_name']
 		entity_type = anno['entity_type']
 		external_id = anno['external_id'] if 'external_id' in anno else None
-		if not entity_name in entity_name_to_id:
-			entitytype_id = entitytype_name_to_id[entity_type]
-			entity_id = (max(entity_name_to_id.values()) + 1) if len(entity_name_to_id) > 0 else 1
+		entitytype_id = entitytype_name_to_id[entity_type]
+		if not (entity_name,entitytype_id) in entity_nametype_to_id:
+			entity_id = (max(entity_nametype_to_id.values()) + 1) if len(entity_nametype_to_id) > 0 else 1
 			entity_record = [entity_name,entitytype_id,external_id]
 			
 			entity_records.append(entity_record)
 			#mycursor.execute(insert_entity_sql, entity_record)
 			#entity_id = mycursor.lastrowid
-			entity_name_to_id[entity_name] = entity_id
+			entity_nametype_to_id[(entity_name,entitytype_id)] = entity_id
 			addition_counts['entity'] += 1
 			
 	for chunk in chunks(entity_records, 500):
@@ -138,7 +138,8 @@ if __name__ == '__main__':
 			continue
 			#raise RuntimeError("Couldn't find matching document for annotation with cord_uid=%s and pubmed_id=%s" % (cord_uid,pubmed_id))
 		
-		entity_id = entity_name_to_id[entity_name]
+		entitytype_id = entitytype_name_to_id[entity_type]
+		entity_id = entity_nametype_to_id[(entity_name,entitytype_id)]
 		is_automatic = (args.type == 'auto')
 				
 		record_data = [document_id,entity_id,is_automatic,is_positive]
