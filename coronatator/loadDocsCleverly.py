@@ -56,6 +56,7 @@ if __name__ == '__main__':
 	#columns['document_id'] = 'INT NOT NULL AUTO_INCREMENT'
 	columns['pubmed_id'] = 'INT NULL'
 	columns['cord_uid'] = 'VARCHAR(255) NULL'
+	columns['doi'] = 'VARCHAR(255) NULL'
 	columns['publish_year'] = 'INT'
 	columns['publish_month'] = 'INT'
 	columns['publish_day'] = 'INT'
