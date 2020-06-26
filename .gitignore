@@ -5,3 +5,5 @@
 *.pickle
 
 __pycache__/
+.snakemake/
+.ipynb_checkpoints/
