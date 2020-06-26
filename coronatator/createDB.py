@@ -28,6 +28,7 @@ if __name__ == '__main__':
 
 	mycursor.execute("DROP TABLE IF EXISTS documents")
 	mycursor.execute("DROP TABLE IF EXISTS annotations")
+	mycursor.execute("DROP TABLE IF EXISTS annotationpositions")
 	mycursor.execute("DROP TABLE IF EXISTS entities")
 	mycursor.execute("DROP TABLE IF EXISTS entitytypes")
 
@@ -47,6 +48,13 @@ if __name__ == '__main__':
 	columns['has_mesh'] = 'BOOLEAN'
 	columns['pub_type'] = 'VARCHAR(255)'
 	columns['chemicals'] = 'TEXT NULL'
+	columns['altmetric_id'] = 'INT DEFAULT -1'
+	columns['altmetric_score'] = 'INT DEFAULT -1'
+	columns['altmetric_score_1day'] = 'INT DEFAULT -1'
+	columns['altmetric_score_1week'] = 'INT DEFAULT -1'
+	columns['altmetric_openaccess'] = 'BOOLEAN DEFAULT FALSE'
+	columns['altmetric_badgetype'] = 'VARCHAR(64) NULL'
+	columns['altmetric_lastupdated'] = 'DATETIME'
 
 	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
@@ -71,29 +79,42 @@ if __name__ == '__main__':
 
 	columns = OrderedDict()
 	columns['entity_id'] = 'INT NOT NULL AUTO_INCREMENT'
-	columns['entity_name'] = 'VARCHAR(255)'
+	columns['name'] = 'VARCHAR(255)'
 	columns['external_id'] = 'VARCHAR(255)'
 	columns['entitytype_id'] = 'INT DEFAULT 1'
 
 	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
-	fields += ", INDEX(entity_name)"
+	fields += ", INDEX(name)"
 	sql = "CREATE TABLE entities (%s)" % fields
 	print(sql)
 	mycursor.execute(sql)
 
 	columns = OrderedDict()
 	columns['entitytype_id'] = 'INT NOT NULL AUTO_INCREMENT'
-	columns['entitytype_name'] = 'VARCHAR(255)'
+	columns['name'] = 'VARCHAR(255)'
 
 	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
-	fields += ", INDEX(entitytype_name)"
+	fields += ", INDEX(name)"
 	sql = "CREATE TABLE entitytypes (%s)" % fields
 	print(sql)
 	mycursor.execute(sql)
 
-	sql = "INSERT INTO entitytypes(entitytype_id,entitytype_name) VALUES (1,'undefined')"
+	sql = "INSERT INTO entitytypes(entitytype_id,name) VALUES (1,'undefined')"
+	print(sql)
+	mycursor.execute(sql)
+	
+	columns = OrderedDict()
+	columns['annotationposition_id'] = 'INT NOT NULL AUTO_INCREMENT'
+	columns['annotation_id'] = 'INT'
+	columns['in_title'] = 'BOOLEAN'
+	columns['start_pos'] = 'INT'
+	columns['end_pos'] = 'INT'
+
+	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
+	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
+	sql = "CREATE TABLE annotationpositions (%s)" % fields
 	print(sql)
 	mycursor.execute(sql)
 

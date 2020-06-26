@@ -62,7 +62,7 @@ if __name__ == '__main__':
 	columns['publish_day'] = 'INT'
 	columns['title'] = 'TEXT'
 	#if (args.db == 'local'):
-	#	columns['abstract'] = 'TEXT'
+	columns['abstract'] = 'TEXT'
 	columns['journal'] = 'TEXT'
 	columns['url'] = 'VARCHAR(255)'
 	columns['mesh'] = 'TEXT NULL'
