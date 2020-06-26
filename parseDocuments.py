@@ -1,7 +1,7 @@
 import kindred
 import argparse
 import pickle
-from utils import load_documents
+import json
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Parse a set of documents and save a pickled form')
@@ -10,7 +10,8 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 	
 	print("Loading...")
-	documents = load_documents(args.inJSON)
+	with open(args.inJSON) as f:
+		documents = json.load(f)
 	
 	corpus = kindred.Corpus()
 	for doc in documents:
