@@ -42,33 +42,26 @@ def filterPubmedFile(inFile,outFile):
 						qualifierElems = meshElem.findall('./QualifierName')
 						for qualifierElem in qualifierElems:
 							qualifierID = qualifierElem.attrib['UI']
-							#majorTopicYN = qualifierElem.attrib['MajorTopicYN']
 							qualifierName = qualifierElem.text
 							hasQualifiers = True
 							
-							print("\t".join([pmid,descriptorName,qualifierName,descriptorID,qualifierID]))
+							#print("\t".join([pmid,descriptorName,qualifierName,descriptorID,qualifierID]))
 
-						if not hasQualifiers:
-							print("\t".join([pmid,descriptorName,"",descriptorID,""]))
-
-				#print(dir(elem))
-				#print(elem.text)
-				#print(etree.tostring(elem))
-				#assert False
+						#if not hasQualifiers:
+							#print("\t".join([pmid,descriptorName,"",descriptorID,""]))
 
 				if hasCoronaDescriptor:
-					#print(pmid)
 					outF.write(etree.tostring(elem).decode("utf-8"))
 
 				# Important: clear the current element from memory to keep memory usage low
 				elem.clear()
 		outF.write('</PubmedArticleSet>\n')
 
-			
-inFile = sys.argv[1]
-outFile = sys.argv[2]
-#print(inFile, outFile)
-filterPubmedFile(inFile, outFile)
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser(description="Filter a PubMed file for papers that discuss coronavirus (SARS/MERS/COVID)")
+	parser.add_argument('--inFile',required=True,type=str,help='Input PubMed file')
+	parser.add_argument('--outFile',required=True,type=str,help='Output filtered PubMed file')
+	args = parser.parse_args()
 
-#if __name__ == '__main__':
-#	parser = argparse
+	filterPubmedFile(args.inFile, args.outFile)
+
