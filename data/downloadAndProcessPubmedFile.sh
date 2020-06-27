@@ -19,5 +19,5 @@ fi
 
 url=`grep $pubmedFilename pubmed_listing.txt`
 
-python filterForCoronaPapers.py --inFile <(curl --silent $url | gunzip) --outFile $outputFilename
+python filterPubMedForCoronaPapers.py --inFile <(curl --silent $url | gunzip) --outFile $outputFilename
 
