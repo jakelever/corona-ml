@@ -7,3 +7,8 @@
 __pycache__/
 .snakemake/
 .ipynb_checkpoints/
+
+pubmed_listing.txt
+pubmed_corona/
+cord19/
+
