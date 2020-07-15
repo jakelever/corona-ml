@@ -1,0 +1,33 @@
+{
+	"Q200253": {
+		"name": "traditional chinese medicine",
+		"type": "drug",
+		"aliases": [
+			"traditional chinese medicine",
+			"chinese herbal medicine",
+			"emodin"
+		]
+	},
+	"Q28209496": {
+		"name": "remdesivir",
+		"type": "drug",
+		"aliases": [
+			"remdesivir"
+		]
+	},
+	"Q603502": {
+		"name": "convalescent plasma",
+		"type": "drug",
+		"aliases": [
+			"convalescent plasma"
+		]
+	},
+	"Q798309": {
+		"name": "bcg vaccine",
+		"type": "drug",
+		"aliases": [
+			"bcg vaccine",
+			"bacillus calmette guerin vaccine"
+		]
+	}
+}

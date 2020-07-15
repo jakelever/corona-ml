@@ -1,0 +1,81 @@
+{
+	"Q82069695": {
+		"name": "SARS-CoV-2",
+		"aliases": [
+			"covid",
+			"covid-19",
+			"covid 19",
+			"sars-cov-2",
+			"sars cov 2",
+			"sars-cov 2",
+			"sars cov-2",
+			"sars-cov2",
+			"sars cov2",
+			"sarscov2",
+			"2019-ncov",
+			"2019 ncov",
+			"ncov19",
+			"ncov-19",
+			"ncov 19",
+			"ncov2019",
+			"ncov-2019",
+			"ncov 2019",
+			"(sars)-cov-2",
+			"(sars) cov 2",
+			"(sars)-cov 2",
+			"(sars) cov-2",
+			"(sars)-cov2",
+			"(sars) cov2",
+			"(sars)cov2",
+			"severe acute respiratory syndrome coronavirus 2",
+			"2019 novel coronavirus",
+			"novel 2019 coronavirus"
+		]
+	},
+	"Q85438966": {
+		"name": "SARS-CoV",
+		"aliases": [
+			"sars",
+			"sars-cov",
+			"sars cov",
+			"sars-cov-1",
+			"sars cov 1",
+			"sars-cov 1",
+			"sars cov-1",
+			"sars-cov1",
+			"sars cov1",
+			"sarscov1",
+			"severe acute respiratory syndrome",
+			"(sars)-cov",
+			"(sars) cov",
+			"(sars)-cov-1",
+			"(sars) cov 1",
+			"(sars)-cov 1",
+			"(sars) cov-1",
+			"(sars)-cov1",
+			"(sars) cov1",
+			"(sars)cov1",
+			"sars virus"
+		]
+	},
+	"Q4902157": {
+		"name": "MERS-CoV",
+		"aliases": [
+			"mers",
+			"middle east respiratory syndrome",
+			"mers-cov",
+			"mers cov",
+			"mers-cov",
+			"mers cov",
+			"mers-cov",
+			"merscov",
+			"(mers)-cov",
+			"(mers) cov",
+			"(mers)-cov",
+			"(mers) cov",
+			"(mers)-cov",
+			"(mers)cov",
+			"mers virus"
+		]
+	}
+}
