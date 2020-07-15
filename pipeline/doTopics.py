@@ -36,16 +36,8 @@ if __name__ == '__main__':
 	annotationsToStrip.extend(['Review','Comment/Editorial','Meta-analysis','News','NotRelevant'])
 	
 	groupings = {}
-	#groupings['Drug Repurposing'] = 'Therapeutics'
-	groupings['Novel therapeutics'] = 'Novel Therapeutics'
 	groupings['Host Biology'] = 'Molecular Biology'
 	groupings['Viral Biology'] = 'Molecular Biology'
-	groupings['Case Report / Series'] = 'Case Reports'
-	#groupings['Observational Study'] = 'Patient Reports'
-	groupings['Forecasting/Modelling'] = 'Forecasting & Modelling'
-	groupings['Healthcare Strategy / Preparedness'] = 'Preparedness'
-	groupings['Other medical disciplines'] = 'Medical Disciplines'
-	
 	
 	for g in groupings:
 		assert any( a == g for d in documents for a in d['annotations']), "Couldn't find any annotations for %s" % g
