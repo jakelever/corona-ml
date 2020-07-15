@@ -24,31 +24,41 @@ if __name__ == '__main__':
 	
 	print("Gathering types of geographic location from Wikidata...")
 	
+	geoClasses = OrderedDict()
+	geoClasses['Q47168'] = 'county of the United States'
+	
 	geoConcepts = OrderedDict()
-	geoConcepts['Q515'] = 'City'
-	geoConcepts['Q6256'] = 'Country'
+	geoConcepts.update(geoClasses)
 	
-	query = """
-		SELECT ?entity ?entityLabel WHERE {
-			SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-			?entity wdt:P279* wd:%s.
-		} 
-	""" % administrativeTerritorialEntity
-	
-	for row in runQuery(query):
-		if 'xml:lang' in row['entityLabel'] and row['entityLabel']['xml:lang'] == 'en':
-			locationID = row['entity']['value'].split('/')[-1]
-			locationType = row['entityLabel']['value']
-			geoConcepts[locationID] = locationType
+	for classID,className in geoClasses.items():
+		query = """
+			SELECT ?entity ?entityLabel WHERE {
+				SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+				?entity wdt:P279* wd:%s.
+			} 
+		""" % classID
+		
+		for row in runQuery(query):
+			if 'xml:lang' in row['entityLabel'] and row['entityLabel']['xml:lang'] == 'en':
+				locationID = row['entity']['value'].split('/')[-1]
+				locationType = row['entityLabel']['value']
+				geoConcepts[locationID] = locationType
 			
 	entities = defaultdict(dict)
+	
+	geoConcepts['Q515'] = 'city'
+	#geoConcepts['Q7930989'] = 'city/town'
+	geoConcepts['Q1549591'] = 'big city'
+	geoConcepts['Q6256'] = 'country'
+	geoConcepts['Q35657'] = 'state of the United States'
+	geoConcepts['Q1615742'] = 'province of China'
 	
 	coordRegex = re.compile(r'Point\((?P<longitude>[-+]?\d*\.?\d*) (?P<latitude>[-+]?\d*\.?\d*)\)')
 
 	print("Gathering locations from Wikidata...")
 	for i,(conceptID,conceptType) in enumerate(geoConcepts.items()):
-		if i >= 10:
-			break
+		#if i >= 10:
+		#	break
 		
 		query = """
 		SELECT ?entity ?entityLabel ?entityDescription ?alias ?coords WHERE {
