@@ -1,50 +1,73 @@
 
-rule:
-	input: "data/autoannotations.json", "data/terms_drugs.json", "data/terms_geonames.json"
+from os.path import join
+
+outDir = "data"
 
 rule:
-	output: "data/terms_drugs.json"
-	shell: "python getDrugsFromWikidata.py --outJSON data/terms_drugs.json"
+	input: join(outDir,"autoannotations.json"), join(outDir,"terms_drugs.json"), join(outDir,"terms_geonames.json")
+
+rule:
+	output: join(outDir,"terms_drugs.json")
+	shell: "python getDrugsFromWikidata.py --outJSON {output}"
 	
 rule:
-	output: "data/terms_geonames.json"
-	shell: "python getGeonamesFromWikidata.py --outJSON data/terms_geonames.json"
-
+	output: join(outDir,"terms_geonames.json")
+	shell: "python getGeonamesFromWikidata.py --outJSON {output}"
+	
 rule:
-	input: "data/alldocuments.json"
-	output: "data/alldocuments.parsed.pickle"
+	input: join(outDir,"alldocuments.json")
+	output: join(outDir,"alldocuments.noduplicates.json")
+	shell: "python removeDuplicates.py --inJSON {input} --outJSON {output}"
+	
+rule:
+	input: join(outDir,"alldocuments.noduplicates.json")
+	output: 
+		documents=join(outDir,"alldocuments.english.json"),
+		nonenglish=join(outDir,"alldocuments.nonenglish.json")
+	shell: "python filterOutLanguages.py --inJSON {input} --nonEnglish {output.nonenglish} --outJSON {output.documents}"
+	
+rule:
+	input: join(outDir,"alldocuments.english.json")
+	output: join(outDir,"alldocuments.parsed.pickle")
 	shell: "python parseDocuments.py --inJSON {input} --outPickle {output}"
-
+	
 rule:
 	input: 
-		json="data/alldocuments.json",
-		parsed="data/alldocuments.parsed.pickle",
-		drugs="data/terms_drugs.json",
-		geonames="data/terms_geonames.json"
-	output: "data/alldocuments.ner.json"
-	shell: "python doNER.py --inJSON {input.json} --drugs {input.drugs} --geonames {input.geonames} --inParsed {input.parsed} --outJSON {output}"
+		json=join(outDir,"alldocuments.english.json"),
+		parsed=join(outDir,"alldocuments.parsed.pickle"),
+		viruses=join("terms","terms_viruses.json"),
+		drugs=join(outDir,"terms_drugs.json"),
+		geonames=join(outDir,"terms_geonames.json"),
+		custom=join("terms","custom_terms.json")
+	output: join(outDir,"alldocuments.ner.json")
+	shell: "python doNER.py --inJSON {input.json} --viruses {input.viruses} --drugs {input.drugs} --geonames {input.geonames} --custom {input.custom} --inParsed {input.parsed} --outJSON {output}"
 
 rule:
-	input: "data/alldocuments.ner.json",
-	output: "data/alldocuments.withannotations.json"
+	input: join(outDir,"alldocuments.ner.json"),
+	output: join(outDir,"alldocuments.withannotations.json")
 	shell: "python integrateAnnotationsAndClean.py --inJSON {input} --outJSON {output}"
 
 rule:
-	input: "data/alldocuments.withannotations.json",
-	output: "data/alldocuments.pubtype.json"
+	input: join(outDir,"alldocuments.withannotations.json"),
+	output: join(outDir,"alldocuments.pubtype.json")
 	shell: "python doPubType.py --inJSON {input} --outJSON {output}"
 
 rule:
-	input: "data/alldocuments.pubtype.json",
-	output: "data/alldocuments.topics.json"
+	input: join(outDir,"alldocuments.pubtype.json"),
+	output: join(outDir,"alldocuments.topics.json")
 	shell: "python doTopics.py --inJSON {input} --outJSON {output}"
 	
 rule:
-	input: "data/alldocuments.topics.json",
-	output: "data/alldocuments.clinicaltrials.json"
+	input: join(outDir,"alldocuments.topics.json"),
+	output: join(outDir,"alldocuments.clinicaltrials.json")
 	shell: "python doClinicalTrials.py --inJSON {input} --outJSON {output}"
 
 rule:
-	input: "data/alldocuments.clinicaltrials.json",
-	output: "data/autoannotations.json"
+	input: join(outDir,"alldocuments.clinicaltrials.json"),
+	output: join(outDir,"autoannotations.json")
 	shell: "python createAutoAnnotations.py --inJSON {input} --outJSON {output}"
+	
+rule:
+	input: join(outDir,"alldocuments.clinicaltrials.json")
+	output: join(outDir,"altmetric.json")
+	shell: "python ../altmetric/getAltmetricData.py --apiKeyFile ../altmetricApiKey.json --documents {input} --outData {output}"
