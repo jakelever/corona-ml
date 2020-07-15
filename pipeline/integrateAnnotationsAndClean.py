@@ -13,7 +13,6 @@ if __name__ == '__main__':
 	
 	print("Loading documents with annotations...")
 	documents = load_documents_with_annotations(args.inJSON,mydb)
-	documents = filter_languages(documents)
 	cleanup_documents(documents)
 	
 	assert all('entities' in d for d in documents), "Expected documents to already have entities extracted using NER"
