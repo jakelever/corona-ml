@@ -34,7 +34,20 @@ if __name__ == '__main__':
 
 	mycursor = mydb.cursor()
 	
-	sql = "DELETE FROM annotations WHERE is_automatic = TRUE"
+	sql = "DELETE FROM annotations"
+	print(sql)
+	mycursor.execute(sql)
+	
+	sql = "DELETE FROM annotationpositions"
+	print(sql)
+	mycursor.execute(sql)
+	
+	
+	sql = "DELETE FROM entities"
+	print(sql)
+	mycursor.execute(sql)
+	
+	sql = "DELETE FROM entitytypes"
 	print(sql)
 	mycursor.execute(sql)
 
@@ -57,7 +70,7 @@ if __name__ == '__main__':
 	print(sql)
 	mycursor.execute(sql)
 	myresult = mycursor.fetchall()
-	entitytype_to_id = { name:entitytype_id for entitytype_id,name in myresult }
+	entitytype_to_id = { (name,):entitytype_id for entitytype_id,name in myresult }
 	print("Found %d existing entity types" % len(entitytype_to_id))
 	
 	sql = "SELECT entity_id,name,entitytype_id FROM entities"
@@ -84,53 +97,8 @@ if __name__ == '__main__':
 	
 	print()
 	
-	addition_counts = Counter()
 	
-	insert_entity_type_sql = "INSERT INTO entitytypes(entitytype_id,name) VALUES(%s,%s)"
-	print(insert_entity_type_sql)
-	entitytype_records = []
-	for anno in annotations:
-		entity_type = anno['entity_type']
-		
-		if not entity_type in entitytype_to_id:
-			entitytype_id = (max(entitytype_to_id.values()) + 1) if len(entitytype_to_id) > 0 else 1
-			entitytype_record = [entitytype_id,entity_type]
-			entitytype_records.append( entitytype_record )
-			
-			entitytype_to_id[entity_type] = entitytype_id
-			addition_counts['entitytype'] += 1
-			
-	for chunk in chunks(entitytype_records, 500):
-		mycursor.executemany(insert_entity_type_sql, chunk)
-			
-	insert_entity_sql = "INSERT INTO entities(entity_id,name,entitytype_id,external_id) VALUES(%s,%s,%s,%s)"
-	print(insert_entity_sql)
-	
-	entity_records = []
-	for anno in annotations:
-		entity_name = anno['entity_name']
-		entity_type = anno['entity_type']
-		external_id = anno['external_id'] if 'external_id' in anno else None
-		entitytype_id = entitytype_to_id[entity_type]
-		if not (entity_name,entitytype_id) in entity_to_id:
-			entity_id = (max(entity_to_id.values()) + 1) if len(entity_to_id) > 0 else 1
-			entity_record = [entity_id,entity_name,entitytype_id,external_id]
-			
-			entity_records.append(entity_record)
-			
-			entity_to_id[(entity_name,entitytype_id)] = entity_id
-			addition_counts['entity'] += 1
-			
-	for chunk in chunks(entity_records, 500):
-		mycursor.executemany(insert_entity_sql, chunk)
-			
-	insert_annotation_sql = "INSERT INTO annotations(annotation_id,document_id,entity_id,is_automatic,is_positive) VALUES(%s,%s,%s,%s,%s)"
-	print(insert_annotation_sql)
-	insert_annotationposition_sql = "INSERT INTO annotationpositions(annotationposition_id,annotation_id,in_title,start_pos,end_pos) VALUES(%s,%s,%s,%s,%s)"
-	print(insert_annotationposition_sql)
-	
-	anno_records = []
-	position_records = []
+	print("Matching annotations to documents")
 	for anno in annotations:
 		cord_uid = anno['cord_uid']
 		pubmed_id = anno['pubmed_id']
@@ -144,48 +112,101 @@ if __name__ == '__main__':
 		else:
 			continue
 			#raise RuntimeError("Couldn't find matching document for annotation with cord_uid=%s and pubmed_id=%s" % (cord_uid,pubmed_id))
+		anno['document_id'] = document_id
 		
-		entitytype_id = entitytype_to_id[entity_type]
-		entity_id = entity_to_id[(entity_name,entitytype_id)]
+	annotations = [ anno for anno in annotations if 'document_id' in anno ]
+	
+	
+	
+	
+	
+	def sortNewFromOldAndAddToDB(allRecords,existingMapping,insertSQL):
+		assert isinstance(allRecords,list)
+		assert isinstance(existingMapping,dict)
+		
+		for x in allRecords:
+			assert isinstance(x, tuple)
+	
+		allRecords = set([ x for x in allRecords ])
+		newRecords = sorted([ x for x in allRecords if not x in existingMapping ])
+		index_offset = max(existingMapping.values())+1 if len(existingMapping) > 0 else 1
+		
+		newRecordsWithID = { x:(i+index_offset) for i,x in enumerate(newRecords) }
+		existingMapping.update(newRecordsWithID)
+		recordsForDB = [ [index] + list(x) for x,index in newRecordsWithID.items() ]
+		
+		print(insertSQL)
+		print("Adding %d rows" % len(recordsForDB))
+		print()
+		for chunk in chunks(recordsForDB, 500):
+			mycursor.executemany(insertSQL, chunk)
+			
+			
+			
+	insert_entity_type_sql = "INSERT INTO entitytypes(entitytype_id,name) VALUES(%s,%s)"
+	entitytype_records = [ (anno['entity_type'],) for anno in annotations ]
+	sortNewFromOldAndAddToDB(entitytype_records, entitytype_to_id, insert_entity_type_sql)
+				
+	print(entitytype_to_id)
+				
+	insert_entity_sql = "INSERT INTO entities(entity_id,name,entitytype_id,external_id) VALUES(%s,%s,%s,%s)"
+	entity_records = []
+	for anno in annotations:
+		entity_name = anno['entity_name']
+		entity_type = anno['entity_type']
+		external_id = anno['external_id'] if 'external_id' in anno else None
+		entitytype_id = entitytype_to_id[(entity_type,)]
+		entity_records.append((entity_name,entitytype_id,external_id))
+	sortNewFromOldAndAddToDB(entity_records, entity_to_id, insert_entity_sql)
+		
+	
+			
+	insert_annotation_sql = "INSERT INTO annotations(annotation_id,document_id,entity_id,is_automatic,is_positive) VALUES(%s,%s,%s,%s,%s)"
+	anno_records = []
+	for anno in annotations:
+		document_id = anno['document_id']	
+		entity_name = anno['entity_name']
+		entity_type = anno['entity_type']
+		entitytype_id = entitytype_to_id[(entity_type,)]
+		external_id = anno['external_id'] if 'external_id' in anno else None
+		entity_id = entity_to_id[(entity_name,entitytype_id,external_id)]
+		is_automatic = (args.type == 'auto')
+		is_positive = anno['is_positive'] if ('is_positive' in anno) else True
+				
+		anno_record = (document_id,entity_id,is_automatic,is_positive)
+		anno_records.append(anno_record)
+	sortNewFromOldAndAddToDB(anno_records, annotation_to_id, insert_annotation_sql)
+	
+	
+	
+	position_records = []
+	insert_annotationposition_sql = "INSERT INTO annotationpositions(annotationposition_id,annotation_id,in_title,start_pos,end_pos) VALUES(%s,%s,%s,%s,%s)"
+	annotationsWithPositions = [ anno for anno in annotations if all( k in anno for k in ['section','start_pos','end_pos'] ) ]
+	for anno in annotationsWithPositions:
+		document_id = anno['document_id']
+		
+		entity_name = anno['entity_name']
+		entity_type = anno['entity_type']
+		entitytype_id = entitytype_to_id[(entity_type,)]
+		external_id = anno['external_id'] if 'external_id' in anno else None
+		entity_id = entity_to_id[(entity_name,entitytype_id,external_id)]
 		is_automatic = (args.type == 'auto')
 		is_positive = anno['is_positive'] if ('is_positive' in anno) else True
 				
 		anno_record = (document_id,entity_id,is_automatic,is_positive)
 		
-		if not anno_record in annotation_to_id:
-			annotation_id = (max(annotation_to_id.values()) + 1) if len(annotation_to_id) > 0 else 1
-			anno_records.append([annotation_id] + list(anno_record))
+		annotation_id = annotation_to_id[anno_record]
+		
+		in_title = (anno['section'] == 'title')
+		start_pos = anno['start_pos']
+		end_pos = anno['end_pos']
+		
+		position_record = (annotation_id,in_title,start_pos,end_pos)
+		position_records.append(position_record)
+		
+	sortNewFromOldAndAddToDB(position_records, annotationposition_to_id, insert_annotationposition_sql)
 			
-			annotation_to_id[anno_record] = annotation_id
-			addition_counts['annotation'] += 1
-		else:
-			annotation_id = annotation_to_id[anno_record]
-			
-		if all( k in anno for k in ['section','start_pos','end_pos']):
-		
-			in_title = (anno['section'] == 'title')
-			start_pos = anno['start_pos']
-			end_pos = anno['end_pos']
-			
-			position_record = (annotation_id,in_title,start_pos,end_pos)
-			if not position_record in annotationposition_to_id:
-				annotationposition_id = (max(annotationposition_to_id.values()) + 1) if len(annotationposition_to_id) > 0 else 1
-				position_records.append([annotationposition_id] + list(position_record))
-				
-				annotationposition_to_id[position_record] = annotationposition_id
-				addition_counts['annotationposition'] += 1
-		
-					
-	for chunk in chunks(anno_records, 500):
-		mycursor.executemany(insert_annotation_sql, chunk)
-		
-	for chunk in chunks(position_records, 500):
-		mycursor.executemany(insert_annotationposition_sql, chunk)
-		
 	
-		
+	
 	mydb.commit()
-	print("Added %d annotations" % addition_counts['annotation'])
-	print("Added %d annotation positions" % addition_counts['annotationposition'])
-	print("Added %d entities" % addition_counts['entity'])
-	print("Added %d entity types" % addition_counts['entitytype'])
+	
