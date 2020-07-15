@@ -55,8 +55,7 @@ def load_documents(filename):
 	return documents
 	
 	
-def load_documents_with_annotations(filename,mydb,task_ids=None):
-	documents = load_documents(filename)
+def associated_annotations_with_documents(documents,mydb,task_ids=None):
 	annotations_by_cord, annotations_by_pubmed_id = get_annotations(mydb,task_ids)
 	
 	for doc in documents:
@@ -68,6 +67,12 @@ def load_documents_with_annotations(filename,mydb,task_ids=None):
 		if pubmed_id in annotations_by_pubmed_id:
 			doc['annotations'].update(annotations_by_pubmed_id[pubmed_id])
 		doc['annotations'] = sorted(list(doc['annotations']))
+		
+	return documents
+	
+def load_documents_with_annotations(filename,mydb,task_ids=None):
+	documents = load_documents(filename)
+	documents = associated_annotations_with_documents(documents,mydb,task_ids)
 			
 	return documents
 	
