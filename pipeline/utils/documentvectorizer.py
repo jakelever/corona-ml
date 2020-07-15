@@ -9,8 +9,14 @@ class DocumentVectorizer():
 			self.features = features
 		else:
 			self.features = ['journal','titleabstract']
+						
+	def set_params(self,features=None):
+		if features:
+			self.features = features
+		else:
+			self.features = ['journal','titleabstract']
 	
-	def fit_transform(self,docs):
+	def fit_transform(self,docs,*args):
 		assert self.fitted == False
 		self.fitted = True
 		
@@ -34,7 +40,7 @@ class DocumentVectorizer():
 		
 		return X
 	
-	def transform(self,docs):
+	def transform(self,docs,*args):
 		assert self.fitted == True
 		
 		X = []
