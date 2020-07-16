@@ -1,0 +1,51 @@
+conflicting	Q344873	acute respiratory distress syndrome
+conflicting	Q12192	pneumonia 
+Gene or Protein	Q14875321	ACE2|angiotensin-converting enzyme 2|angiotensin-converting enzyme 2 receptor|angiotensin converting enzyme 2|angiotensin converting enzyme 2 receptor|angiotensin-converting-enzyme 2|angiotensin-converting-enzyme 2 receptor|angiotensin-converting-enzyme-2|angiotensin-converting-enzyme-2 receptor
+Prevention Method	Q1333024	personal protective equipment
+Prevention Method	Q2252352	face mask|face masks|masks
+Prevention Method	Q30314010	social distancing
+Risk Factor	Q12206	diabetes
+Risk Factor	Q199804	chronic obstructive pulmonary disease
+Risk Factor	Q12174	obesity
+Risk Factor	Q47657	blood type|blood-type|blood group|blood-group|ABO blood type|blood types|blood groups
+Risk Factor	Q95566669	hypertension
+Risk Factor	Q485831	lymphopenia
+Symptom	Q570920	tachypnea|tachypnoea
+Symptom	Q4340209	mental depression
+Symptom	Q544006	anxiety disorder
+Symptom	Q1869874	insomnia
+Symptom	Q3500368	psychological stress
+Transmission Type	Q104541	aerosol transmission
+Transmission Type	Q88103997	surface transmission
+Transmission Type	Q12059568	placental transmission
+Transmission Type	Q45349134	sexual transmission
+Transmission Type	Q88812586	nosocomial transmission
+Transmission Type	Q871752	droplet transmission
+Transmission Type	Q11986959	airborne transmission
+Transmission Type	Q15304512	contact transmission
+Transmission Type	Q26305989	blood-borne transmission
+Transmission Type	Q7933612	viral shedding
+Vaccine Type	Q383260	influenza vaccine
+Vaccine Type	Q578537	DNA vaccine
+Vaccine Type	Q1475781	virus-like particle
+Vaccine Type	Q3560939	inactivated vaccine
+Vaccine Type	Q4682307	adenovirus vaccine
+Vaccine Type	Q7166532	peptide vaccine
+Vaccine Type	Q11954164	recombinant vaccine
+Vaccine Type	Q11954166	subunit vaccine
+Vaccine Type	Q16858617	cell-based vaccine
+Vaccine Type	Q16915769	Live vector vaccine
+Vaccine Type	Q85795487	RNA vaccine|mRNA vaccine
+Vaccine Type	Q97153933	Protein subunit vaccine
+Test Type	Q502159	Serological testing|Antibody testing|antibody responses
+Test Type	Q169526	RT-PCR
+Test Type	Q17310682	CRISPR
+Test Type	Q32566	CT scan|chest CT
+Test Type	Q332126	ELISA
+Test Type	Q16939311	lateral flow immunoassay|lateral flow immunoassays|LFIA
+Transmission Type	Q1549382	asymptomatic transmission
+Risk Factor	Q185836	age
+Prevention Method	Q552461	hand washing
+Transmission Type	Q2272069	fecal–oral transmission
+Medical Discipline	Q186005	physiotherapy
+conflicting	Q5338245	Edinburgh Postpartum Depression Scale
