@@ -6,7 +6,7 @@ from collections import defaultdict,Counter
 from scipy.spatial import distance_matrix
 
 def doesLocationCapitalizationMatch(allEntities,e):
-	if e['type'] != 'location':
+	if e['type'] != 'Location':
 		return True
 		
 	aliases = allEntities[e['id']]['aliases']
@@ -15,34 +15,49 @@ def doesLocationCapitalizationMatch(allEntities,e):
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Run named entity recognition on parsed documents and integrate it into the JSON data')
 	parser.add_argument('--inJSON',required=True,type=str,help='Filename of JSON documents')
-	parser.add_argument('--viruses',required=True,type=str,help='JSON file with virus entities')
-	parser.add_argument('--drugs',required=True,type=str,help='JSON file with drug entities')
-	parser.add_argument('--geonames',required=True,type=str,help='JSON file with geographic entities')
-	parser.add_argument('--custom',required=True,type=str,help='JSON file with custom additional entities')
+	parser.add_argument('--entities',required=True,type=str,help='JSON file with listing of different JSON files with entities to load')
 	parser.add_argument('--inParsed',required=True,type=str,help='Filename of Kindred corpus')
+	parser.add_argument('--stopwords',required=True,type=str,help='File with stopwords to remove')
+	parser.add_argument('--removals',required=True,type=str,help='File with entities to remove')
 	parser.add_argument('--outJSON',required=True,type=str,help='Output JSON with entities')
 	args = parser.parse_args()
 	
 	print("Loading wordlists...")
+	
+	with open(args.entities) as f:
+		nerFiles = json.load(f)
 		
-	nerFiles = {'virus':args.viruses,'drug':args.drugs,'location':args.geonames,'custom':args.custom}
+	with open(args.stopwords) as f:
+		stopwords = set( line.strip().lower() for line in f )
+		
+	with open(args.stopwords) as f:
+		removals = set(line.strip('\n').split('\t')[0] for line in f)
 	
 	allEntities = {}
 	termLookup = defaultdict(set)
+	hasAmbiguities = []
 	for entityType,filename in nerFiles.items():
+		print("  %s\t%s" % (entityType,filename))
 		with open(filename,encoding='utf8') as f:
 			entityData = json.load(f)
+			
+			entityData = { entityID:entity for entityID,entity in entityData.items() if not entityID in removals }
 				
 			allEntities.update(entityData)
 			
 			for entityID,entity in entityData.items():
-				for alias in entity['aliases']:
+				aliases = entity['aliases']
+				if 'ambiguous_aliases' in entity:
+					aliases += entity['ambiguous_aliases']
+					hasAmbiguities.append(entityID)
+					
+				for alias in aliases:
 					tmpEntityType = entity['type'] if entityType == 'custom' else entityType
 					termLookup[alias.lower()].add((tmpEntityType,entityID))
 		 
-	termLookup = defaultdict(set,{ k:v for k,v in termLookup.items() if not '/' in k })
+	termLookup = defaultdict(set,{ k:v for k,v in termLookup.items() if not k in stopwords })
 	
-	with open(args.geonames,encoding='utf8') as f:
+	with open(nerFiles['Location'],encoding='utf8') as f:
 		geoData = json.load(f)
 	
 	print("NO AMBIGUITY ALLOWED")
@@ -62,7 +77,7 @@ if __name__ == '__main__':
 	#parser.parse(corpus)
 	
 	corpus.removeEntities()
-	ner = kindred.EntityRecognizer(termLookup)
+	ner = kindred.EntityRecognizer(termLookup, mergeTerms=True)
 	ner.annotate(corpus)
 	
 	#doc = corpus.documents[0]
@@ -79,21 +94,26 @@ if __name__ == '__main__':
 	for d in corpus.documents:
 		title = d.metadata['title']
 		
+		# Strip out some terms
+		d.entities = [ e for e in d.entities if not e.entityType == 'conflicting' ]
+		
 		unambigLocationCoords = []
+		
+		virusesInDoc = sorted(set( allEntities[e.externalID]['name'] for e in d.entities if e.entityType == 'Virus'))
 		
 		entitiesByPosition = defaultdict(list)
 		for e in d.entities:
 			entitiesByPosition[e.position[0]].append(e)
 			
 		for position,entitiesAtPosition in entitiesByPosition.items():
-			if len(entitiesAtPosition) == 1 and entitiesAtPosition[0].entityType == 'location':
+			if len(entitiesAtPosition) == 1 and entitiesAtPosition[0].entityType == 'Location':
 				thisGeoData = geoData[entitiesAtPosition[0].externalID]
 				coord = [thisGeoData['longitude'],thisGeoData['latitude']]
 				unambigLocationCoords.append(coord)
 			
 		entities = []
 		for position,entitiesAtPosition in entitiesByPosition.items():
-			#allAreLocations = all( e.entityType=='location' for e in entitiesAtPosition )
+			#allAreLocations = all( e.entityType=='Location' for e in entitiesAtPosition )
 			
 			# Only do disambiguation for locations
 			#if len(entitiesAtPosition) > 1 and not allAreLocations and len(unambigLocationCoords) > 0:
@@ -109,6 +129,13 @@ if __name__ == '__main__':
 			#		candidateCoords.append(coord)
 			#	closestCandidateCoord = distance_matrix(unambigLocationCoords, candidateCoords).min(axis=0).argmin()
 			#	entitiesAtPosition = [entitiesAtPosition[closestCandidateCoord]]
+			
+			if e.externalID in hasAmbiguities:
+				virusForEntity = allEntities[e.externalID]['associated_virus']
+				if len(virusesInDoc) != 1: # Ambiguous which virus in document, skip this one
+					continue
+				elif virusForEntity != virusesInDoc[0]: # Skip because this entity is for the wrong virus!
+					continue
 				
 			e = entitiesAtPosition[0]
 			

@@ -4,14 +4,38 @@ from os.path import join
 outDir = "data"
 
 rule:
-	input: join(outDir,"autoannotations.json"), join(outDir,"terms_drugs.json"), join(outDir,"terms_geonames.json")
+	input: join(outDir,"autoannotations.json"), join(outDir,"terms_complete.txt")
 
+rule:
+	input: join(outDir,"terms_drugs.json"), join(outDir,"terms_symptoms.json"), join(outDir,"terms_locations.json"), join(outDir,"terms_medicaldisciplines.json"), join(outDir,"terms_genes_and_proteins.json"), join(outDir,"terms_custom.json")
+	output: join(outDir,"terms_complete.txt")
+	shell: "echo DONE > {output}"
+
+rule:
+	input: 
+		toexpand=join("predefined","more_custom.tsv"),
+		predefined=join("predefined","terms_custom.json")
+	output: join(outDir,"terms_custom.json")
+	shell: "python getCustomTerms.py --termsToExpand {input.toexpand} --predefined {input.predefined} --outJSON {output}"
+	
 rule:
 	output: join(outDir,"terms_drugs.json")
 	shell: "python getDrugsFromWikidata.py --outJSON {output}"
 	
 rule:
-	output: join(outDir,"terms_geonames.json")
+	output: join(outDir,"terms_medicaldisciplines.json")
+	shell: "python getMedicalDisciplinesFromWikidata.py --outJSON {output}"
+	
+rule:
+	output: join(outDir,"terms_genes_and_proteins.json")
+	shell: "python getGenesFromWikidataPlusCustomCoronavirusOnes.py --outJSON {output}"
+	
+rule:
+	output: join(outDir,"terms_symptoms.json")
+	shell: "python getSymptomsFromWikidata.py --outJSON {output}"
+	
+rule:
+	output: join(outDir,"terms_locations.json")
 	shell: "python getGeonamesFromWikidata.py --outJSON {output}"
 	
 rule:
@@ -35,12 +59,12 @@ rule:
 	input: 
 		json=join(outDir,"alldocuments.english.json"),
 		parsed=join(outDir,"alldocuments.parsed.pickle"),
-		viruses=join("terms","terms_viruses.json"),
-		drugs=join(outDir,"terms_drugs.json"),
-		geonames=join(outDir,"terms_geonames.json"),
-		custom=join("terms","custom_terms.json")
+		entities="entities.json",
+		entitiesflag=join(outDir,"terms_complete.txt"),
+		stopwords=join("predefined","stopwords.txt"),
+		removals=join("predefined","removals.tsv")
 	output: join(outDir,"alldocuments.ner.json")
-	shell: "python doNER.py --inJSON {input.json} --viruses {input.viruses} --drugs {input.drugs} --geonames {input.geonames} --custom {input.custom} --inParsed {input.parsed} --outJSON {output}"
+	shell: "python doNER.py --inJSON {input.json} --entities {input.entities} --stopwords {input.stopwords} --removals {input.removals} --inParsed {input.parsed} --outJSON {output}"
 
 rule:
 	input: join(outDir,"alldocuments.ner.json"),

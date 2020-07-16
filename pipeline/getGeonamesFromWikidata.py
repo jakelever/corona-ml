@@ -51,6 +51,7 @@ if __name__ == '__main__':
 	geoConcepts['Q1549591'] = 'big city'
 	geoConcepts['Q6256'] = 'country'
 	geoConcepts['Q35657'] = 'state of the United States'
+	geoConcepts['Q16110'] = 'region of Italy'
 	geoConcepts['Q1615742'] = 'province of China'
 	
 	coordRegex = re.compile(r'Point\((?P<longitude>[-+]?\d*\.?\d*) (?P<latitude>[-+]?\d*\.?\d*)\)')

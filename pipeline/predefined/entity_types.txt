@@ -1,0 +1,13 @@
+entities:chemical
+entities:drug
+entities:gene_protein
+entities:location
+entities:medical_discipline
+entities:model_system
+entities:prevention_method
+entities:risk_factor
+entities:species
+entities:symptom
+entities:test_type
+entities:transmission_type
+entities:vaccine_type

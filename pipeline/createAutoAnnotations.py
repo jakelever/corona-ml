@@ -21,7 +21,7 @@ if __name__ == '__main__':
 	autoannotations = []
 	#locations = []
 	for d in documents:
-		if not any(entity['type'] == 'virus' for entity in d['entities']):
+		if not any(entity['type'] == 'Virus' for entity in d['entities']):
 			continue
 			
 		cord_uid = d['cord_uid']
