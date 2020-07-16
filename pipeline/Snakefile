@@ -69,7 +69,7 @@ rule:
 rule:
 	input: join(outDir,"alldocuments.ner.json"),
 	output: join(outDir,"alldocuments.withannotations.json")
-	shell: "python integrateAnnotationsAndClean.py --inJSON {input} --outJSON {output}"
+	shell: "python integrateAnnotations.py --inJSON {input} --outJSON {output}"
 
 rule:
 	input: join(outDir,"alldocuments.withannotations.json"),

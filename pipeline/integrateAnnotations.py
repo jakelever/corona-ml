@@ -1,6 +1,6 @@
 import argparse
 import json
-from utils import dbconnect,cleanup_documents,load_documents_with_annotations
+from utils import dbconnect,load_documents_with_annotations
 from utils import filter_languages
 
 if __name__ == '__main__':
@@ -21,7 +21,7 @@ if __name__ == '__main__':
 	for d in documents:
 		if not d['publish_year']:
 			continue
-		viruses = sorted(set([ e['normalized'] for e in d['entities'] if e['type'] == 'virus']))
+		viruses = sorted(set([ e['normalized'] for e in d['entities'] if e['type'] == 'Virus']))
 		
 		if d['publish_year'] < 2002 and 'SARS-CoV' in viruses:
 			viruses.remove('SARS-CoV')
@@ -33,11 +33,11 @@ if __name__ == '__main__':
 		if 'SARS-CoV-2' in viruses:
 			viruses = ['SARS-CoV-2']
 			
-		d['entities'] = [ e for e in d['entities'] if e['type'] != 'virus' or e['normalized'] in viruses ]
+		d['entities'] = [ e for e in d['entities'] if e['type'] != 'Virus' or e['normalized'] in viruses ]
 	
 	print("Filtering for virus documents")
 	viruses = {'SARS-CoV-2','SARS-CoV','MERS-CoV'}
-	documents = [ d for d in documents if any(entity['type'] == 'virus' for entity in d['entities']) or any( v in d['annotations'] for v in viruses) ]
+	documents = [ d for d in documents if any(entity['type'] == 'Virus' for entity in d['entities']) or any( v in d['annotations'] for v in viruses) ]
 	
 	print("Saving JSON file...")
 	with open(args.outJSON,'w') as f:
