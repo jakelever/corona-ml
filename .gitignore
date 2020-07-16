@@ -3,6 +3,7 @@
 *.csv
 *.zip
 *.pickle
+*.txt
 
 __pycache__/
 .snakemake/
