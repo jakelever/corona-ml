@@ -78,7 +78,9 @@ if __name__ == '__main__':
 		
 		#break
 		
-	for chunk in chunks(updates, 500):
+	for i,chunk in enumerate(chunks(updates, 500)):
+		num_done = i*500
+		print(num_done,len(updates))
 		mycursor.executemany(update_altmetric_sql, chunk)
 		
 	mydb.commit()

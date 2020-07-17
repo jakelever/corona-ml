@@ -23,6 +23,8 @@ if __name__ == '__main__':
 	  passwd=database['passwd'],
 	  database=database['database']
 	)
+	
+	engine = "MyISAM"
 		
 	mycursor = mydb.cursor()
 
@@ -58,7 +60,7 @@ if __name__ == '__main__':
 
 	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
-	sql = "CREATE TABLE documents (%s)" % fields
+	sql = "CREATE TABLE documents (%s) ENGINE=%s" % (fields,engine)
 	print(sql)
 	mycursor.execute(sql)
 
@@ -73,7 +75,7 @@ if __name__ == '__main__':
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
 	fields += ", INDEX(document_id)"
 	fields += ", INDEX(entity_id)"
-	sql = "CREATE TABLE annotations (%s)" % fields
+	sql = "CREATE TABLE annotations (%s) ENGINE=%s" % (fields,engine)
 	print(sql)
 	mycursor.execute(sql)
 
@@ -86,7 +88,7 @@ if __name__ == '__main__':
 	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
 	fields += ", INDEX(name)"
-	sql = "CREATE TABLE entities (%s)" % fields
+	sql = "CREATE TABLE entities (%s) ENGINE=%s" % (fields,engine)
 	print(sql)
 	mycursor.execute(sql)
 
@@ -97,7 +99,7 @@ if __name__ == '__main__':
 	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
 	fields += ", INDEX(name)"
-	sql = "CREATE TABLE entitytypes (%s)" % fields
+	sql = "CREATE TABLE entitytypes (%s) ENGINE=%s" % (fields,engine)
 	print(sql)
 	mycursor.execute(sql)
 
@@ -115,7 +117,7 @@ if __name__ == '__main__':
 	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
 	fields += ", INDEX(annotation_id)"
-	sql = "CREATE TABLE annotationpositions (%s)" % fields
+	sql = "CREATE TABLE annotationpositions (%s) ENGINE=%s" % (fields,engine)
 	print(sql)
 	mycursor.execute(sql)
 

@@ -88,18 +88,6 @@ if __name__ == '__main__':
 		#	doc['abstract'] = doc['abstract'][len('abstract'):].strip()
 		if args.db == 'remote' and not '-cov' in doc['abstract'].lower():
 			continue
-		
-		if 'publish_time' in doc:
-			assert len(doc['publish_time']) in [0,4,10], doc['publish_time']
-			doc['publish_year'] = None
-			doc['publish_month'] = None
-			doc['publish_day'] = None
-			if len(doc['publish_time']) == 4:
-				doc['publish_year'] = doc['publish_time']
-			elif len(doc['publish_time']) == 10:
-				doc['publish_year'] = doc['publish_time'][0:4]
-				doc['publish_month'] = doc['publish_time'][5:7]
-				doc['publish_day'] = doc['publish_time'][8:10]
 				
 		if 'mesh' in doc:
 			mesh_txts = []
