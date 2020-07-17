@@ -4,6 +4,7 @@ import requests
 import urllib.parse
 from collections import Counter
 import time
+import datetime
 	
 def nice_time(seconds):
 	days = int(seconds) // (24*60*60)
@@ -24,10 +25,22 @@ def nice_time(seconds):
 	
 	return ", ".join(bits)
 	
+def associate_altmetric_data_with_documents(documents, altmetric_filename):
+	with open(altmetric_filename) as f:
+		altmetric_data = json.load(f)
+	altmetric_data = { (ad['identifiers']['cord_uid'],ad['identifiers']['pubmed_id'],ad['identifiers']['doi']) : ad for ad in altmetric_data }
+	
+	for d in documents:
+		altmetric_id = (d['cord_uid'],d['pubmed_id'],d['doi'])
+		if altmetric_id in altmetric_data:
+			d['altmetric'] = altmetric_data[altmetric_id]
+	
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Tool to pull Altmetric data')
 	parser.add_argument('--apiKeyFile',type=str,required=True,help='JSON file with API key')
 	parser.add_argument('--documents',type=str,required=True,help='JSON file with documents')
+	parser.add_argument('--popularOrRecent', action='store_true',help='Only track popular or recent publications')
+	parser.add_argument('--prevData',type=str,required=False,help='JSON file with previous Altmetric data for documents')
 	parser.add_argument('--outData',type=str,required=True,help='JSON file with Altmetric data for documents')
 	args = parser.parse_args()
 	
@@ -36,6 +49,34 @@ if __name__ == '__main__':
 		
 	with open(args.documents) as f:
 		documents = json.load(f)
+		
+	if args.popularOrRecent:
+		assert args.prevData, "Must provide previous data to use --popularOrRecent"
+		associate_altmetric_data_with_documents(documents, args.prevData)
+		
+		popularOrRecent = []
+		for d in documents:
+			add = False
+			if 'altmetric' in d:
+				history_1w = d['altmetric']['history']['1w']
+				if history_1w > 10:
+					add = True
+				#print(json.dumps(d['altmetric'],indent=2,sort_keys=True))
+				
+			if d['publish_year']:
+				pub_date = datetime.date(d['publish_year'],d['publish_month'] if d['publish_month'] else 1,d['publish_day'] if d['publish_day'] else 1)
+				days_between = abs((pub_date-datetime.date.today()).days)
+				
+				if days_between < 15:
+					add = True
+			
+			if add:
+				popularOrRecent.append(d)
+				
+		print("Found %d documents that are popular or recent" % len(popularOrRecent))
+		#assert False
+		documents = popularOrRecent
+		
 		
 	output = []
 	counts = Counter()
