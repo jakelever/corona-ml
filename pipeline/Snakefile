@@ -48,12 +48,12 @@ rule:
 	output: 
 		documents=join(outDir,"alldocuments.english.json"),
 		nonenglish=join(outDir,"alldocuments.nonenglish.json")
-	shell: "python filterOutLanguages.py --inJSON {input} --nonEnglish {output.nonenglish} --outJSON {output.documents}"
+	shell: "python filterOutLanguages.py --inJSON {input} --prevNonEnglishDocs {output.nonenglish}.prev --prevEnglishDocs {output.documents}.prev --outNonEnglishDocs {output.nonenglish} --outEnglishDocs {output.documents} && cp {output.nonenglish} {output.nonenglish}.prev && cp {output.documents} {output.documents}.prev"
 	
 rule:
 	input: join(outDir,"alldocuments.english.json")
 	output: join(outDir,"alldocuments.parsed.pickle")
-	shell: "python parseDocuments.py --inJSON {input} --outPickle {output}"
+	shell: "python parseDocuments.py --inJSON {input} --prevPickle {output}.prev --outPickle {output} && cp {output} {output}.prev"
 	
 rule:
 	input: 

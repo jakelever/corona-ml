@@ -9,18 +9,20 @@ Risk Factor	Q199804	chronic obstructive pulmonary disease
 Risk Factor	Q12174	obesity
 Risk Factor	Q47657	blood type|blood-type|blood group|blood-group|ABO blood type|blood types|blood groups
 Risk Factor	Q95566669	hypertension
-Risk Factor	Q485831	lymphopenia
+Risk Factor	Q485831	lymphopenia|low lymphocyte count|level of lymphocytes|low lymphocytes count
+Risk Factor	Q1641062	hyperphosphatemia
+Risk Factor	Q1641384	hypophosphatemia
 Symptom	Q570920	tachypnea|tachypnoea
 Symptom	Q4340209	mental depression
 Symptom	Q544006	anxiety disorder
 Symptom	Q1869874	insomnia
 Symptom	Q3500368	psychological stress
 Transmission Type	Q104541	aerosol transmission
-Transmission Type	Q88103997	surface transmission
+Transmission Type	Q88103997	surface transmission|surface stability
 Transmission Type	Q12059568	placental transmission
 Transmission Type	Q45349134	sexual transmission
 Transmission Type	Q88812586	nosocomial transmission
-Transmission Type	Q871752	droplet transmission
+Transmission Type	Q871752	droplet transmission|droplets
 Transmission Type	Q11986959	airborne transmission
 Transmission Type	Q15304512	contact transmission
 Transmission Type	Q26305989	blood-borne transmission
@@ -49,3 +51,14 @@ Prevention Method	Q552461	hand washing
 Transmission Type	Q2272069	fecal–oral transmission
 Medical Discipline	Q186005	physiotherapy
 conflicting	Q5338245	Edinburgh Postpartum Depression Scale
+Risk Factor	Q794086	hypokalemia 
+Symptom	Q373597	hematuria
+Symptom	Q86	headache
+Symptom	Q28578	appetite|loss of appetite|gain of appetite
+Symptom	Q474959	myalgia
+Transmission Type	Q26305621	water-borne transmission
+Transmission Type	Q26305696	food-borne transmission
+Transmission Type	Q16000070	cross-species transmission
+Symptom	Q424318	testicular pain|scrotal discomfort
+conflicting	Q288280	angiotensin-converting enzyme inhibitors|angiotensin-converting enzyme inhibitor
+conflicting	Q183290	serine

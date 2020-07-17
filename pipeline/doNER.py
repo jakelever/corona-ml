@@ -89,7 +89,7 @@ if __name__ == '__main__':
 	with open(args.inJSON) as f:
 		documents = json.load(f)
 	
-	key_items = ['url','title','cord_uid','pubmed_id','doi']
+	key_items = ['title','cord_uid','pubmed_id','doi']
 	entity_map = {}
 	for d in corpus.documents:
 		title = d.metadata['title']
