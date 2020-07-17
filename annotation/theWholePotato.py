@@ -106,7 +106,7 @@ def remap_annotations(annotated):
 	return annotated
 
 def connect_db(dbfile):
-	with open(args.db) as f:
+	with open(dbfile) as f:
 		database = json.load(f)
 
 	mydb = mysql.connector.connect(
@@ -119,7 +119,7 @@ def connect_db(dbfile):
 	return mydb
 	
 def associate_altmetric_data_with_documents(documents, altmetric_filename):
-	with open(args.inAltmetric) as f:
+	with open(altmetric_filename) as f:
 		altmetric_data = json.load(f)
 	altmetric_data = { (ad['identifiers']['cord_uid'],ad['identifiers']['pubmed_id'],ad['identifiers']['doi']) : ad for ad in altmetric_data }
 	
