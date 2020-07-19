@@ -38,6 +38,8 @@ if __name__ == '__main__':
 	groupings = {}
 	groupings['Host Biology'] = 'Molecular Biology'
 	groupings['Viral Biology'] = 'Molecular Biology'
+	groupings['Drug Repurposing'] = 'Therapeutics'
+	groupings['Novel Therapeutics'] = 'Therapeutics'
 	
 	for g in groupings:
 		assert any( a == g for d in documents for a in d['annotations']), "Couldn't find any annotations for %s" % g
