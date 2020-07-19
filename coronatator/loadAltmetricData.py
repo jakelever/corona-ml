@@ -1,6 +1,6 @@
 import argparse
 import mysql.connector
-from collections import Counter
+from collections import Counter,OrderedDict
 import csv
 import json
 import re
@@ -47,7 +47,25 @@ if __name__ == '__main__':
 	print("Found %d CORD mappings" % len(cord_to_document_id))
 	print()
 	
-	update_altmetric_sql = "UPDATE documents SET altmetric_id=%s, altmetric_score=%s, altmetric_score_1day=%s, altmetric_score_1week=%s, altmetric_openaccess=%s, altmetric_badgetype=%s, altmetric_lastupdated=NOW() WHERE document_id=%s"
+	mycursor.execute("DROP TABLE IF EXISTS tmp_altmetric")
+	columns = OrderedDict()
+	columns['document_id'] = 'INT NOT NULL AUTO_INCREMENT'
+	columns['altmetric_id'] = 'INT DEFAULT -1'
+	columns['altmetric_score'] = 'INT DEFAULT -1'
+	columns['altmetric_score_1day'] = 'INT DEFAULT -1'
+	columns['altmetric_score_1week'] = 'INT DEFAULT -1'
+	columns['altmetric_openaccess'] = 'BOOLEAN DEFAULT FALSE'
+	columns['altmetric_badgetype'] = 'VARCHAR(64) NULL'
+
+	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
+	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
+	sql = "CREATE TABLE tmp_altmetric (%s)" % fields
+	print(sql)
+	mycursor.execute(sql)
+	
+	
+	#update_altmetric_sql = "UPDATE documents SET altmetric_id=%s, altmetric_score=%s, altmetric_score_1day=%s, altmetric_score_1week=%s, altmetric_openaccess=%s, altmetric_badgetype=%s, altmetric_lastupdated=NOW() WHERE document_id=%s"
+	insert_altmetric_sql = "INSERT INTO tmp_altmetric(altmetric_id,altmetric_score,altmetric_score_1day,altmetric_score_1week,altmetric_openaccess,altmetric_badgetype,document_id) VALUES(%s,%s,%s,%s,%s,%s,%s)"
 		
 	updates = []
 	for record in records:
@@ -78,10 +96,28 @@ if __name__ == '__main__':
 		
 		#break
 		
-	for i,chunk in enumerate(chunks(updates, 500)):
-		num_done = i*500
-		print(num_done,len(updates))
-		mycursor.executemany(update_altmetric_sql, chunk)
+	chunk_size = 1000
+	for i,chunk in enumerate(chunks(updates, chunk_size)):
+		num_complete = i*chunk_size
+		print("  %.1f%% (%d/%d)" % (100*num_complete/len(updates),num_complete,len(updates)))
+		#mycursor.executemany(update_altmetric_sql, chunk)
+		mycursor.executemany(insert_altmetric_sql, chunk)
+		
+	merge_sql = """
+	UPDATE documents d, tmp_altmetric ta
+	SET d.altmetric_id = ta.altmetric_id, 
+		d.altmetric_score = ta.altmetric_score, 
+		d.altmetric_score_1day = ta.altmetric_score_1day, 
+		d.altmetric_score_1week = ta.altmetric_score_1week, 
+		d.altmetric_openaccess = ta.altmetric_openaccess, 
+		d.altmetric_badgetype = ta.altmetric_badgetype, 
+		d.altmetric_lastupdated = NOW()
+	WHERE d.document_id = ta.document_id
+	"""
+	
+	mycursor.execute(merge_sql)
+	
+	mycursor.execute("DROP TABLE IF EXISTS tmp_altmetric")
 		
 	mydb.commit()
 	print("Updated %d documents with Altmetric data" % len(updates))
