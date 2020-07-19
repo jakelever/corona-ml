@@ -62,47 +62,32 @@ def load_document_id_mapping(mydb,documents):
 		d['document_id'] = document_id
 
 def remap_annotations(annotated):
-	toFilter = {'Maybe','Skip'}
-	annotated = [ d for d in annotated if not any (a in d['annotations'] for a in toFilter)]
-	#print("len(annotated)=",len(annotated))
+	toRemoveFromTraining = {'RemoveFromCorpus?','NotAllEnglish','NotRelevant','Skip','Maybe','FixAbstract'}
+	#toRemoveFromTraining.update({'Review','Updates','Comment/Editorial','News','Meta-analysis'})
+	#toRemoveFromTraining.update({'Updates','Comment/Editorial','News','Meta-analysis','Guidelines'})
+	#toRemoveFromTraining.update({'News'})
 
-	#toRemove = {'SARS-CoV','SARS-CoV-2','MERS-CoV','None'}
+	annotated = [ d for d in annotated if not any (f in d['annotations'] for f in toRemoveFromTraining) ]
 
-	mapping = {}
-	mapping['Observational Study'] = 'Case Reports'
-	mapping['Case Report / Series'] = 'Case Reports'
-	mapping['Diagnostics'] = 'Diagnostics'
-	mapping['Prevalence'] = 'Prevalence'
-	mapping['Viral Biology'] = 'Molecular Biology'
-	mapping['Host Biology'] = 'Molecular Biology'
-	mapping['Transmission'] = 'Transmission'
-	mapping['Non-therapeutic interventions'] = 'Non-therapeutic interventions'
-	mapping['Drug Repurposing'] = 'Therapeutics'
-	mapping['Novel therapeutics'] = 'Therapeutics'
-	#mapping['Clinical Trial'] = 'Clinical Trial'
-	mapping['Immunology'] = 'Immunology'
-	mapping['Psychology'] = 'Psychology'
-	mapping['Vaccines'] = 'Vaccines'
-	mapping['Symptoms'] = 'Symptoms'
-	mapping['Risk Factors'] = 'Risk Factors'
-	mapping['Pediatrics'] = 'Pediatrics'
-	mapping['Forecasting/Modelling'] = 'Disease Modelling'
+	annotationsToStrip = ['SARS-CoV','MERS-CoV','SARS-CoV-2','None','NotMainFocus']
+	annotationsToStrip.append('Clinical Trial')
+	annotationsToStrip.extend(['Review','Comment/Editorial','Meta-analysis','News','NotRelevant','Updates','Book chapter'])
 	
-	annotationCounter = Counter( a for d in annotated for a in d['annotations'] )
-	for map_from,map_to in mapping.items():
-		assert map_from in annotationCounter, "Couldn't find %s annotation in any documents to remap" % map_from
+	groupings = {}
+	groupings['Host Biology'] = 'Molecular Biology'
+	groupings['Viral Biology'] = 'Molecular Biology'
+	groupings['Drug Repurposing'] = 'Therapeutics'
+	groupings['Novel Therapeutics'] = 'Therapeutics'
 	
-	for d in annotated:
-		#d['annotations'] = [ a for a in d['annotations'] if not a in toRemove ]
+	for g in groupings:
+		assert any( a == g for d in documents for a in d['annotations']), "Couldn't find any annotations for %s" % g
+	
+	for d in documents:
+		d['annotated_topics'] = d['annotations']
+		d['annotated_topics'] = [ a for a in d['annotated_topics'] if not a in annotationsToStrip ]
+		d['annotated_topics'] = [ (groupings[a] if a in groupings else a) for a in d['annotated_topics'] ]
+		d['annotated_topics'] = sorted(set(d['annotated_topics']))
 		
-		d['annotated_topics'] = [ mapping[a] for a in d['annotations'] if a in mapping ]
-			
-		if 'Review' in d['annotations']:
-			d['annotated_topics'] = ['Review']
-		
-		if len(d['annotated_topics']) == 0:
-			d['annotated_topics'] = ['Other']
-			
 	return annotated
 
 def connect_db(dbfile):
@@ -299,10 +284,13 @@ if __name__ == '__main__':
 	parser.add_argument('--db',required=True,type=str,help='JSON with database settings')
 	parser.add_argument('--inDocs',required=True,type=str,help='Input file with all the documents')
 	parser.add_argument('--inAltmetric',required=True,type=str,help='Input file with the Altmetric data')
+	parser.add_argument('--mode',required=False,default="bestoutcome",type=str,help='Mode to select next document (bestoutcome/popular)')
 	parser.add_argument('--altmetricThreshold',required=False,type=int,default=100,help='Altmetric score to threshold to identify docs for annotation')
 	parser.add_argument('--negThreshold',required=False,default=0.3,type=float,help='Threshold below which is a confident negative (default=0.25)')
 	parser.add_argument('--posThreshold',required=False,default=0.7,type=float,help='Threshold above which is a confident positive (default=0.75)')
 	args = parser.parse_args()
+	
+	assert args.mode in ['bestoutcome','popular']
 	
 	task_id = 2
 	
@@ -338,19 +326,29 @@ if __name__ == '__main__':
 			
 		print("Selected %d documents with annotations and %d \"challenge\" documents with high Altmetric scores" % (len(annotated),len(challenge_docs)))
 		
-		print("Using ML to identify docs that can't be decided...")
-		y_annotated, undecided_docs = get_y_and_undecided_docs(annotated,challenge_docs,args.posThreshold,args.negThreshold)
-		print("Found %d decided and %d undecided documents" % (len(challenge_docs)-len(undecided_docs),len(undecided_docs)))
+		if args.mode == 'bestoutcome':
+			print("Using ML to identify docs that can't be decided...")
+			y_annotated, undecided_docs = get_y_and_undecided_docs(annotated,challenge_docs,args.posThreshold,args.negThreshold)
+			print("Found %d decided and %d undecided documents" % (len(challenge_docs)-len(undecided_docs),len(undecided_docs)))
 		
-		print("Vectorizing annotated and undecided docs...")
-		X_annotated, X_undecided = vectorizer_docs(annotated, undecided_docs)
+			print("Vectorizing annotated and undecided docs...")
+			X_annotated, X_undecided = vectorizer_docs(annotated, undecided_docs)
 
-		print("Search for optimal undecided document for annotation...")
-		potential_outcomes = calculate_outcomes_of_different_document_choices(X_annotated,y_annotated,X_undecided,args.posThreshold)
-		best_doc_change = potential_outcomes.mean(axis=1).max()
-		best_doc_index = potential_outcomes.mean(axis=1).argmax()
-		doc_to_annotate = undecided_docs[best_doc_index]
-		print("Selected document (index=%d) with optimal outcome of %d" % (best_doc_index,best_doc_change))
+			print("Search for optimal undecided document for annotation...")
+		
+			potential_outcomes = calculate_outcomes_of_different_document_choices(X_annotated,y_annotated,X_undecided,args.posThreshold)
+			best_doc_change = potential_outcomes.mean(axis=1).max()
+			best_doc_index = potential_outcomes.mean(axis=1).argmax()
+			doc_to_annotate = undecided_docs[best_doc_index]
+			dochash = hash(X_undecided.data.tobytes())
+			current_coverage = round(1 - (len(undecided_docs) / len(challenge_docs)),3)
+			print("Selected document (index=%d) with optimal outcome of %d" % (best_doc_index,best_doc_change))
+		elif args.mode == 'popular':
+			doc_to_annotate = sorted([ d for d in challenge_docs if 'altmetric' in d ],key=lambda x : x['altmetric']['score'])[-1]
+			dochash = "popular"
+			current_coverage = 0
+			print("Selected document with score of %d" % (doc_to_annotate['altmetric']['score']))
+			
 		print("Title of paper: %s" % (doc_to_annotate['title']))
 		print("URL of paper: %s" % (doc_to_annotate['url']))
 		
@@ -361,8 +359,6 @@ if __name__ == '__main__':
 			insert_document_into_db(mydb,doc_to_annotate)
 		
 		print("Adding document (id=%d) to active learning queue" % doc_to_annotate['document_id'])
-		dochash = hash(X_undecided.data.tobytes())
-		current_coverage = round(1 - (len(undecided_docs) / len(challenge_docs)),3)
 		print("Coverage = %.3f" % current_coverage)
 		add_doc_to_queue(mydb,doc_to_annotate,task_id,dochash,current_coverage)
 	
