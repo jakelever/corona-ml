@@ -60,6 +60,7 @@ if __name__ == '__main__':
 
 	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
+	fields += ", INDEX(altmetric_score_1day)"
 	sql = "CREATE TABLE documents (%s) ENGINE=%s" % (fields,engine)
 	print(sql)
 	mycursor.execute(sql)
