@@ -14,13 +14,13 @@ def runQuery(query):
 	return results['results']['bindings']
 	
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser(description='Tool to pull symptoms data from WikiData using SPARQL')
+	parser = argparse.ArgumentParser(description='Tool to pull species data from WikiData using SPARQL')
 	parser.add_argument('--outJSON',type=str,required=True,help='File to output entities')
 	args = parser.parse_args()
 
 	totalCount = 0
 	
-	symptom = 'Q169872'
+	taxon = 'Q16521'
 
 	entities = defaultdict(dict)
 	
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 		OPTIONAL {?entity skos:altLabel ?alias FILTER (LANG (?alias) = "en") .}
 	} 
 
-	""" % symptom
+	""" % taxon
 
 	rowCount = 0
 	for row in runQuery(query):

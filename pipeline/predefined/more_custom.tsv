@@ -62,3 +62,25 @@ Vaccine Type	Q16858617	cell-based vaccine
 Vaccine Type	Q16915769	Live vector vaccine
 Vaccine Type	Q85795487	RNA vaccine|mRNA vaccine
 Vaccine Type	Q97153933	Protein subunit vaccine
+conflicting	Q305481	alanine aminotransferase
+conflicting	Q7973735	water insecurity
+Species	Q39275	mice
+Species	Q184224	rat|rats
+Species	Q7375	camel|camels
+Species	Q177601	macaque
+Species	Q9394	rabbit
+Species	Q28425	bat
+Species	Q156606	rhesus macaque
+Species	Q178973	ferret|ferrets
+Species	Q146	cat|cats
+Species	Q144	dog|dogs
+Species	Q25397	pangolin|pangolins
+Species	Q71516	dromedary camel|dromedary camels
+Species	Q133189	racoon dog
+Species	Q12294232	civet|civets
+Species	Q42569	llama|llamas
+Species	Q58697	pig|pigs
+Species	Q7368	sheep
+Species	Q2934	goat|goats
+Species	Q726	horse|horses
+conflicting	Q18354214	European Academy of Neurology

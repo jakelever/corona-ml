@@ -28,10 +28,16 @@
 			"(sars) cov2",
 			"(sars)cov2",
 			"severe acute respiratory syndrome coronavirus 2",
+			"severe acute respiratory syndrome coronavirus-2",
+			"severe acute respiratory syndrome-related coronavirus 2",
+			"corona virus disease 2019",
+			"coronavirus disease 2019",
+			"corona-virus disease 2019",
 			"2019 novel coronavirus",
-			"novel 2019 coronavirus"
+			"novel 2019 coronavirus",
+			"severe acute respiratory syndrome coronavirus 2-related acute respiratory distress syndrome"
 		]
-	},
+	},‐
 	"Q85438966": {
 		"name": "SARS-CoV",
 		"aliases": [
@@ -56,7 +62,8 @@
 			"(sars) cov1",
 			"(sars)cov1",
 			"sars virus",
-			"severe acute respiratory syndrome coronavirus"
+			"severe acute respiratory syndrome coronavirus",
+			"severe acute respiratory syndrome-related coronavirus"
 		]
 	},
 	"Q4902157": {
@@ -76,7 +83,9 @@
 			"(mers) cov",
 			"(mers)-cov",
 			"(mers)cov",
-			"mers virus"
+			"mers virus",
+			"middle east respiratory syndrome coronavirus",
+			"middle east respiratory syndrome-related coronavirus"
 		]
 	}
 }

@@ -6,7 +6,7 @@ import re
 
 def runQuery(query):
 	endpoint = 'https://query.wikidata.org/sparql'
-	sparql = SPARQLWrapper.SPARQLWrapper(endpoint)
+	sparql = SPARQLWrapper.SPARQLWrapper(endpoint, agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36')
 	sparql.setQuery(query)
 	sparql.setReturnFormat(SPARQLWrapper.JSON)
 	results = sparql.query().convert()

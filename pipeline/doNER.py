@@ -30,8 +30,17 @@ if __name__ == '__main__':
 	with open(args.stopwords) as f:
 		stopwords = set( line.strip().lower() for line in f )
 		
-	with open(args.stopwords) as f:
-		removals = set(line.strip('\n').split('\t')[0] for line in f)
+	idsToRemove, specificSynonymsToRemove = set(), defaultdict(set)
+	with open(args.removals) as f:
+		for line in f:
+			#removals = set(line.strip('\n').split('\t')[0] for line in f)
+			split = line.strip('\n').split('\t')
+			assert len(split)==3, "Expected 3 columns on line: %s" % json.dumps([line])
+			wikidataID, name, synonyms = split
+			if synonyms:
+				specificSynonymsToRemove[wikidataID].update(synonyms.lower().split('|'))
+			else:
+				idsToRemove.add(wikidataID)
 	
 	allEntities = {}
 	termLookup = defaultdict(set)
@@ -41,7 +50,7 @@ if __name__ == '__main__':
 		with open(filename,encoding='utf8') as f:
 			entityData = json.load(f)
 			
-			entityData = { entityID:entity for entityID,entity in entityData.items() if not entityID in removals }
+			entityData = { entityID:entity for entityID,entity in entityData.items() if not entityID in idsToRemove }
 				
 			allEntities.update(entityData)
 			
@@ -51,9 +60,13 @@ if __name__ == '__main__':
 					aliases += entity['ambiguous_aliases']
 					hasAmbiguities.append(entityID)
 					
+				aliases = [ a.lower() for a in aliases ]
+				if len(specificSynonymsToRemove[entityID]) > 0:
+					aliases = [ a for a in aliases if not a in specificSynonymsToRemove[entityID] ]
+					
 				for alias in aliases:
 					tmpEntityType = entity['type'] if entityType == 'custom' else entityType
-					termLookup[alias.lower()].add((tmpEntityType,entityID))
+					termLookup[alias].add((tmpEntityType,entityID))
 		 
 	termLookup = defaultdict(set,{ k:v for k,v in termLookup.items() if not k in stopwords })
 	
@@ -61,7 +74,7 @@ if __name__ == '__main__':
 		geoData = json.load(f)
 	
 	print("NO AMBIGUITY ALLOWED")
-	termLookup = defaultdict(set,{ k:v for k,v in termLookup.items() if len(v) == 1 })
+	#termLookup = defaultdict(set,{ k:v for k,v in termLookup.items() if len(v) == 1 })
 	
 	#for alias,entities in termLookup.items():
 	#	if len(entities) > 1:
@@ -97,6 +110,15 @@ if __name__ == '__main__':
 		# Strip out some terms
 		d.entities = [ e for e in d.entities if not e.entityType == 'conflicting' ]
 		
+		# This is "undoing" the merge of externalIDs for merged terms in Kindred
+		entitiesWithoutMergedExternalIDs = []
+		for e in d.entities:
+			for externalID in e.externalID.split(';'):
+				e2 = e.clone()
+				e2.externalID = externalID
+				entitiesWithoutMergedExternalIDs.append(e2)
+		d.entities = entitiesWithoutMergedExternalIDs
+		
 		unambigLocationCoords = []
 		
 		virusesInDoc = sorted(set( allEntities[e.externalID]['name'] for e in d.entities if e.entityType == 'Virus'))
@@ -118,8 +140,6 @@ if __name__ == '__main__':
 			# Only do disambiguation for locations
 			#if len(entitiesAtPosition) > 1 and not allAreLocations and len(unambigLocationCoords) > 0:
 			#	continue
-			if len(entitiesAtPosition) > 1:
-				continue
 				
 			#if allAreLocations:
 			#	candidateCoords = []
@@ -136,6 +156,12 @@ if __name__ == '__main__':
 					continue
 				elif virusForEntity != virusesInDoc[0]: # Skip because this entity is for the wrong virus!
 					continue
+					
+				entitiesAtPosition = [e]
+					
+			# Ambiguity remains so we skip it
+			if len(entitiesAtPosition) > 1:
+				continue
 				
 			e = entitiesAtPosition[0]
 			
