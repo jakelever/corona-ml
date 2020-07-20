@@ -334,7 +334,6 @@ basically
 basis
 basket
 basketball
-bat
 bath
 bathroom
 battery
@@ -1087,7 +1086,6 @@ developmental
 device
 devil
 devote
-diabetes
 diagnose
 diagnosis
 dialogue
@@ -1506,7 +1504,6 @@ fat
 fatal
 fate
 father
-fatigue
 fault
 favor
 favorable
@@ -1525,7 +1522,6 @@ female
 feminist
 fence
 festival
-fever
 few
 fewer
 fiber
@@ -4403,3 +4399,24 @@ prophylaxis
 prophylactic
 apps
 cochrane
+alanine
+arginine
+asparagine
+aspartic acid
+cysteine
+glutamine
+glutamic acid
+glycine
+histidine
+isoleucine
+leucine
+lysine
+methionine
+phenylalanine
+proline
+serine
+threonine
+tryptophan
+tyrosine
+valine
+creatine

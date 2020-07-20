@@ -33,11 +33,13 @@
 			"corona virus disease 2019",
 			"coronavirus disease 2019",
 			"corona-virus disease 2019",
-			"2019 novel coronavirus",
+			"2019 novel coronavirus",,
+			"2019 novel coronavirus disease",
 			"novel 2019 coronavirus",
+			"novel 2019 coronavirus disease",
 			"severe acute respiratory syndrome coronavirus 2-related acute respiratory distress syndrome"
 		]
-	},‐
+	},
 	"Q85438966": {
 		"name": "SARS-CoV",
 		"aliases": [

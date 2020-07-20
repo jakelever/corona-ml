@@ -69,14 +69,14 @@ Species	Q184224	rat|rats
 Species	Q7375	camel|camels
 Species	Q177601	macaque
 Species	Q9394	rabbit
-Species	Q28425	bat
-Species	Q156606	rhesus macaque
+Species	Q28425	bat|bats
+Species	Q156606	rhesus macaque|rhesus macaques
 Species	Q178973	ferret|ferrets
 Species	Q146	cat|cats
 Species	Q144	dog|dogs
 Species	Q25397	pangolin|pangolins
 Species	Q71516	dromedary camel|dromedary camels
-Species	Q133189	racoon dog
+Species	Q133189	racoon dog|racoon dogs
 Species	Q12294232	civet|civets
 Species	Q42569	llama|llamas
 Species	Q58697	pig|pigs
@@ -84,3 +84,7 @@ Species	Q7368	sheep
 Species	Q2934	goat|goats
 Species	Q726	horse|horses
 conflicting	Q18354214	European Academy of Neurology
+Drug	Q12187	antibiotics
+Risk Factor	Q844935	coronary artery disease
+Drug	Q177911	steroids
+Drug	Q4391540	"recombinant interferon ?-2b|interferon Alfa-2b, Recombinant|interferon Alfa-2b|IFN-?2b"

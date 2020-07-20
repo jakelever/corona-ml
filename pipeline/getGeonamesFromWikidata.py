@@ -51,8 +51,15 @@ if __name__ == '__main__':
 	geoConcepts['Q1549591'] = 'big city'
 	geoConcepts['Q6256'] = 'country'
 	geoConcepts['Q35657'] = 'state of the United States'
+	geoConcepts['Q1352230'] = 'territory of the United States'
 	geoConcepts['Q16110'] = 'region of Italy'
+	geoConcepts['Q36784'] = 'region of France'
+	geoConcepts['Q1221156'] = 'state of Germany'
 	geoConcepts['Q1615742'] = 'province of China'
+	geoConcepts['Q11828004'] = 'province of Canada'
+	geoConcepts['Q9357527'] = 'territory of Canada'
+	geoConcepts['Q50337'] = 'prefecture of Japan'
+	geoConcepts['Q5852411'] = 'state of Australia'
 	
 	coordRegex = re.compile(r'Point\((?P<longitude>[-+]?\d*\.?\d*) (?P<latitude>[-+]?\d*\.?\d*)\)')
 

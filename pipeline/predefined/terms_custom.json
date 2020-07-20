@@ -19,7 +19,8 @@
 		"name": "convalescent plasma",
 		"type": "Drug",
 		"aliases": [
-			"convalescent plasma"
+			"convalescent plasma",
+			"convalescent plasma therapy"
 		]
 	},
 	"Q798309": {
@@ -27,7 +28,14 @@
 		"type": "Drug",
 		"aliases": [
 			"bcg vaccine",
-			"bacillus calmette guerin vaccine"
+			"bacillus calmette guerin vaccine",
+			"bacillus calmette guérin vaccine",
+			"bacillus calmette-guerin vaccine",
+			"bacillus calmette-guérin vaccine",
+			"bacillus calmette guerin vaccination",
+			"bacillus calmette guérin vaccination",
+			"bacillus calmette-guerin vaccination",
+			"bacillus calmette-guérin vaccination"
 		]
 	}
 }
