@@ -79,6 +79,12 @@ if __name__ == '__main__':
 		else:
 			d['ml_pubtype'] = predicted_pubtype
 			
+			
+	updates_journals = set(['MMWR. Morbidity and mortality weekly report','MMWR Morb Mortal Wkly Rep'])
+	for d in documents:
+		if d['journal'] in updates_journals:
+			d['ml_pubtype'] = 'Updates'
+			
 	print(Counter( d['ml_pubtype'] for d in documents))
 			
 	print("Saving JSON file...")
