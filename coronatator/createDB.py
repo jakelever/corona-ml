@@ -33,6 +33,7 @@ if __name__ == '__main__':
 	mycursor.execute("DROP TABLE IF EXISTS annotationpositions")
 	mycursor.execute("DROP TABLE IF EXISTS entities")
 	mycursor.execute("DROP TABLE IF EXISTS entitytypes")
+	mycursor.execute("DROP TABLE IF EXISTS coordinates")
 
 	columns = OrderedDict()
 	columns['document_id'] = 'INT NOT NULL AUTO_INCREMENT'
@@ -101,6 +102,17 @@ if __name__ == '__main__':
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
 	fields += ", INDEX(name)"
 	sql = "CREATE TABLE entitytypes (%s) ENGINE=%s" % (fields,engine)
+	print(sql)
+	mycursor.execute(sql)
+	
+	columns = OrderedDict()
+	columns['entity_id'] = 'INT NOT NULL AUTO_INCREMENT'
+	columns['longitude'] = 'FLOAT'
+	columns['latitude'] = 'FLOAT'
+	
+	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
+	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
+	sql = "CREATE TABLE coordinates (%s) ENGINE=%s" % (fields,engine)
 	print(sql)
 	mycursor.execute(sql)
 
