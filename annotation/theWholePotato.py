@@ -76,6 +76,7 @@ def remap_annotations(annotated):
 	groupings = {}
 	groupings['Host Biology'] = 'Molecular Biology'
 	groupings['Viral Biology'] = 'Molecular Biology'
+	groupings['Drug Targets'] = 'Molecular Biology'
 	groupings['Drug Repurposing'] = 'Therapeutics'
 	groupings['Novel Therapeutics'] = 'Therapeutics'
 	
