@@ -17,7 +17,7 @@ Risk Factor	Q95566669	hypertension
 Risk Factor	Q485831	lymphopenia|low lymphocyte count|level of lymphocytes|low lymphocytes count
 Risk Factor	Q1641062	hyperphosphatemia
 Risk Factor	Q1641384	hypophosphatemia
-Risk Factor	Q185836	age
+Risk Factor	Q185836	age|old age|older age
 Risk Factor	Q794086	hypokalemia 
 Symptom	Q570920	tachypnea|tachypnoea
 Symptom	Q4340209	mental depression
@@ -88,3 +88,18 @@ Drug	Q12187	antibiotics
 Risk Factor	Q844935	coronary artery disease
 Drug	Q177911	steroids
 Drug	Q4391540	"recombinant interferon ?-2b|interferon Alfa-2b, Recombinant|interferon Alfa-2b|IFN-?2b"
+Risk Factor	Q490539	eosinopenia
+Risk Factor	Q3254959	race|white race|African American race|black race|Asian race
+Risk Factor	Q736715	chronic kidney disease
+Risk Factor	Q3045040	blood oxygen saturation|reduced o2 saturation|o2 saturation
+Risk Factor	Q813243	ventilator use
+Risk Factor	Q35869	asthma
+Risk Factor	Q4430231	social deprivation|deprivation
+Risk Factor	Q42015775	systolic blood pressure
+Risk Factor	Q82642	blood pressure
+Risk Factor	Q1542839	glomerular filtration rate
+Risk Factor	Q290	biological sex|sex|male sex|female sex|gender
+Risk Factor	Q105688	hypoxia
+Risk Factor	Q476921	kidney failure|impaired renal function
+Species	Q838947	common marmoset|common marmosets
+Species	Q19829485	marmoset|marmosets
