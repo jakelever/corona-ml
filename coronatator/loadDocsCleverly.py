@@ -84,10 +84,13 @@ if __name__ == '__main__':
 	insertrecords = []
 	updaterecords = []
 	for doc in documents:
+		if not doc['pubmed_id']:
+			doc['pubmed_id'] = None
+		if not doc['cord_uid']:
+			doc['cord_uid'] = None
+	
 		#if doc['abstract'].lower().startswith('abstract'):
 		#	doc['abstract'] = doc['abstract'][len('abstract'):].strip()
-		if args.db == 'remote' and not '-cov' in doc['abstract'].lower():
-			continue
 				
 		if 'mesh' in doc:
 			mesh_txts = []
