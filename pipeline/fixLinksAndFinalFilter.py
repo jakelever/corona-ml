@@ -30,9 +30,16 @@ if __name__ == '__main__':
 			#print(json.dumps(d,indent=2,sort_keys=True))
 			#assert False
 	
-	filtered = [ d for d in documents if not d['url'] is None ]
-	print("Removing %d documents without a usable URL" % (len(documents)-len(filtered)))
-	print("Saving %d documents with usable URL" % len(filtered))
+	filtered = documents
+	
+	print("%d documents before final filtering" % len(filtered))
+	
+	filtered = [ d for d in filtered if not d['url'] is None ]
+	
+	print("%d documents after removing those without a usable URL" % len(filtered))
+	
+	filtered = [ d for d in filtered if not ('NotRelevant' in d['annotations'] or 'RemoveFromCorpus?' in d['annotations']) ]
+	print("%d documents after removing that are manually flagged for removal" % len(filtered))
 			
 	print("Saving JSON file...")
 	with open(args.outJSON,'w') as f:

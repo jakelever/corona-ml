@@ -93,7 +93,7 @@ rule:
 rule:
 	input: join(outDir,"alldocuments.clinicaltrials.json"),
 	output: join(outDir,"alldocuments.final.json")
-	shell: "python fixLinksAndCleanUnlinked.py --inJSON {input} --outJSON {output}"
+	shell: "python fixLinksAndFinalFilter.py --inJSON {input} --outJSON {output}"
 
 rule:
 	input: join(outDir,"alldocuments.final.json"),
