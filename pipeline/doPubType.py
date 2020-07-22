@@ -60,6 +60,8 @@ if __name__ == '__main__':
 	#predicted = clf.predict(X_all)
 	print("Classes:", pipeline.classes_)
 	
+	updates_journals = set(['MMWR. Morbidity and mortality weekly report','MMWR Morb Mortal Wkly Rep'])
+	
 	#for p,d in zip(predicted,documents):
 	for i,d in enumerate(documents):
 		max_index = probs[i,:].argmax()
@@ -68,6 +70,9 @@ if __name__ == '__main__':
 			predicted_pubtype = pipeline.classes_[max_index]
 		else:
 			predicted_pubtype = 'Research'
+			
+		if d['journal'] in updates_journals:
+			predicted_pubtype = 'Updates'
 		
 		assert len(annotated_pubtypes) <= 1, "Document has %s" % (str(annotated_pubtypes))
 		
@@ -79,11 +84,6 @@ if __name__ == '__main__':
 		else:
 			d['ml_pubtype'] = predicted_pubtype
 			
-			
-	updates_journals = set(['MMWR. Morbidity and mortality weekly report','MMWR Morb Mortal Wkly Rep'])
-	for d in documents:
-		if d['journal'] in updates_journals:
-			d['ml_pubtype'] = 'Updates'
 			
 	print(Counter( d['ml_pubtype'] for d in documents))
 			

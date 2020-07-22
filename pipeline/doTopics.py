@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
 	annotationsToStrip = ['SARS-CoV','MERS-CoV','SARS-CoV-2','None','NotMainFocus']
 	annotationsToStrip.append('Clinical Trial')
-	annotationsToStrip.extend(['Review','Comment/Editorial','Meta-analysis','News','NotRelevant','Updates','Book chapter'])
+	annotationsToStrip.extend(['Review','Comment/Editorial','Meta-analysis','News','NotRelevant','Updates','Book chapter','Talk'])
 	annotationsToStrip.extend(toRemoveFromTraining)
 	
 	groupings = {}
