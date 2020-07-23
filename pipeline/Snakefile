@@ -45,7 +45,7 @@ rule:
 rule:
 	input: join(outDir,"alldocuments.json")
 	output: join(outDir,"alldocuments.noduplicates.json")
-	shell: "python removeDuplicates.py --inJSON {input} --outJSON {output}"
+	shell: "python mergeDuplicates.py --inJSON {input} --outJSON {output}"
 	
 rule:
 	input: join(outDir,"alldocuments.noduplicates.json")
@@ -93,7 +93,7 @@ rule:
 rule:
 	input: join(outDir,"alldocuments.clinicaltrials.json"),
 	output: join(outDir,"alldocuments.final.json")
-	shell: "python fixLinksAndFinalFilter.py --inJSON {input} --outJSON {output}"
+	shell: "python finalFilter.py --inJSON {input} --outJSON {output}"
 
 rule:
 	input: join(outDir,"alldocuments.final.json"),

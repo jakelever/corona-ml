@@ -80,7 +80,7 @@ if __name__ == '__main__':
 	#	if len(entities) > 1:
 	#		print("%s\t%d" % (alias,len(entities)))
 	
-	print("Loading and annotating corpus...")
+	print("Loading corpus...")
 	with open(args.inParsed,'rb') as f:
 		corpus = pickle.load(f)
 		
@@ -89,6 +89,7 @@ if __name__ == '__main__':
 	#parser = kindred.Parser(model='en_core_sci_sm')
 	#parser.parse(corpus)
 	
+	print("Annotating corpus...")
 	corpus.removeEntities()
 	ner = kindred.EntityRecognizer(termLookup, mergeTerms=True)
 	ner.annotate(corpus)
@@ -102,37 +103,41 @@ if __name__ == '__main__':
 	with open(args.inJSON) as f:
 		documents = json.load(f)
 	
-	key_items = ['title','cord_uid','pubmed_id','doi']
-	entity_map = {}
-	for d in corpus.documents:
-		title = d.metadata['title']
+	corpusMap = {}
+	for kindred_doc in corpus.documents:
+		corpusMap[kindred_doc.text] = kindred_doc
+
+	for d in documents:
+		key = d['title'] + "\n" + d['abstract']
+		kindred_doc = corpusMap[key]
 		
 		# Strip out some terms
-		d.entities = [ e for e in d.entities if not e.entityType == 'conflicting' ]
+		kindred_doc.entities = [ e for e in kindred_doc.entities if not e.entityType == 'conflicting' ]
 		
 		# This is "undoing" the merge of externalIDs for merged terms in Kindred
 		entitiesWithoutMergedExternalIDs = []
-		for e in d.entities:
+		for e in kindred_doc.entities:
 			for externalID in e.externalID.split(';'):
 				e2 = e.clone()
 				e2.externalID = externalID
 				entitiesWithoutMergedExternalIDs.append(e2)
-		d.entities = entitiesWithoutMergedExternalIDs
+		kindred_doc.entities = entitiesWithoutMergedExternalIDs
 		
-		unambigLocationCoords = []
 		
-		virusesInDoc = sorted(set( allEntities[e.externalID]['name'] for e in d.entities if e.entityType == 'Virus'))
+		virusesInDoc = sorted(set( allEntities[e.externalID]['name'] for e in kindred_doc.entities if e.entityType == 'Virus'))
 		
 		entitiesByPosition = defaultdict(list)
-		for e in d.entities:
+		for e in kindred_doc.entities:
 			entitiesByPosition[e.position[0]].append(e)
 			
+		unambigLocationCoords = []
 		for position,entitiesAtPosition in entitiesByPosition.items():
 			if len(entitiesAtPosition) == 1 and entitiesAtPosition[0].entityType == 'Location':
 				thisGeoData = geoData[entitiesAtPosition[0].externalID]
 				coord = [thisGeoData['longitude'],thisGeoData['latitude']]
 				unambigLocationCoords.append(coord)
-			
+	
+		title = d['title']
 		entities = []
 		for position,entitiesAtPosition in entitiesByPosition.items():
 			#allAreLocations = all( e.entityType=='Location' for e in entitiesAtPosition )
@@ -182,17 +187,9 @@ if __name__ == '__main__':
 			
 		#print(entities)
 			
-		#if d.metadata['cord_uid'] == 'zpv5f8pr':
+		#if kindred_doc.metadata['cord_uid'] == 'zpv5f8pr':
 		#	print(json.dumps(entities,indent=2,sort_keys=True))
-			
-		key = tuple([ d.metadata[k] for k in key_items ])
-		assert not key in entity_map, "Found duplicate document with key: %s" % str(key)
-		entity_map[key] = entities
-		
-	for d in documents:
-		key = tuple([ d[k] for k in key_items ])
-		assert key in entity_map
-		d['entities'] = entity_map[key]
+		d['entities'] = entities
 		
 		
 	# Filter locations to be capitalization matches

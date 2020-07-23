@@ -12,24 +12,6 @@ if __name__ == '__main__':
 	with open(args.inJSON) as f:
 		documents = json.load(f)
 		
-	filtered = []
-
-	for d in documents:
-			
-		if d['pubmed_id']:
-			d['url'] = "https://pubmed.ncbi.nlm.nih.gov/%s" % d['pubmed_id']
-		elif d['doi']:
-			d['url'] = "https://doi.org/%s" % d['doi']
-		elif d['pmcid']:
-			d['url'] = "https://www.ncbi.nlm.nih.gov/pmc/articles/%s" % d['pmcid']
-		elif d['url']:
-			urls = [ u.strip() for u in d['url'].split(';') ]
-			d['url'] = urls[0]
-		else:
-			d['url'] = None
-			#print(json.dumps(d,indent=2,sort_keys=True))
-			#assert False
-	
 	filtered = documents
 	
 	print("%d documents before final filtering" % len(filtered))

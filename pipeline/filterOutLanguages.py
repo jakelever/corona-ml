@@ -25,7 +25,7 @@ if __name__ == '__main__':
 	
 	ray.init()
 	
-	keys = ['title','cord_uid','pubmed_id','doi']
+	keys = ['title','abstract']
 	
 	print("Loading...")
 	with open(args.inJSON) as f:
@@ -39,65 +39,52 @@ if __name__ == '__main__':
 	print(args.prevEnglishDocs, os.path.isfile(args.prevEnglishDocs))
 	print(args.prevNonEnglishDocs, os.path.isfile(args.prevNonEnglishDocs))
 		
-	alreadySeen = set()
-	englishDocuments = []
-	nonenglishDocuments = []
+	prev_results = {}
 	if args.prevEnglishDocs and args.prevNonEnglishDocs and os.path.isfile(args.prevEnglishDocs) and os.path.isfile(args.prevNonEnglishDocs):
 		print("Reusing old language assignments where possible...")
 		with open(args.prevEnglishDocs,'r') as f:
 			englishDocuments = json.load(f)
 		with open(args.prevNonEnglishDocs,'r') as f:
 			nonenglishDocuments = json.load(f)
-			prevLanguages = { tuple([ doc[k] for k in keys ]):doc['languages'] for doc in nonenglishDocuments }
-			
-		print("Pulling the latest version of documents from the new file (assuming the language hasn't changed)...")
-		englishDocuments = [ documentsByIdentifier[tuple([ doc[k] for k in keys ])] for doc in englishDocuments ]
-		nonenglishDocuments = [ documentsByIdentifier[tuple([ doc[k] for k in keys ])] for doc in nonenglishDocuments ]
-		
-		englishDocuments = [ doc for doc in englishDocuments if doc is not None ]
-		nonenglishDocuments = [ doc for doc in nonenglishDocuments if doc is not None ]
-		
-		for doc in nonenglishDocuments:
-			key = tuple([ doc[k] for k in keys ])
-			doc['language'] = prevLanguages[key]
 
-		print("  Loaded %d English documents with matching identifiers to new documents" % len(englishDocuments))
-		print("  Loaded %d non-English documents with matching identifiers to new documents" % len(nonenglishDocuments))
-			
 		for doc in englishDocuments + nonenglishDocuments:
-			identifier = tuple([ doc[k] for k in keys ])
-			alreadySeen.add(identifier)
-		print("Found %d existing language assignments" % len(alreadySeen))
+			identifier = tuple( doc[k] for k in keys )
+			prev_results[identifier] = doc['languages']
+		
+		print("Found %d existing language assignments" % len(prev_results))
 
 	needs_processing = []
 	for doc in documents:
 		identifier = tuple([ doc[k] for k in keys ])
-		if not identifier in alreadySeen:
+		if not identifier in prev_results:
 			needs_processing.append(doc)
 			
-	#needs_processing = needs_processing[:100]
 	print("Found %d documents to process" % len(needs_processing))
 
 	print("Filtering...")
-	results = [ processDoc.remote(doc) for doc in needs_processing ]
+	new_results = [ processDoc.remote(doc) for doc in needs_processing ]
 	
-	if len(results) > 0:
+	if len(new_results) > 0:
 		while True:
-			done,todo = ray.wait(results,len(needs_processing),timeout=1)
+			done,todo = ray.wait(new_results,len(needs_processing),timeout=1)
 			print("  Processed %.1f%% (%d/%d)" % (100*len(done)/len(needs_processing),len(done),len(needs_processing)))
 			if len(todo) == 0:
 				break
 			time.sleep(5)
-	results = ray.get(results)
+	new_results = ray.get(new_results)
 	
-	for i,doc in enumerate(needs_processing):
-		#if (i%1000) == 0:
-		#	print("  Processed %.1f%% (%d/%d)" % (100*i/len(needs_processing),i,len(needs_processing)))
+	for doc,new_result in zip(needs_processing,new_results):
+		identifier = tuple([ doc[k] for k in keys ])
+		prev_results[identifier] = new_result
+		
+	englishDocuments, nonenglishDocuments = [], []
+	for doc in documents:
 	
-		nonenglish_languages = results[i]
-		#languageCounter += Counter(nonenglish_languages)
+		identifier = tuple([ doc[k] for k in keys ])
+		nonenglish_languages = prev_results[identifier]
 		
 		if len(nonenglish_languages) == 0:
+			doc['languages'] = ['eng']
 			englishDocuments.append(doc)
 		else:
 			doc['languages'] = nonenglish_languages
