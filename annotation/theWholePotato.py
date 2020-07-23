@@ -147,6 +147,22 @@ def add_doc_to_queue(mydb,doc,task_id,dochash,current_coverage):
 	mycursor.execute(insertsql, record)
 	#mydb.commit()
 
+def get_multiscores_with_pipeline(annotated,challenge_docs):
+	encoder = MultiLabelBinarizer()
+	y_annotated = encoder.fit_transform( [ d['annotated_topics'] for d in annotated ] )
+
+	pipeline = Pipeline([
+		("vectorizer", DocumentVectorizer(features=['titleabstract'])),
+		("dimreducer", TruncatedSVD(n_components=64,random_state=0)),
+		("classifier", OneVsRestClassifier(LogisticRegression(class_weight='balanced',random_state=0,C=21)))
+	])
+
+	pipeline.fit(annotated, y_annotated)
+
+	scores = pipeline.predict_proba(challenge_docs)
+	
+	return scores, list(encoder.classes_)
+
 def get_y_and_undecided_docs(annotated,challenge_docs,posThreshold,negThreshold):
 	encoder = MultiLabelBinarizer()
 	y_annotated = encoder.fit_transform( [ d['annotated_topics'] for d in annotated ] )
@@ -286,12 +302,13 @@ if __name__ == '__main__':
 	parser.add_argument('--inDocs',required=True,type=str,help='Input file with all the documents')
 	parser.add_argument('--inAltmetric',required=True,type=str,help='Input file with the Altmetric data')
 	parser.add_argument('--mode',required=False,default="bestoutcome",type=str,help='Mode to select next document (bestoutcome/popular)')
+	parser.add_argument('--focus_label',required=False,type=str,help='A label to focus on')
 	parser.add_argument('--altmetricThreshold',required=False,type=int,default=100,help='Altmetric score to threshold to identify docs for annotation')
 	parser.add_argument('--negThreshold',required=False,default=0.3,type=float,help='Threshold below which is a confident negative (default=0.25)')
 	parser.add_argument('--posThreshold',required=False,default=0.7,type=float,help='Threshold above which is a confident positive (default=0.75)')
 	args = parser.parse_args()
 	
-	assert args.mode in ['bestoutcome','popular']
+	assert args.mode in ['bestoutcome','popular','focus']
 	
 	task_id = 2
 	
@@ -349,6 +366,22 @@ if __name__ == '__main__':
 			dochash = "popular"
 			current_coverage = 0
 			print("Selected document with score of %d" % (doc_to_annotate['altmetric']['score']))
+		elif args.mode == 'focus':
+			assert args.focus_label, "Must provide focus_label when using --mode focus"
+			scores, labels = get_multiscores_with_pipeline(annotated, challenge_docs)
+			assert args.focus_label in labels, "Focus label is not in labels: %s" % str(labels)
+			
+			label_index = labels.index(args.focus_label)
+			labeled_docs = [ (doc,score) for doc,score in zip(challenge_docs, scores[:,label_index]) if score > args.posThreshold ]
+			
+			labeled_docs = sorted(labeled_docs, key=lambda x: x[0]['altmetric']['score'])
+			
+			doc_to_annotate, pred_score = labeled_docs[-1]
+			dochash = "focus_%s" % args.focus_label
+			current_coverage = 0
+			print("Selected document with prediction score of %.3f and Altmetric score of %d" % (pred_score,doc_to_annotate['altmetric']['score']))
+			
+			#assert False
 			
 		print("Title of paper: %s" % (doc_to_annotate['title']))
 		print("URL of paper: %s" % (doc_to_annotate['url']))
