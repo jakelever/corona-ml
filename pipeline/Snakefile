@@ -7,7 +7,7 @@ rule:
 	input: join(outDir,"autoannotations.json"), join(outDir,"terms_complete.txt")
 
 rule:
-	input: join(outDir,"terms_drugs.json"), join(outDir,"terms_symptoms.json"), join(outDir,"terms_locations.json"), join(outDir,"terms_medicaldisciplines.json"), join(outDir,"terms_genes_and_proteins.json"), join(outDir,"terms_custom.json")
+	input: join(outDir,"terms_drugs.json"), join(outDir,"terms_symptoms.json"), join(outDir,"terms_locations.json"), join(outDir,"terms_medicaldisciplines.json"), join(outDir,"terms_genes_and_proteins.json"), join(outDir,"terms_coronavirus_proteins.json"), join(outDir,"terms_custom.json")
 	output: join(outDir,"terms_complete.txt")
 	shell: "echo DONE > {output}"
 
@@ -32,7 +32,12 @@ rule:
 	
 rule:
 	output: join(outDir,"terms_genes_and_proteins.json")
-	shell: "python getGenesFromWikidataPlusCustomCoronavirusOnes.py --outJSON {output}"
+	shell: "python getGenesFromWikidata.py --outJSON {output}"
+	
+rule:
+	input: join("predefined","terms_viruses.json")
+	output: join(outDir,"terms_coronavirus_proteins.json")
+	shell: "python getCoronavirusProteins.py --viruses {input} --outJSON {output}"
 	
 rule:
 	output: join(outDir,"terms_symptoms.json")

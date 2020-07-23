@@ -45,7 +45,9 @@ if __name__ == '__main__':
 	allEntities = {}
 	termLookup = defaultdict(set)
 	hasAmbiguities = []
-	for entityType,filename in nerFiles.items():
+	for nerFile in nerFiles:
+		entityType = nerFile['type']
+		filename = nerFile['filename']
 		print("  %s\t%s" % (entityType,filename))
 		with open(filename,encoding='utf8') as f:
 			entityData = json.load(f)
@@ -70,8 +72,8 @@ if __name__ == '__main__':
 		 
 	termLookup = defaultdict(set,{ k:v for k,v in termLookup.items() if not k in stopwords })
 	
-	with open(nerFiles['Location'],encoding='utf8') as f:
-		geoData = json.load(f)
+	#with open(nerFiles['Location'],encoding='utf8') as f:
+	#	geoData = json.load(f)
 	
 	print("NO AMBIGUITY ALLOWED")
 	#termLookup = defaultdict(set,{ k:v for k,v in termLookup.items() if len(v) == 1 })
@@ -130,12 +132,12 @@ if __name__ == '__main__':
 		for e in kindred_doc.entities:
 			entitiesByPosition[e.position[0]].append(e)
 			
-		unambigLocationCoords = []
-		for position,entitiesAtPosition in entitiesByPosition.items():
-			if len(entitiesAtPosition) == 1 and entitiesAtPosition[0].entityType == 'Location':
-				thisGeoData = geoData[entitiesAtPosition[0].externalID]
-				coord = [thisGeoData['longitude'],thisGeoData['latitude']]
-				unambigLocationCoords.append(coord)
+		#unambigLocationCoords = []
+		#for position,entitiesAtPosition in entitiesByPosition.items():
+		#	if len(entitiesAtPosition) == 1 and entitiesAtPosition[0].entityType == 'Location':
+		#		thisGeoData = geoData[entitiesAtPosition[0].externalID]
+		#		coord = [thisGeoData['longitude'],thisGeoData['latitude']]
+		#		unambigLocationCoords.append(coord)
 	
 		title = d['title']
 		entities = []
