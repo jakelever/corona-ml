@@ -57,6 +57,11 @@ if __name__ == '__main__':
 			allEntities.update(entityData)
 			
 			for entityID,entity in entityData.items():
+				if entityType != 'custom': 
+					entity['type'] = entityType
+				else:
+					assert 'type' in entity # Custom entities must define their type internally
+			
 				aliases = entity['aliases']
 				if 'ambiguous_aliases' in entity:
 					aliases += entity['ambiguous_aliases']
@@ -67,15 +72,34 @@ if __name__ == '__main__':
 					aliases = [ a for a in aliases if not a in specificSynonymsToRemove[entityID] ]
 					
 				for alias in aliases:
-					tmpEntityType = entity['type'] if entityType == 'custom' else entityType
-					termLookup[alias].add((tmpEntityType,entityID))
+					termLookup[alias].add((entity['type'],entityID))
 		 
 	termLookup = defaultdict(set,{ k:v for k,v in termLookup.items() if not k in stopwords })
+	
+	print ("Checking that entities have unique primary names within each type...")
+	uniqueNamesCheck = defaultdict(lambda : defaultdict(list))
+	for entityID,entity in entityData.items():
+		uniqueNamesCheck[entity['type']][entity['name'].lower()].append(entityID)
+		
+	uniqueCheckPassed = True
+	for entityType in sorted(uniqueNamesCheck.keys()):
+		notunique = { name:ids for name,ids in uniqueNamesCheck[entityType].items() if len(ids) > 1 }
+		if len(notunique) > 0:
+			uniqueCheckPassed = False
+		for name,ids in notunique:
+			print("  Not Unique: %s : %s : %s" % (entityType,name,str(ids)))
+	
+	assert uniqueCheckPassed, "Check FAILED!"
+	
+	
+	
+	print("Check PASSED!")
+	print()
 	
 	#with open(nerFiles['Location'],encoding='utf8') as f:
 	#	geoData = json.load(f)
 	
-	print("NO AMBIGUITY ALLOWED")
+	print("N.B. NO AMBIGUITY ALLOWED (in current implementation)")
 	#termLookup = defaultdict(set,{ k:v for k,v in termLookup.items() if len(v) == 1 })
 	
 	#for alias,entities in termLookup.items():
