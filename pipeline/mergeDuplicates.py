@@ -1,6 +1,11 @@
 import argparse
 from collections import Counter, defaultdict
 import json
+import string
+
+def remove_punctuation(text):
+    exclude = set(string.punctuation)
+    return ''.join(ch for ch in text if ch not in exclude)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Remove duplicate documents')
@@ -12,6 +17,8 @@ if __name__ == '__main__':
 	with open(args.inJSON) as f:
 		documents = json.load(f)
 		
+	print("Loaded %d documents" % len(documents))
+		
 	print("Finding groupings of duplicate papers...")
 	for i,d in enumerate(documents):
 		d['group_id'] = i
@@ -21,14 +28,20 @@ if __name__ == '__main__':
 		groupings[d['group_id']].append(d)
 
 	# These are the different keys that the papers will be merged with
-	keys = ['doi','pubmed_id','cord_uid','pmcid',('publish_year','title','abstract','authors')]
+	keys = ['doi','pubmed_id','cord_uid','pmcid',('publish_year','title','authors'),('publish_year','title','abstract'),('publish_year','title','journal')]
 	
 	for key in keys:
 		groupedById = defaultdict(list)
 		for d in documents:
 			# Assign documents into group based on a key (or keys), e.g. doi
 			if isinstance(key,tuple):
-				doc_identifier = tuple( d[k] for k in key )
+				doc_identifier = tuple( remove_punctuation(d[k].lower()) if k in ['title','journal','abstract'] else d[k] for k in key )
+				
+				if 'title' in key and len(d['title']) < 20:
+					continue # Skip short title for being too vague
+				if 'abstract' in key and len(d['abstract']) < 50:
+					continue # Skip short abstracts for being too vague
+					
 				if not all(doc_identifier):
 					continue
 				doc_identifier = str(doc_identifier)
@@ -108,13 +121,15 @@ if __name__ == '__main__':
 			d['url'] = "https://www.ncbi.nlm.nih.gov/pmc/articles/%s" % d['pmcid']
 		elif d['url']:
 			urls = [ u.strip() for u in d['url'].split(';') ]
+			assert not any('pubmed' in url for url in urls), "Found a document with a Pubmed URL (%d) but no PubMed ID" % str(urls)
 			d['url'] = urls[0]
 		else:
 			d['url'] = None
 			    
-	print("Saving JSON file...")
+	print("Removed %d duplicate documents" % (len(documents)-len(merged_documents)))
+	
+	print("Saving %d documents to JSON file..." % len(merged_documents))
 	with open(args.outJSON,'w') as f:
 		json.dump(merged_documents,f,indent=2,sort_keys=True)
 
-	print("Removed %d duplicate documents" % (len(documents)-len(merged_documents)))
 	
