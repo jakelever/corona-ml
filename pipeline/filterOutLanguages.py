@@ -12,7 +12,10 @@ def processDoc(doc):
 		
 	nonenglish_languages = detect_language(combined_text)
 	
-	return nonenglish_languages
+	if len(nonenglish_languages) == 0:
+		return ['english']
+	else:
+		return nonenglish_languages
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Check the likely language of each document and filter non-English documents')
@@ -81,13 +84,11 @@ if __name__ == '__main__':
 	for doc in documents:
 	
 		identifier = tuple([ doc[k] for k in keys ])
-		nonenglish_languages = prev_results[identifier]
+		doc['languages'] = prev_results[identifier]
 		
-		if len(nonenglish_languages) == 0:
-			doc['languages'] = ['eng']
+		if doc['languages'] == ['english']:
 			englishDocuments.append(doc)
 		else:
-			doc['languages'] = nonenglish_languages
 			nonenglishDocuments.append(doc)
 			
 	print("Saving file with %d English documents..." % len(englishDocuments))

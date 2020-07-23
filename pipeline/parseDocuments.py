@@ -13,34 +13,38 @@ if __name__ == '__main__':
 	
 	use_previous_parses = (args.prevPickle and os.path.isfile(args.prevPickle))
 	
+	print("Loading documents...")
+	with open(args.inJSON) as f:
+		documents = json.load(f)
+		
 	existing_mapping = {}
 	if use_previous_parses:
+		print("Loading previous parses for reuse...")
 		with open(args.prevPickle,'rb') as f:
 			previously_parsed_corpus = pickle.load(f)
 			
+		print("Setting up lookup for previous parses...")
 		for kindred_doc in previously_parsed_corpus.documents:
 			identifier = kindred_doc.text
 			existing_mapping[identifier] = kindred_doc
 	
-	print("Loading...")
-	with open(args.inJSON) as f:
-		documents = json.load(f)
-		
+	print("Checking which documents need to be parsed...")
 	needs_parsing,already_parsed = [],[]
 	for doc in documents:
-		identifier = doc['title'] + "\n" + doc['abstract']
-		if identifier in existing_mapping:
-			already_parsed.append(existing_mapping[identifier])
+		title_plus_abstract = doc['title'] + "\n" + doc['abstract']
+		if title_plus_abstract in existing_mapping:
+			already_parsed.append(existing_mapping[title_plus_abstract])
 		else:
-			needs_parsing.append(doc)
-			
+			needs_parsing.append(title_plus_abstract)		
+	needs_parsing = sorted(set(needs_parsing))
+	
 	if use_previous_parses:
 		print("Found %d documents with existing parses" % len(already_parsed))
 	print("Found %d documents to parse" % len(needs_parsing))
 	
 	corpus = kindred.Corpus()
-	for doc in needs_parsing:
-		kindred_doc = kindred.Document(doc['title'] + "\n" + doc['abstract'])
+	for title_plus_abstract in needs_parsing:
+		kindred_doc = kindred.Document(title_plus_abstract)
 		corpus.addDocument(kindred_doc)
 		
 	print("Parsing...")
@@ -49,11 +53,10 @@ if __name__ == '__main__':
 	
 	corpus.documents += already_parsed
 	
-	print("Saving...")
+	print("Saving %d parses..." % len(corpus.documents))
 	with open(args.outPickle,'wb') as outF:
 		pickle.dump(corpus,outF)
 
-	print(len(corpus.documents))
 	
 	
 	
