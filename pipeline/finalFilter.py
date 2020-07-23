@@ -1,6 +1,7 @@
 import argparse
 from collections import Counter
 import json
+import os
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Clean up the associated URLs in documents and remove ones without usable URLs')
@@ -13,6 +14,11 @@ if __name__ == '__main__':
 		documents = json.load(f)
 		
 	filtered = documents
+	if os.path.isfile('checks.json'):
+		with open('checks.json') as f:
+			checks = json.load(f)
+			
+		filtered = [ d for d in filtered if not d['doi'] in checks ]
 	
 	print("%d documents before final filtering" % len(filtered))
 	
