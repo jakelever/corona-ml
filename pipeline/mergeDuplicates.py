@@ -128,6 +128,25 @@ if __name__ == '__main__':
 			    
 	print("Removed %d duplicate documents" % (len(documents)-len(merged_documents)))
 	
+	print("Running final checks to check no duplicate IDs...")
+	
+	for d in merged_documents:
+		assert d['doi'] or d['pubmed_id'] or d['cord_uid'], "Found document that doesn't have a DOI, Pubmed ID or CORD UID"
+    
+	doiCounter = Counter( d['doi'] for d in merged_documents if d['doi'] )
+	multipleDOIs = [ doi for doi,count in doiCounter.items() if count > 1 ]
+	assert len(multipleDOIs) == 0, "Found duplicate DOIs: %s" % str(multipleDOIs)
+
+	pmidCounter = Counter( d['pubmed_id'] for d in merged_documents if d['pubmed_id'] )
+	multiplePubmedIDs = [ doi for pubmed_id,count in pmidCounter.items() if count > 1 ]
+	assert len(multiplePubmedIDs) == 0, "Found duplicate Pubmed IDs: %s" % str(multiplePubmedIDs)
+
+	cordCounter = Counter( d['cord_uid'] for d in merged_documents if d['cord_uid'] )
+	multipleCordUIDs = [ doi for cord_uid,count in cordCounter.items() if count > 1 ]
+	assert len(multipleCordUIDs) == 0, "Found duplicate CORD UIDs: %s" % str(multipleCordUIDs)
+	
+	print("Checks PASSED")
+	
 	print("Saving %d documents to JSON file..." % len(merged_documents))
 	with open(args.outJSON,'w') as f:
 		json.dump(merged_documents,f,indent=2,sort_keys=True)
