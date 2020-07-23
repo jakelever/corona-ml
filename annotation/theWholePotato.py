@@ -104,7 +104,7 @@ def connect_db(dbfile):
 	)
 	return mydb
 	
-def associate_altmetric_data_with_documents(documents, altmetric_filename):
+def associate_altmetric_data_with_documents(documents, altmetric_filename, filter_nones=True):
 	with open(altmetric_filename) as f:
 		altmetric_data = json.load(f)
 	altmetric_data = { (ad['identifiers']['cord_uid'],ad['identifiers']['pubmed_id'],ad['identifiers']['doi']) : ad for ad in altmetric_data }
@@ -112,6 +112,9 @@ def associate_altmetric_data_with_documents(documents, altmetric_filename):
 	for d in documents:
 		altmetric_id = (d['cord_uid'],d['pubmed_id'],d['doi'])
 		if altmetric_id in altmetric_data:
+			if filter_nones and altmetric_data[altmetric_id] is None:
+				continue
+		
 			d['altmetric'] = altmetric_data[altmetric_id]
 			
 def insert_document_into_db(mydb,doc):
@@ -321,7 +324,7 @@ if __name__ == '__main__':
 	with open(args.inDocs) as f:
 		documents = json.load(f)
 	load_document_id_mapping(mydb, documents)
-	associate_altmetric_data_with_documents(documents,args.inAltmetric)
+	associate_altmetric_data_with_documents(documents,args.inAltmetric, filter_nones=True)
 	
 	while True:
 		
