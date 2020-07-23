@@ -86,7 +86,7 @@ if __name__ == '__main__':
 		notunique = { name:ids for name,ids in uniqueNamesCheck[entityType].items() if len(ids) > 1 }
 		if len(notunique) > 0:
 			uniqueCheckPassed = False
-		for name,ids in notunique:
+		for name,ids in notunique.items():
 			print("  Not Unique: %s : %s : %s" % (entityType,name,str(ids)))
 	
 	assert uniqueCheckPassed, "Check FAILED!"
