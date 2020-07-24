@@ -25,15 +25,35 @@ def nice_time(seconds):
 	
 	return ", ".join(bits)
 	
-def associate_altmetric_data_with_documents(documents, altmetric_filename):
+def associate_altmetric_data_with_documents(documents, altmetric_filename, filter_empty=True):
 	with open(altmetric_filename) as f:
 		altmetric_data = json.load(f)
-	altmetric_data = { (ad['identifiers']['cord_uid'],ad['identifiers']['pubmed_id'],ad['identifiers']['doi']) : ad for ad in altmetric_data }
+	
+	by_cord, by_pubmed, by_doi = {},{},{}
+	for ad in altmetric_data:
+		if ad['cord_uid']:
+			by_cord[ad['cord_uid']] = ad['altmetric']
+		if ad['pubmed_id']:
+			by_pubmed[ad['pubmed_id']] = ad['altmetric']
+		if ad['doi']:
+			by_doi[ad['doi']] = ad['altmetric']
 	
 	for d in documents:
-		altmetric_id = (d['cord_uid'],d['pubmed_id'],d['doi'])
-		if altmetric_id in altmetric_data:
-			d['altmetric'] = altmetric_data[altmetric_id]
+		altmetric_data = None
+		if d['cord_uid'] in by_cord:
+			altmetric_for_doc = by_cord[d['cord_uid']]
+		elif d['pubmed_id'] in by_pubmed:
+			altmetric_for_doc = by_pubmed[d['pubmed_id']]
+		elif d['doi'] in by_doi:
+			altmetric_for_doc = by_doi[d['doi']]
+			
+		if altmetric_data is None:
+			continue
+			
+		if filter_empty and altmetric_for_doc['response'] == False:
+			continue
+		
+		d['altmetric'] = altmetric_for_doc
 	
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Tool to pull Altmetric data')
@@ -52,21 +72,26 @@ if __name__ == '__main__':
 		
 	if args.popularOrRecent:
 		assert args.prevData, "Must provide previous data to use --popularOrRecent"
-		associate_altmetric_data_with_documents(documents, args.prevData)
+		associate_altmetric_data_with_documents(documents, args.prevData, filter_empty=False)
 		
 		popularOrRecent = []
 		for d in documents:
 			add = False
 			if 'altmetric' in d:
-				history_1w = d['altmetric']['history']['1w']
-				if history_1w > 10:
-					add = True
-				#print(json.dumps(d['altmetric'],indent=2,sort_keys=True))
+				if d['altmetric'] is not None:
+					history_1w = d['altmetric']['history']['1w']
+					if history_1w > 10:
+						# It's popular
+						add = True
+			else:
+				# It's new
+				add = True
 				
 			if d['publish_year']:
 				pub_date = datetime.date(d['publish_year'],d['publish_month'] if d['publish_month'] else 1,d['publish_day'] if d['publish_day'] else 1)
 				days_between = abs((pub_date-datetime.date.today()).days)
 				
+				# It's recent
 				if days_between < 15:
 					add = True
 			
@@ -74,7 +99,6 @@ if __name__ == '__main__':
 				popularOrRecent.append(d)
 				
 		print("Found %d documents that are popular or recent" % len(popularOrRecent))
-		#assert False
 		documents = popularOrRecent
 		
 		
@@ -106,9 +130,6 @@ if __name__ == '__main__':
 		doi = d['doi']
 		url = d['url']
 		
-		#doi = False
-		#pubmed_id = False
-		
 		if doi:
 			altmetric_url = "https://api.altmetric.com/v1/doi/%s?key=%s" % (doi,apiKey)
 			method = 'doi'
@@ -119,21 +140,21 @@ if __name__ == '__main__':
 			altmetric_url = "https://api.altmetric.com/v1/uri/%s?key=%s" % (urllib.parse.quote(url),apiKey)
 			method = 'uri'
 		else:
+			altmetric_url = None
 			counts['no identifier'] += 1
-			continue
 			
-		response = requests.get(altmetric_url)
-		if response.text == 'Not Found':
-			counts['not found'] += 1
-			continue
+		doc_data = {'cord_uid':cord_uid,'pubmed_id':pubmed_id,'doi':doi, 'altmetric':{'response':False}}
+		if altmetric_url:
+			response = requests.get(altmetric_url)
+			if response.text == 'Not Found':
+				counts['not found'] += 1
+			else:
+				response_json = json.loads(response.text)
+				response_json['response'] = True
+				doc_data['altmetric'] = response_json
+				counts[method] += 1
 		
-		doc_data = json.loads(response.text)
-		#print(data)
-		counts[method] += 1
-		
-		doc_data['identifiers'] = {'cord_uid':cord_uid,'pubmed_id':pubmed_id,'doi':doi}
 		output.append(doc_data)
-		#break
 		
 	print(counts)
 		
