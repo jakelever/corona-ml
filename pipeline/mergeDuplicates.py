@@ -131,7 +131,6 @@ if __name__ == '__main__':
 	
 	print("Running final checks to check no duplicate IDs...")
 	
-	#doiRegex = re.compile(r'^[0-9\.]+\/[^\/]+$')
 	doiRegex = re.compile(r'^[0-9\.]+\/.+[^\/]$')
 	for d in merged_documents:
 		assert d['doi'] or d['pubmed_id'] or d['cord_uid'], "Found document that doesn't have a DOI, Pubmed ID or CORD UID"
