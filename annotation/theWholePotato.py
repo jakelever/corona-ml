@@ -104,18 +104,34 @@ def connect_db(dbfile):
 	)
 	return mydb
 	
-def associate_altmetric_data_with_documents(documents, altmetric_filename, filter_nones=True):
+def associate_altmetric_data_with_documents(documents, altmetric_filename, filter_empty):
 	with open(altmetric_filename) as f:
 		altmetric_data = json.load(f)
-	altmetric_data = { (ad['identifiers']['cord_uid'],ad['identifiers']['pubmed_id'],ad['identifiers']['doi']) : ad for ad in altmetric_data }
+	
+	by_cord, by_pubmed, by_doi = {},{},{}
+	for ad in altmetric_data:
+		if ad['cord_uid']:
+			by_cord[ad['cord_uid']] = ad['altmetric']
+		if ad['pubmed_id']:
+			by_pubmed[ad['pubmed_id']] = ad['altmetric']
+		if ad['doi']:
+			by_doi[ad['doi']] = ad['altmetric']
 	
 	for d in documents:
-		altmetric_id = (d['cord_uid'],d['pubmed_id'],d['doi'])
-		if altmetric_id in altmetric_data:
-			if filter_nones and altmetric_data[altmetric_id] is None:
-				continue
+		altmetric_for_doc = None
+		if d['cord_uid'] and d['cord_uid'] in by_cord:
+			altmetric_for_doc = by_cord[d['cord_uid']]
+		elif d['pubmed_id'] and d['pubmed_id'] in by_pubmed:
+			altmetric_for_doc = by_pubmed[d['pubmed_id']]
+		elif d['doi'] and d['doi'] in by_doi:
+			altmetric_for_doc = by_doi[d['doi']]
+			
+		if altmetric_for_doc is None:
+			continue
+		elif filter_empty and altmetric_for_doc['response'] == False:
+			continue
 		
-			d['altmetric'] = altmetric_data[altmetric_id]
+		d['altmetric'] = altmetric_for_doc
 			
 def insert_document_into_db(mydb,doc):
 	mycursor = mydb.cursor()
@@ -324,7 +340,7 @@ if __name__ == '__main__':
 	with open(args.inDocs) as f:
 		documents = json.load(f)
 	load_document_id_mapping(mydb, documents)
-	associate_altmetric_data_with_documents(documents,args.inAltmetric, filter_nones=True)
+	associate_altmetric_data_with_documents(documents,args.inAltmetric, filter_empty=True)
 	
 	while True:
 		
