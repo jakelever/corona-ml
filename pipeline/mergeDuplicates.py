@@ -2,6 +2,7 @@ import argparse
 from collections import Counter, defaultdict
 import json
 import string
+import re
 
 def remove_punctuation(text):
     exclude = set(string.punctuation)
@@ -130,8 +131,14 @@ if __name__ == '__main__':
 	
 	print("Running final checks to check no duplicate IDs...")
 	
+	#doiRegex = re.compile(r'^[0-9\.]+\/[^\/]+$')
+	doiRegex = re.compile(r'^[0-9\.]+\/.+[^\/]$')
 	for d in merged_documents:
 		assert d['doi'] or d['pubmed_id'] or d['cord_uid'], "Found document that doesn't have a DOI, Pubmed ID or CORD UID"
+		
+		if d['doi']:
+			assert doiRegex.match(d['doi']), "Found unexpected DOI format: %s" % d['doi']
+			
     
 	doiCounter = Counter( d['doi'] for d in merged_documents if d['doi'] )
 	multipleDOIs = [ doi for doi,count in doiCounter.items() if count > 1 ]
