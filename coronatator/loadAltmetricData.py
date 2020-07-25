@@ -67,10 +67,14 @@ if __name__ == '__main__':
 	#update_altmetric_sql = "UPDATE documents SET altmetric_id=%s, altmetric_score=%s, altmetric_score_1day=%s, altmetric_score_1week=%s, altmetric_openaccess=%s, altmetric_badgetype=%s, altmetric_lastupdated=NOW() WHERE document_id=%s"
 	insert_altmetric_sql = "INSERT INTO tmp_altmetric(altmetric_id,altmetric_score,altmetric_score_1day,altmetric_score_1week,altmetric_openaccess,altmetric_badgetype,document_id) VALUES(%s,%s,%s,%s,%s,%s,%s)"
 		
+	#updatesByDoc = {}
 	updates = []
 	for record in records:
-		cord_uid = record['identifiers']['cord_uid']
-		pubmed_id = record['identifiers']['pubmed_id']
+		if record['altmetric']['response'] == False:
+			continue
+			
+		cord_uid = record['cord_uid']
+		pubmed_id = record['pubmed_id']
 
 		if cord_uid in cord_to_document_id:
 			document_id = cord_to_document_id[cord_uid]
@@ -79,22 +83,27 @@ if __name__ == '__main__':
 		else:
 			continue
 			#raise RuntimeError("Couldn't find matching document for annotation with cord_uid=%s and pubmed_id=%s" % (cord_uid,pubmed_id))
+			
+		altdata = record['altmetric']
 		
-		badgeMatch = re.match(r"^https://badges.altmetric.com/\?size=\d+&score=\d+&types=(?P<badgetype>\w+)$", record['images']['large'])
-		assert badgeMatch, "Didn't manage to extract info from badge URL: %s" % record['images']['large']
+		badgeMatch = re.match(r"^https://badges.altmetric.com/\?size=\d+&score=\d+&types=(?P<badgetype>\w+)$", altdata['images']['large'])
+		assert badgeMatch, "Didn't manage to extract info from badge URL: %s" % altdata['images']['large']
 		
-		altmetric_id = record['altmetric_id']
-		altmetric_score = record['score']
-		altmetric_score_1day = record['history']['1d']
-		altmetric_score_1week = record['history']['1d']
-		altmetric_openaccess = record['is_oa']
+		altmetric_id = altdata['altmetric_id']
+		altmetric_score = altdata['score']
+		altmetric_score_1day = altdata['history']['1d']
+		altmetric_score_1week = altdata['history']['1d']
+		altmetric_openaccess = altdata['is_oa']
 		altmetric_badgetype = badgeMatch.groupdict()['badgetype']
 		
 		update = [ altmetric_id, altmetric_score, altmetric_score_1day, altmetric_score_1week, altmetric_openaccess, altmetric_badgetype, document_id ]
 		updates.append(update)
+		#updatesByDoc[document_id] = update
 		#print(document_id)
 		
 		#break
+		
+	#updates = sorted(updatesByDoc.values())
 		
 	chunk_size = 1000
 	for i,chunk in enumerate(chunks(updates, chunk_size)):
