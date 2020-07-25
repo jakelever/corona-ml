@@ -5,6 +5,7 @@ import urllib.parse
 from collections import Counter
 import time
 import datetime
+import ray
 	
 def nice_time(seconds):
 	days = int(seconds) // (24*60*60)
@@ -25,7 +26,7 @@ def nice_time(seconds):
 	
 	return ", ".join(bits)
 	
-def associate_altmetric_data_with_documents(documents, altmetric_filename, filter_empty=True):
+def associate_altmetric_data_with_documents(documents, altmetric_filename, filter_empty):
 	with open(altmetric_filename) as f:
 		altmetric_data = json.load(f)
 	
@@ -39,21 +40,57 @@ def associate_altmetric_data_with_documents(documents, altmetric_filename, filte
 			by_doi[ad['doi']] = ad['altmetric']
 	
 	for d in documents:
-		altmetric_data = None
-		if d['cord_uid'] in by_cord:
+		altmetric_for_doc = None
+		if d['cord_uid'] and d['cord_uid'] in by_cord:
 			altmetric_for_doc = by_cord[d['cord_uid']]
-		elif d['pubmed_id'] in by_pubmed:
+		elif d['pubmed_id'] and d['pubmed_id'] in by_pubmed:
 			altmetric_for_doc = by_pubmed[d['pubmed_id']]
-		elif d['doi'] in by_doi:
+		elif d['doi'] and d['doi'] in by_doi:
 			altmetric_for_doc = by_doi[d['doi']]
 			
-		if altmetric_data is None:
+		if altmetric_for_doc is None:
 			continue
-			
-		if filter_empty and altmetric_for_doc['response'] == False:
+		elif filter_empty and altmetric_for_doc['response'] == False:
 			continue
 		
 		d['altmetric'] = altmetric_for_doc
+		
+@ray.remote
+def get_altmetric_for_doc(apiKey,d):
+	cord_uid = d['cord_uid']
+	pubmed_id = d['pubmed_id']
+	doi = d['doi']
+	url = d['url']
+	
+	if doi:
+		altmetric_url = "https://api.altmetric.com/v1/doi/%s?key=%s" % (doi,apiKey)
+		method = 'doi'
+	elif pubmed_id:
+		altmetric_url = "https://api.altmetric.com/v1/pmid/%s?key=%s" % (pubmed_id,apiKey)
+		method = 'pmid'
+	elif url:
+		altmetric_url = "https://api.altmetric.com/v1/uri/%s?key=%s" % (urllib.parse.quote(url),apiKey)
+		method = 'uri'
+	else:
+		altmetric_url = None
+		#counts['no identifier'] += 1
+		
+		
+	doc_data = {'cord_uid':cord_uid,'pubmed_id':pubmed_id,'doi':doi, 'altmetric':{'response':False}}
+	if altmetric_url:
+		response = requests.get(altmetric_url)
+		if response.text == 'Not Found':
+			#counts['not found'] += 1
+			pass
+		else:
+			response_json = json.loads(response.text)
+			response_json['response'] = True
+			doc_data['altmetric'] = response_json
+			#counts[method] += 1
+			
+	#print(altmetric_url, doc_data)
+			
+	return doc_data
 	
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Tool to pull Altmetric data')
@@ -64,21 +101,31 @@ if __name__ == '__main__':
 	parser.add_argument('--outData',type=str,required=True,help='JSON file with Altmetric data for documents')
 	args = parser.parse_args()
 	
+	ray.init()
+	
 	with open(args.apiKeyFile) as f:
 		apiKey = json.load(f)['key']
 		
 	with open(args.documents) as f:
 		documents = json.load(f)
 		
+	print("Loaded %d documents" % len(documents))
+		
 	if args.popularOrRecent:
 		assert args.prevData, "Must provide previous data to use --popularOrRecent"
 		associate_altmetric_data_with_documents(documents, args.prevData, filter_empty=False)
+		
+		has_altmetric_response = len( [ d for d in documents if 'altmetric' in d ] )
+		has_altmetric_and_score = len( [ d for d in documents if 'altmetric' in d and 'score' in d['altmetric'] ] )
+		
+		print("Found %d documents with Altmetric responses" % has_altmetric_response)
+		print("Found %d documents with Altmetric responses and scores" % has_altmetric_and_score)
 		
 		popularOrRecent = []
 		for d in documents:
 			add = False
 			if 'altmetric' in d:
-				if d['altmetric'] is not None:
+				if d['altmetric']['response'] == True:
 					history_1w = d['altmetric']['history']['1w']
 					if history_1w > 10:
 						# It's popular
@@ -101,62 +148,37 @@ if __name__ == '__main__':
 		print("Found %d documents that are popular or recent" % len(popularOrRecent))
 		documents = popularOrRecent
 		
+	print("Starting processing of %d documents..." % len(documents))
+	output = [ get_altmetric_for_doc.remote(apiKey,d) for d in documents ]
 		
-	output = []
-	counts = Counter()
 	start = time.time()
-	for i,d in enumerate(documents):
-	
-		if (i%100) == 0:
+	if len(output) > 0:
+		while True:
+			done,todo = ray.wait(output,len(documents),timeout=1)
+			
 			now = time.time()
-			perc = 100*i/len(documents)
+			perc = 100*len(done)/len(documents)
 			
 			time_so_far = (now-start)
-			time_per_doc = time_so_far / (i+1)
-			remaining_docs = len(documents) - i
+			time_per_doc = time_so_far / (len(done)+1)
+			remaining_docs = len(documents) - len(done)
 			remaining_time = time_per_doc * remaining_docs
 			total_time = time_so_far + remaining_time
 			
-			print("Completed %.1f%% (%d/%d)" % (perc,i,len(documents)))
+			print("Completed %.1f%% (%d/%d)" % (perc,len(done),len(documents)))
 			print("time_per_doc = %.4fs" % time_per_doc)
 			print("remaining_docs = %d" % remaining_docs)
 			print("time_so_far = %.1fs (%s)" % (time_so_far,nice_time(time_so_far)))
 			print("remaining_time = %.1fs (%s)" % (remaining_time,nice_time(remaining_time)))
 			print("total_time = %.1fs (%s)" % (total_time,nice_time(total_time)))
 			print('-'*30)
-	
-		cord_uid = d['cord_uid']
-		pubmed_id = d['pubmed_id']
-		doi = d['doi']
-		url = d['url']
-		
-		if doi:
-			altmetric_url = "https://api.altmetric.com/v1/doi/%s?key=%s" % (doi,apiKey)
-			method = 'doi'
-		elif pubmed_id:
-			altmetric_url = "https://api.altmetric.com/v1/pmid/%s?key=%s" % (pubmed_id,apiKey)
-			method = 'pmid'
-		elif url:
-			altmetric_url = "https://api.altmetric.com/v1/uri/%s?key=%s" % (urllib.parse.quote(url),apiKey)
-			method = 'uri'
-		else:
-			altmetric_url = None
-			counts['no identifier'] += 1
 			
-		doc_data = {'cord_uid':cord_uid,'pubmed_id':pubmed_id,'doi':doi, 'altmetric':{'response':False}}
-		if altmetric_url:
-			response = requests.get(altmetric_url)
-			if response.text == 'Not Found':
-				counts['not found'] += 1
-			else:
-				response_json = json.loads(response.text)
-				response_json['response'] = True
-				doc_data['altmetric'] = response_json
-				counts[method] += 1
+			if len(todo) == 0:
+				break
+			time.sleep(10)
+	
+	output = ray.get(output)
 		
-		output.append(doc_data)
-		
-	print(counts)
-		
+	print("Saving data...")
 	with open(args.outData,'w',encoding='utf8') as f:
 		json.dump(output,f)
