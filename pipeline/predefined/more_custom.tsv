@@ -1,105 +1,107 @@
-conflicting	Q344873	acute respiratory distress syndrome
 conflicting	Q12192	pneumonia 
-conflicting	Q5338245	Edinburgh Postpartum Depression Scale
-conflicting	Q288280	angiotensin-converting enzyme inhibitors|angiotensin-converting enzyme inhibitor
 conflicting	Q183290	serine
+conflicting	Q18354214	European Academy of Neurology
+conflicting	Q288280	angiotensin-converting enzyme inhibitors|angiotensin-converting enzyme inhibitor
+conflicting	Q305481	alanine aminotransferase
+conflicting	Q344873	acute respiratory distress syndrome
+conflicting	Q5338245	Edinburgh Postpartum Depression Scale
+conflicting	Q7973735	water insecurity
+Drug	Q12187	antibiotics
+Drug	Q177911	steroids
+Drug	Q4391540	"recombinant interferon ?-2b|interferon Alfa-2b, Recombinant|interferon Alfa-2b|IFN-?2b"
 Gene or Protein	Q14875321	ACE2|angiotensin-converting enzyme 2|angiotensin-converting enzyme 2 receptor|angiotensin converting enzyme 2|angiotensin converting enzyme 2 receptor|angiotensin-converting-enzyme 2|angiotensin-converting-enzyme 2 receptor|angiotensin-converting-enzyme-2|angiotensin-converting-enzyme-2 receptor
 Medical Specialty	Q186005	physiotherapy
+Prevention Method	Q1128437	contact tracing
 Prevention Method	Q1333024	personal protective equipment
 Prevention Method	Q2252352	face mask|face masks|masks|facemask|face masks|face-mask|face-masks
 Prevention Method	Q30314010	social distancing
 Prevention Method	Q552461	hand washing
-Risk Factor	Q12206	diabetes
-Risk Factor	Q199804	chronic obstructive pulmonary disease
+Prevention Method	Q182899	quarantine|isolation
+Risk Factor	Q105688	hypoxia
 Risk Factor	Q12174	obesity
-Risk Factor	Q47657	blood type|blood-type|blood group|blood-group|ABO blood type|blood types|blood groups
-Risk Factor	Q95566669	hypertension
-Risk Factor	Q485831	lymphopenia|low lymphocyte count|level of lymphocytes|low lymphocytes count
+Risk Factor	Q12206	diabetes
+Risk Factor	Q1542839	glomerular filtration rate
 Risk Factor	Q1641062	hyperphosphatemia
 Risk Factor	Q1641384	hypophosphatemia
 Risk Factor	Q185836	age|old age|older age
+Risk Factor	Q199804	chronic obstructive pulmonary disease
+Risk Factor	Q290	biological sex|sex|male sex|female sex|gender
+Risk Factor	Q3045040	blood oxygen saturation|reduced o2 saturation|o2 saturation
+Risk Factor	Q3254959	race|white race|African American race|black race|Asian race
+Risk Factor	Q35869	asthma
+Risk Factor	Q42015775	systolic blood pressure
+Risk Factor	Q4430231	social deprivation|deprivation
+Risk Factor	Q47657	blood type|blood-type|blood group|blood-group|ABO blood type|blood types|blood groups
+Risk Factor	Q476921	kidney failure|impaired renal function
+Risk Factor	Q485831	lymphopenia|low lymphocyte count|level of lymphocytes|low lymphocytes count
+Risk Factor	Q490539	eosinopenia
+Risk Factor	Q736715	chronic kidney disease
 Risk Factor	Q794086	hypokalemia 
-Symptom	Q570920	tachypnea|tachypnoea
-Symptom	Q4340209	mental depression
-Symptom	Q544006	anxiety disorder
+Risk Factor	Q813243	ventilator use
+Risk Factor	Q82642	blood pressure
+Risk Factor	Q844935	coronary artery disease
+Risk Factor	Q95566669	hypertension
+Species	Q12294232	civet|civets
+Species	Q133189	racoon dog|racoon dogs
+Species	Q144	dog|dogs
+Species	Q146	cat|cats
+Species	Q156606	rhesus macaque|rhesus macaques
+Species	Q177601	macaque
+Species	Q178973	ferret|ferrets
+Species	Q184224	rat|rats
+Species	Q19829485	marmoset|marmosets
+Species	Q25397	pangolin|pangolins
+Species	Q28425	bat|bats
+Species	Q2934	goat|goats
+Species	Q39275	mice
+Species	Q42569	llama|llamas
+Species	Q58697	pig|pigs
+Species	Q71516	dromedary camel|dromedary camels
+Species	Q726	horse|horses
+Species	Q7368	sheep
+Species	Q7375	camel|camels
+Species	Q838947	common marmoset|common marmosets
+Species	Q9394	rabbit
 Symptom	Q1869874	insomnia
+Symptom	Q28578	appetite|loss of appetite|gain of appetite
 Symptom	Q3500368	psychological stress
 Symptom	Q373597	hematuria
-Symptom	Q86	headache
-Symptom	Q28578	appetite|loss of appetite|gain of appetite
-Symptom	Q474959	myalgia
 Symptom	Q424318	testicular pain|scrotal discomfort
-Test Type	Q502159	Serological testing|Antibody testing|antibody responses
+Symptom	Q4340209	mental depression
+Symptom	Q474959	myalgia
+Symptom	Q544006	anxiety disorder
+Symptom	Q570920	tachypnea|tachypnoea
+Symptom	Q86	headache
+Test Type	Q16939311	lateral flow immunoassay|lateral flow immunoassays|LFIA
 Test Type	Q169526	RT-PCR
 Test Type	Q17310682	CRISPR
 Test Type	Q32566	CT scan|chest CT
 Test Type	Q332126	ELISA
-Test Type	Q16939311	lateral flow immunoassay|lateral flow immunoassays|LFIA
+Test Type	Q502159	Serological testing|Antibody testing|antibody responses
 Transmission Type	Q104541	aerosol transmission
-Transmission Type	Q88103997	surface transmission|surface stability
-Transmission Type	Q12059568	placental transmission
-Transmission Type	Q45349134	sexual transmission
-Transmission Type	Q88812586	nosocomial transmission
-Transmission Type	Q871752	droplet transmission|droplets
 Transmission Type	Q11986959	airborne transmission
+Transmission Type	Q12059568	placental transmission
 Transmission Type	Q15304512	contact transmission
-Transmission Type	Q26305989	blood-borne transmission
-Transmission Type	Q7933612	viral shedding
 Transmission Type	Q1549382	asymptomatic transmission
+Transmission Type	Q16000070	cross-species transmission
 Transmission Type	Q2272069	fecal–oral transmission
 Transmission Type	Q26305621	water-borne transmission
 Transmission Type	Q26305696	food-borne transmission
-Transmission Type	Q16000070	cross-species transmission
-Vaccine Type	Q383260	influenza vaccine
-Vaccine Type	Q578537	DNA vaccine
-Vaccine Type	Q1475781	virus-like particle
-Vaccine Type	Q3560939	inactivated vaccine
-Vaccine Type	Q4682307	adenovirus vaccine
-Vaccine Type	Q7166532	peptide vaccine
+Transmission Type	Q26305989	blood-borne transmission
+Transmission Type	Q45349134	sexual transmission
+Transmission Type	Q7933612	viral shedding
+Transmission Type	Q871752	droplet transmission|droplets
+Transmission Type	Q88103997	surface transmission|surface stability
+Transmission Type	Q88812586	nosocomial transmission
 Vaccine Type	Q11954164	recombinant vaccine
 Vaccine Type	Q11954166	subunit vaccine
+Vaccine Type	Q1475781	virus-like particle
 Vaccine Type	Q16858617	cell-based vaccine
 Vaccine Type	Q16915769	Live vector vaccine
+Vaccine Type	Q3560939	inactivated vaccine
+Vaccine Type	Q383260	influenza vaccine
+Vaccine Type	Q4682307	adenovirus vaccine
+Vaccine Type	Q578537	DNA vaccine
+Vaccine Type	Q7166532	peptide vaccine
 Vaccine Type	Q85795487	RNA vaccine|mRNA vaccine
 Vaccine Type	Q97153933	Protein subunit vaccine
-conflicting	Q305481	alanine aminotransferase
-conflicting	Q7973735	water insecurity
-Species	Q39275	mice
-Species	Q184224	rat|rats
-Species	Q7375	camel|camels
-Species	Q177601	macaque
-Species	Q9394	rabbit
-Species	Q28425	bat|bats
-Species	Q156606	rhesus macaque|rhesus macaques
-Species	Q178973	ferret|ferrets
-Species	Q146	cat|cats
-Species	Q144	dog|dogs
-Species	Q25397	pangolin|pangolins
-Species	Q71516	dromedary camel|dromedary camels
-Species	Q133189	racoon dog|racoon dogs
-Species	Q12294232	civet|civets
-Species	Q42569	llama|llamas
-Species	Q58697	pig|pigs
-Species	Q7368	sheep
-Species	Q2934	goat|goats
-Species	Q726	horse|horses
-conflicting	Q18354214	European Academy of Neurology
-Drug	Q12187	antibiotics
-Risk Factor	Q844935	coronary artery disease
-Drug	Q177911	steroids
-Drug	Q4391540	"recombinant interferon ?-2b|interferon Alfa-2b, Recombinant|interferon Alfa-2b|IFN-?2b"
-Risk Factor	Q490539	eosinopenia
-Risk Factor	Q3254959	race|white race|African American race|black race|Asian race
-Risk Factor	Q736715	chronic kidney disease
-Risk Factor	Q3045040	blood oxygen saturation|reduced o2 saturation|o2 saturation
-Risk Factor	Q813243	ventilator use
-Risk Factor	Q35869	asthma
-Risk Factor	Q4430231	social deprivation|deprivation
-Risk Factor	Q42015775	systolic blood pressure
-Risk Factor	Q82642	blood pressure
-Risk Factor	Q1542839	glomerular filtration rate
-Risk Factor	Q290	biological sex|sex|male sex|female sex|gender
-Risk Factor	Q105688	hypoxia
-Risk Factor	Q476921	kidney failure|impaired renal function
-Species	Q838947	common marmoset|common marmosets
-Species	Q19829485	marmoset|marmosets
