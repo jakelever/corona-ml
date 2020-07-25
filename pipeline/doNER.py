@@ -181,17 +181,21 @@ if __name__ == '__main__':
 			#	closestCandidateCoord = distance_matrix(unambigLocationCoords, candidateCoords).min(axis=0).argmin()
 			#	entitiesAtPosition = [entitiesAtPosition[closestCandidateCoord]]
 			
-			if e.externalID in hasAmbiguities:
-				virusForEntity = allEntities[e.externalID]['associated_virus']
+			allEntitiesDependOnVirus = all( 'associated_virus' in allEntities[e.externalID] for e in entitiesAtPosition)
+			if allEntitiesDependOnVirus:
 				if len(virusesInDoc) != 1: # Ambiguous which virus in document, skip this one
 					continue
-				elif virusForEntity != virusesInDoc[0]: # Skip because this entity is for the wrong virus!
-					continue
 					
-				entitiesAtPosition = [e]
+				entitiesFilteredToVirus = []
+				for e in entitiesAtPosition:
+					virusForEntity = allEntities[e.externalID]['associated_virus']
+					if virusForEntity == virusesInDoc[0]:
+						entitiesFilteredToVirus.append(e)
+						
+				entitiesAtPosition = entitiesFilteredToVirus
 					
 			# Ambiguity remains so we skip it
-			if len(entitiesAtPosition) > 1:
+			if len(entitiesAtPosition) != 1:
 				continue
 				
 			e = entitiesAtPosition[0]
