@@ -44,7 +44,7 @@ def get_annotations(mydb,task_ids=None):
 	for cord_uid,pubmed_id,annotation in myresult:
 		if cord_uid:
 			annotations_by_cord[cord_uid].add(annotation)
-		elif pubmed_id:
+		if pubmed_id:
 			annotations_by_pubmed_id[str(pubmed_id)].add(annotation)
 			
 	return annotations_by_cord, annotations_by_pubmed_id
