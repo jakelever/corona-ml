@@ -83,7 +83,8 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 	
 	task_id = 2
-	doc_hash = 'n/a'
+	dochash = 'n/a'
+	current_coverage = 0
 	
 	mydb = connect_db(args.db)
 	
