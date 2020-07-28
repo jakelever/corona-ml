@@ -16,24 +16,6 @@ if __name__ == '__main__':
 	
 	assert all('entities' in d for d in documents), "Expected documents to already have entities extracted using NER"
 	
-	# Filter viruses by years
-	for d in documents:
-		if not d['publish_year']:
-			continue
-		viruses = sorted(set([ e['normalized'] for e in d['entities'] if e['type'] == 'Virus']))
-		
-		if d['publish_year'] < 2002 and 'SARS-CoV' in viruses:
-			viruses.remove('SARS-CoV')
-		if d['publish_year'] < 2012 and 'MERS-CoV' in viruses:
-			viruses.remove('MERS-CoV')
-		if d['publish_year'] < 2019 and 'SARS-CoV-2' in viruses:
-			viruses.remove('SARS-CoV-2')
-			
-		if 'SARS-CoV-2' in viruses:
-			viruses = ['SARS-CoV-2']
-			
-		d['entities'] = [ e for e in d['entities'] if e['type'] != 'Virus' or e['normalized'] in viruses ]
-	
 	print("Filtering for virus documents")
 	viruses = {'SARS-CoV-2','SARS-CoV','MERS-CoV'}
 	documents = [ d for d in documents if any(entity['type'] == 'Virus' for entity in d['entities']) or any( v in d['annotations'] for v in viruses) ]
