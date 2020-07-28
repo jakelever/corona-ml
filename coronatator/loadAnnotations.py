@@ -38,7 +38,7 @@ if __name__ == '__main__':
 	#print(sql)
 	#mycursor.execute(sql)
 	
-	#sql = "DELETE FROM annotationpositions"
+	#sql = "DELETE FROM annotationspans"
 	#print(sql)
 	#mycursor.execute(sql)
 	
@@ -88,12 +88,12 @@ if __name__ == '__main__':
 	print("Found %d existing annotations" % len(annotation_to_id))
 	
 	
-	sql = "SELECT annotationposition_id,annotation_id,in_title,start_pos,end_pos FROM annotationpositions"
+	sql = "SELECT annotationspan_id,annotation_id,in_title,start_pos,end_pos FROM annotationspans"
 	print(sql)
 	mycursor.execute(sql)
 	myresult = mycursor.fetchall()
-	annotationposition_to_id = { (annotation_id,in_title,start_pos,end_pos):annotationposition_id for annotationposition_id,annotation_id,in_title,start_pos,end_pos in myresult }
-	print("Found %d existing annotation positions" % len(annotationposition_to_id))
+	annotationspan_to_id = { (annotation_id,in_title,start_pos,end_pos):annotationspan_id for annotationspan_id,annotation_id,in_title,start_pos,end_pos in myresult }
+	print("Found %d existing annotation positions" % len(annotationspan_to_id))
 	
 	print()
 	
@@ -182,7 +182,7 @@ if __name__ == '__main__':
 	
 	
 	position_records = []
-	insert_annotationposition_sql = "INSERT INTO annotationpositions(annotationposition_id,annotation_id,in_title,start_pos,end_pos) VALUES(%s,%s,%s,%s,%s)"
+	insert_annotationspan_sql = "INSERT INTO annotationspans(annotationspan_id,annotation_id,in_title,start_pos,end_pos) VALUES(%s,%s,%s,%s,%s)"
 	annotationsWithPositions = [ anno for anno in annotations if all( k in anno for k in ['section','start_pos','end_pos'] ) ]
 	for anno in annotationsWithPositions:
 		document_id = anno['document_id']
@@ -206,7 +206,7 @@ if __name__ == '__main__':
 		position_record = (annotation_id,in_title,start_pos,end_pos)
 		position_records.append(position_record)
 		
-	sortNewFromOldAndAddToDB(position_records, annotationposition_to_id, insert_annotationposition_sql)
+	sortNewFromOldAndAddToDB(position_records, annotationspan_to_id, insert_annotationspan_sql)
 			
 	
 	
