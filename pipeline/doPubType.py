@@ -55,6 +55,8 @@ if __name__ == '__main__':
 	pipeline.fit(annotated,y)
 	
 	probs = pipeline.predict_proba(documents)
+	
+	class_to_column = { c:i for i,c in enumerate(pipeline.classes_) }
 
 	#print("Predicting...")
 	#predicted = clf.predict(X_all)
@@ -64,6 +66,11 @@ if __name__ == '__main__':
 	
 	#for p,d in zip(predicted,documents):
 	for i,d in enumerate(documents):
+		mesh_pubtypes = d['pub_type'] if 'pub_type' in d else []
+		if 'Review' in mesh_pubtypes: # If it's tagged as a Review, it's definitely not research or news, but could be more than Review
+			probs[i,class_to_column['Research']] = -1
+			probs[i,class_to_column['News']] = -1
+		
 		max_index = probs[i,:].argmax()
 		score = probs[i,max_index]
 		if score > 0.6:
@@ -79,6 +86,16 @@ if __name__ == '__main__':
 		if 'annotated_pubtype' in d:
 			d['ml_pubtype'] = d['annotated_pubtype']
 			del d['annotated_pubtype']
+		elif any('Clinical Trial' in pt for pt in mesh_pubtypes):
+			d['ml_pubtype'] = 'Research'
+		elif any (pt in mesh_pubtypes for pt in ['News','Newspaper Article'] ):
+			d['ml_pubtype'] = 'News'
+		elif any (pt in mesh_pubtypes for pt in ['Systematic Review','Meta-Analysis'] ):
+			d['ml_pubtype'] = 'Meta-analysis'
+		elif any (pt in mesh_pubtypes for pt in ['Editorial','Comment'] ):
+			d['ml_pubtype'] = 'Comment/Editorial'
+		elif 'Published Erratum' in mesh_pubtypes or d['title'].lower().startswith('erratum'):
+			d['ml_pubtype'] = 'Erratum'
 		elif d['title'].startswith('Chapter '):
 			d['ml_pubtype'] = 'Book chapter'
 		else:
