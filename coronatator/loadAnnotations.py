@@ -34,22 +34,22 @@ if __name__ == '__main__':
 
 	mycursor = mydb.cursor()
 	
-	sql = "DELETE FROM annotations"
-	print(sql)
-	mycursor.execute(sql)
+	#sql = "DELETE FROM annotations"
+	#print(sql)
+	#mycursor.execute(sql)
 	
-	sql = "DELETE FROM annotationpositions"
-	print(sql)
-	mycursor.execute(sql)
+	#sql = "DELETE FROM annotationpositions"
+	#print(sql)
+	#mycursor.execute(sql)
 	
 	
-	sql = "DELETE FROM entities"
-	print(sql)
-	mycursor.execute(sql)
+	#sql = "DELETE FROM entities"
+	#print(sql)
+	#mycursor.execute(sql)
 	
-	sql = "DELETE FROM entitytypes"
-	print(sql)
-	mycursor.execute(sql)
+	#sql = "DELETE FROM entitytypes"
+	#print(sql)
+	#mycursor.execute(sql)
 
 	sql = "SELECT document_id,pubmed_id,cord_uid FROM documents"
 	print(sql)
@@ -73,11 +73,11 @@ if __name__ == '__main__':
 	entitytype_to_id = { (name,):entitytype_id for entitytype_id,name in myresult }
 	print("Found %d existing entity types" % len(entitytype_to_id))
 	
-	sql = "SELECT entity_id,name,entitytype_id FROM entities"
+	sql = "SELECT entity_id,name,entitytype_id,external_id FROM entities"
 	print(sql)
 	mycursor.execute(sql)
 	myresult = mycursor.fetchall()
-	entity_to_id = { (name,entitytype_id):entity_id for entity_id,name,entitytype_id in myresult }
+	entity_to_id = { (name,entitytype_id,external_id):entity_id for entity_id,name,entitytype_id,external_id in myresult }
 	print("Found %d existing entities" % len(entity_to_id))
 	
 	sql = "SELECT annotation_id,document_id,entity_id,is_automatic,is_positive FROM annotations"
@@ -104,6 +104,8 @@ if __name__ == '__main__':
 		pubmed_id = anno['pubmed_id']
 		entity_name = anno['entity_name']
 		entity_type = anno['entity_type']
+		
+		assert 'external_id' in anno and anno['external_id'], "Found empty external_id for annotation: %s" % str(anno)
 
 		if cord_uid in cord_to_document_id:
 			document_id = cord_to_document_id[cord_uid]

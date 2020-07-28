@@ -28,7 +28,7 @@ if __name__ == '__main__':
 		pubmed_id = d['pubmed_id']
 		
 		for topic in d['topics']:
-			aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':'topic', 'entity_name':topic, 'wikidata_id':None, 'is_positive':True }
+			aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':'topic', 'entity_name':topic, 'external_id':'topic_%s' % topic, 'is_positive':True }
 			autoannotations.append(aa)
 			
 		#uniqueEntities = sorted(set([ (entity['id'],entity['type'],entity['normalized']) for entity in d['entities'] ]))
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 			aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':entity['type'], 'entity_name':entity['normalized'], 'external_id':entity['id'], 'start_pos':entity['start'], 'end_pos':entity['end'], 'section':entity['section'] }
 			autoannotations.append(aa)
 			
-		aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':'pubtype', 'entity_name':d['ml_pubtype'] }
+		aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':'pubtype', 'entity_name':d['ml_pubtype'],'external_id':'pubtype_%s' % d['ml_pubtype'] }
 		autoannotations.append(aa)
 		
 	#output = { 'annotations':autoannotations, 'locations':locations }
