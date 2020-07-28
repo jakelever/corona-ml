@@ -50,6 +50,8 @@ if __name__ == '__main__':
 	#geoConcepts['Q7930989'] = 'city/town'
 	geoConcepts['Q1549591'] = 'big city'
 	geoConcepts['Q6256'] = 'country'
+	geoConcepts['Q112099'] = 'island nation'
+	geoConcepts['Q3624078'] = 'sovereign state'
 	geoConcepts['Q35657'] = 'state of the United States'
 	geoConcepts['Q1352230'] = 'territory of the United States'
 	geoConcepts['Q16110'] = 'region of Italy'
