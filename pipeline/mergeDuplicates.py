@@ -96,9 +96,13 @@ if __name__ == '__main__':
 			
 			all_ids = {'doi':dois,'pubmed_id':pubmed_ids,'pmcid':pmcids,'url':urls}
 			
-			# Sort the documents by title then abstract length (so that shorter abstracts get overwritten)
-			docs = sorted(docs, key=lambda x:(len(x['title']),len(x['abstract'])))
-			
+			# Order documents with preprints before nonpreprints, and then by title/abstract length
+			preprints = [ d for d in docs if d['journal'] in ['arXiv','bioRxiv','ChemRxiv','medRxiv'] ]
+			preprints = sorted(preprints, key=lambda x:x['journal'])
+			nonpreprints = [ d for d in docs if not d['journal'] in ['arXiv','bioRxiv','ChemRxiv','medRxiv'] ]
+			nonpreprints = sorted(nonpreprints, key=lambda x:(len(x['title']),len(x['abstract'])))
+			docs = preprints + nonpreprints
+						
 			# Create a single merged document, initially with empty values for each key
 			keys = sorted(set(sum([list(d.keys()) for d in docs],[])))
 			merged_doc = { k:'' for k in keys }
