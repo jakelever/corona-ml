@@ -26,39 +26,44 @@ if __name__ == '__main__':
 	
 	print("Gathering data from Wikidata...")
 		
-	query = """
-	SELECT ?entity ?entityLabel ?entityDescription ?alias WHERE {
-		SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-		?entity wdt:P31 wd:%s.
-		OPTIONAL {?entity skos:altLabel ?alias FILTER (LANG (?alias) = "en") .}
-	} 
-
-	""" % symptom
-
 	rowCount = 0
-	for row in runQuery(query):
-		longID = row['entity']['value']
-		
-		if 'xml:lang' in row['entityLabel'] and row['entityLabel']['xml:lang'] == 'en':
-		
-			# Get the Wikidata ID, not the whole URL
-			shortID = longID.split('/')[-1]
-					
-			entity = entities[shortID]
-			entity['id'] = shortID
-			entity['name'] = row['entityLabel']['value']
-						
-			if 'entityDescription' in row and 'xml:lang' in row['entityDescription'] and row['entityDescription']['xml:lang'] == 'en':
-				entity['description'] = row['entityDescription']['value']
+	
+	instance_of = 'P31'
+	subclass_of = 'P279'
+	
+	for child_type in [instance_of,subclass_of]:
+		query = """
+		SELECT ?entity ?entityLabel ?entityDescription ?alias WHERE {
+			SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+			?entity wdt:%s wd:%s.
+			OPTIONAL {?entity skos:altLabel ?alias FILTER (LANG (?alias) = "en") .}
+		} 
+
+		""" % (child_type,symptom)
+
+		for row in runQuery(query):
+			longID = row['entity']['value']
 			
-			if not 'aliases' in entity:
-				entity['aliases'] = []
+			if 'xml:lang' in row['entityLabel'] and row['entityLabel']['xml:lang'] == 'en':
+			
+				# Get the Wikidata ID, not the whole URL
+				shortID = longID.split('/')[-1]
+						
+				entity = entities[shortID]
+				entity['id'] = shortID
+				entity['name'] = row['entityLabel']['value']
+							
+				if 'entityDescription' in row and 'xml:lang' in row['entityDescription'] and row['entityDescription']['xml:lang'] == 'en':
+					entity['description'] = row['entityDescription']['value']
+				
+				if not 'aliases' in entity:
+					entity['aliases'] = []
 
-			if 'alias' in row and row['alias']['xml:lang'] == 'en':
-				entity['aliases'].append(row['alias']['value'])
+				if 'alias' in row and row['alias']['xml:lang'] == 'en':
+					entity['aliases'].append(row['alias']['value'])
 
-		rowCount += 1
-		totalCount += 1
+			rowCount += 1
+			totalCount += 1
 
 	for entityID,entity in entities.items():
 		entity['aliases'].append(entity['name'])
