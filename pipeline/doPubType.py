@@ -86,6 +86,8 @@ if __name__ == '__main__':
 		if 'annotated_pubtype' in d:
 			d['ml_pubtype'] = d['annotated_pubtype']
 			del d['annotated_pubtype']
+		elif 'Published Erratum' in mesh_pubtypes or d['title'].lower().startswith('erratum'):
+			d['ml_pubtype'] = 'Erratum'
 		elif any('Clinical Trial' in pt for pt in mesh_pubtypes):
 			d['ml_pubtype'] = 'Research'
 		elif any (pt in mesh_pubtypes for pt in ['News','Newspaper Article'] ):
@@ -94,8 +96,6 @@ if __name__ == '__main__':
 			d['ml_pubtype'] = 'Meta-analysis'
 		elif any (pt in mesh_pubtypes for pt in ['Editorial','Comment'] ):
 			d['ml_pubtype'] = 'Comment/Editorial'
-		elif 'Published Erratum' in mesh_pubtypes or d['title'].lower().startswith('erratum'):
-			d['ml_pubtype'] = 'Erratum'
 		elif d['title'].startswith('Chapter '):
 			d['ml_pubtype'] = 'Book chapter'
 		else:
