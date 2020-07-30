@@ -23,7 +23,7 @@ if __name__ == '__main__':
 	annotated = [ d for d in annotated if not any(a in d['annotations'] for a in ['Skip','Maybe'])]
 	unannotated = [ d for d in documents if len(d['annotations']) == 0]
 	
-	selected_annotations = ['Review','Updates','Comment/Editorial','Meta-analysis','News','NotRelevant','Research','Book chapter']
+	selected_annotations = ['Review','Updates','Comment/Editorial','Meta-analysis','News','NotRelevant','Research','Book chapter','Erratum']
 	for d in annotated:
 		annotated_pubtypes = [ a for a in selected_annotations if a in d['annotations'] ]
 		if 'NotRelevant' in annotated_pubtypes:
@@ -35,8 +35,8 @@ if __name__ == '__main__':
 			
 		d['annotated_pubtype'] = annotated_pubtypes[0]
 		
-	print("Removing book chapters from training - will get with simple title check")
-	annotated = [ d for d in annotated if not d['annotated_pubtype'] == 'Book chapter' ]
+	print("Removing book chapters and erratum from training - will get with simple title check")
+	annotated = [ d for d in annotated if not d['annotated_pubtype'] in ['Book chapter','Erratum'] ]
 		
 	print("Vectorizing...")
 	#documentVectorizer = DocumentVectorizer()
