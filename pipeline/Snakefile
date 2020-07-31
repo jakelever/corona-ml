@@ -96,11 +96,11 @@ rule:
 
 rule:
 	input: join(outDir,"alldocuments.withannotations.json"),
-	output: join(outDir,"alldocuments.pubtype.json")
-	shell: "python doPubType.py --inJSON {input} --outJSON {output}"
+	output: join(outDir,"alldocuments.articletype.json")
+	shell: "python doArticleType.py --inJSON {input} --outJSON {output}"
 
 rule:
-	input: join(outDir,"alldocuments.pubtype.json"),
+	input: join(outDir,"alldocuments.articletype.json"),
 	output: join(outDir,"alldocuments.topics.json")
 	shell: "python doTopics.py --inJSON {input} --outJSON {output}"
 	
