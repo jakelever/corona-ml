@@ -48,7 +48,19 @@ rule:
 	shell: "python getGeonamesFromWikidata.py --outJSON {output}"
 	
 rule:
-	input: join(outDir,"alldocuments.json")
+	input: 
+		documents=join(outDir,"alldocuments.json"),
+		webmetadata=join(outDir,"webmetadata.json")
+	output: join(outDir,"alldocuments.webdata.json")
+	shell: "python integrateWebData.py --inJSON {input.documents} --webmetadata {input.webmetadata} --outJSON {output}"
+	
+rule:
+	input: join(outDir,"alldocuments.webdata.json")
+	output: join(outDir,"alldocuments.cleaned.json")
+	shell: "python cleanupDocs.py --inJSON {input} --outJSON {output}"
+	
+rule:
+	input: join(outDir,"alldocuments.cleaned.json")
 	output: join(outDir,"alldocuments.noduplicates.json")
 	shell: "python mergeDuplicates.py --inJSON {input} --outJSON {output}"
 	

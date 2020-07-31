@@ -56,7 +56,7 @@ if __name__ == '__main__':
 						
 					meta_dict[name].append(value)
 				
-				all_metadata[url] = dict(meta_dict)
+			all_metadata[url] = dict(meta_dict)
 			#break
 	
 	print("Saving data...")
