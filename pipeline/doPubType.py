@@ -19,30 +19,76 @@ if __name__ == '__main__':
 	with open(args.inJSON) as f:
 		documents = json.load(f)
 	
-	annotated = [ d for d in documents if len(d['annotations']) > 0]
-	annotated = [ d for d in annotated if not any(a in d['annotations'] for a in ['Skip','Maybe'])]
-	unannotated = [ d for d in documents if len(d['annotations']) == 0]
+	#articleTypes = Counter( at for d in documents for at in d['web_articletypes'] )
+	#articleTypes = [ (count,at) for at,count in articleTypes.items() ]
+	#for count,at in sorted(articleTypes,reverse=True):
+	#	if count > 10:
+	#		print("%d\t%s" % (count,at))
+	
+	web_article_groups = {}
+	web_article_groups['Research'] = "research-article,research,research letter,original research".split(',')
+	web_article_groups['Comment/Editorial'] = "editorial,editorialnotes,commentary,viewpoint,comments & opinion,comment,perspective,article commentary,reply,editorials,opinion,correspondence response,perspectives,opinion piece,n-perspective".split(',')
+	web_article_groups['Review'] = "review article,reviewpaper,review,review-article,reviews,short review,summary review".split(',')
+	web_article_groups['Meta-analysis'] = "meta-analysis".split(',')
+	web_article_groups['News'] = "news".split(',')
+	web_article_groups['Erratum'] = "erratum,correction".split(',')
+	web_article_groups['Book chapter'] = "chapter".split(',')
 	
 	selected_annotations = ['Review','Updates','Comment/Editorial','Meta-analysis','News','NotRelevant','Research','Book chapter','Erratum']
-	for d in annotated:
-		annotated_pubtypes = [ a for a in selected_annotations if a in d['annotations'] ]
-		if 'NotRelevant' in annotated_pubtypes:
-			annotated_pubtypes = ['NotRelevant']
-			
-		assert len(annotated_pubtypes) <= 1, "Document has %s" % (str(annotated_pubtypes))
-		if len(annotated_pubtypes) == 0:
-			annotated_pubtypes = ['Research']
-			
-		d['annotated_pubtype'] = annotated_pubtypes[0]
+	
+	#updates_journals = set(['MMWR. Morbidity and mortality weekly report','MMWR Morb Mortal Wkly Rep'])
+	
+	for d in documents:
+		confident_article_type = None
 		
-	print("Removing book chapters and erratum from training - will get with simple title check")
-	annotated = [ d for d in annotated if not d['annotated_pubtype'] in ['Book chapter','Erratum'] ]
+		annotated_articletypes = [ a for a in selected_annotations if a in d['annotations'] ]
+		if 'NotRelevant' in annotated_articletypes:
+			annotated_articletypes = ['NotRelevant']
+		assert len(annotated_articletypes) <= 1, "Document has %s" % (str(annotated_articletypes))
+		if len(d['annotations']) > 0 and len(annotated_articletypes) == 0:
+			annotated_articletypes = ['Research']
+		if 'Skip' in d['annotations'] or 'Maybe' in d['annotations']:
+			annotated_articletypes = []
+			
+		mesh_pubtypes = d['pub_type'] if 'pub_type' in d else []
+		
+		types_from_webdata = [ group for group,names in web_article_groups.items() if any ( at in names for at in d['web_articletypes'] ) ]
+		
+		
+		#if d['journal'] in updates_journals:
+		#	predicted_articletype = 'Updates'
+		
+		if len(annotated_articletypes) == 1:
+			confident_article_type = annotated_articletypes[0]
+		elif 'Erratum' in types_from_webdata or 'Published Erratum' in mesh_pubtypes or d['title'].lower().startswith('erratum')  or d['title'].lower().startswith('correction'):
+			confident_article_type = 'Erratum'
+		elif 'News' in types_from_webdata or any (pt in mesh_pubtypes for pt in ['News','Newspaper Article'] ):
+			confident_article_type = 'News'
+		elif 'Comment/Editorial' in types_from_webdata or any (pt in mesh_pubtypes for pt in ['Editorial','Comment'] ):
+			confident_article_type = 'Comment/Editorial'
+		elif 'Book chapter' in types_from_webdata or d['title'].startswith('Chapter '):
+			confident_article_type = 'Book chapter'
+		elif 'Meta-analysis' in types_from_webdata or any (pt in mesh_pubtypes for pt in ['Systematic Review','Meta-Analysis'] ):
+			confident_article_type = 'Meta-analysis'
+		elif 'Review' in types_from_webdata:
+			confident_article_type = 'Review'
+		elif 'Research' in types_from_webdata or any('Clinical Trial' in pt for pt in mesh_pubtypes):
+			confident_article_type = 'Research'
+			
+		if confident_article_type:
+			d['article_type'] = confident_article_type
+	
+	training_data = [ d for d in documents if 'article_type' in d ]
+	
+	print("Got %d documents (of %d) with confident article types" % (len(training_data),len(documents)))
+	
+	unannotated = [ d for d in documents if not 'article_type' in d]
+		
+	print("Removing book chapters and erratum from training")
+	training_data = [ d for d in training_data if not d['article_type'] in ['Book chapter','Erratum'] ]
 		
 	print("Vectorizing...")
-	#documentVectorizer = DocumentVectorizer()
-	#X = documentVectorizer.fit_transform(annotated)
-	#X_all = documentVectorizer.transform(documents)
-	y = [ d['annotated_pubtype'] for d in annotated ]
+	y = [ d['article_type'] for d in training_data ]
 	
 	pipeline = Pipeline([
 		("vectorizer", DocumentVectorizer(features=['titleabstract'])),
@@ -50,59 +96,40 @@ if __name__ == '__main__':
 	])
 	
 	print("Training...")
-	#clf = LogisticRegression(class_weight='balanced',random_state=0)
-	#clf.fit(X,y)
-	pipeline.fit(annotated,y)
+	pipeline.fit(training_data,y)
 	
 	probs = pipeline.predict_proba(documents)
 	
 	class_to_column = { c:i for i,c in enumerate(pipeline.classes_) }
 
-	#print("Predicting...")
-	#predicted = clf.predict(X_all)
 	print("Classes:", pipeline.classes_)
 	
-	updates_journals = set(['MMWR. Morbidity and mortality weekly report','MMWR Morb Mortal Wkly Rep'])
-	
-	#for p,d in zip(predicted,documents):
 	for i,d in enumerate(documents):
+		if 'article_type' in d:
+			continue
+			
+		reference_count = int(d['reference_count']) if 'reference_count' in d and d['reference_count'] else 0
+			
 		mesh_pubtypes = d['pub_type'] if 'pub_type' in d else []
 		if 'Review' in mesh_pubtypes: # If it's tagged as a Review, it's definitely not research or news, but could be more than Review
 			probs[i,class_to_column['Research']] = -1
 			probs[i,class_to_column['News']] = -1
-		
+		elif reference_count > 50: # If it has a lot of references, it's either a review or a meta-analysis
+			for j,c in enumerate(pipeline.classes_):
+				if c != 'Review' and c != 'Meta-analysis':
+					probs[i,j] = -1
+					
 		max_index = probs[i,:].argmax()
 		score = probs[i,max_index]
 		if score > 0.6:
-			predicted_pubtype = pipeline.classes_[max_index]
+			predicted_articletype = pipeline.classes_[max_index]
 		else:
-			predicted_pubtype = 'Research'
-			
-		if d['journal'] in updates_journals:
-			predicted_pubtype = 'Updates'
+			predicted_articletype = 'Research'
 		
-		assert len(annotated_pubtypes) <= 1, "Document has %s" % (str(annotated_pubtypes))
-		
-		if 'annotated_pubtype' in d:
-			d['ml_pubtype'] = d['annotated_pubtype']
-			del d['annotated_pubtype']
-		elif 'Published Erratum' in mesh_pubtypes or d['title'].lower().startswith('erratum'):
-			d['ml_pubtype'] = 'Erratum'
-		elif any('Clinical Trial' in pt for pt in mesh_pubtypes):
-			d['ml_pubtype'] = 'Research'
-		elif any (pt in mesh_pubtypes for pt in ['News','Newspaper Article'] ):
-			d['ml_pubtype'] = 'News'
-		elif any (pt in mesh_pubtypes for pt in ['Systematic Review','Meta-Analysis'] ):
-			d['ml_pubtype'] = 'Meta-analysis'
-		elif any (pt in mesh_pubtypes for pt in ['Editorial','Comment'] ):
-			d['ml_pubtype'] = 'Comment/Editorial'
-		elif d['title'].startswith('Chapter '):
-			d['ml_pubtype'] = 'Book chapter'
-		else:
-			d['ml_pubtype'] = predicted_pubtype
+		d['article_type'] = predicted_articletype
 			
 			
-	print(Counter( d['ml_pubtype'] for d in documents))
+	print(Counter( d['article_type'] for d in documents))
 			
 	print("Saving JSON file...")
 	with open(args.outJSON,'w') as f:

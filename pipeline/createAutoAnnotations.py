@@ -37,7 +37,7 @@ if __name__ == '__main__':
 			aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':entity['type'], 'entity_name':entity['normalized'], 'external_id':entity['id'], 'start_pos':entity['start'], 'end_pos':entity['end'], 'section':entity['section'] }
 			autoannotations.append(aa)
 			
-		aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':'pubtype', 'entity_name':d['ml_pubtype'],'external_id':'pubtype_%s' % d['ml_pubtype'] }
+		aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':'articletype', 'entity_name':d['article_type'],'external_id':'pubtype_%s' % d['article_type'] }
 		autoannotations.append(aa)
 		
 	#output = { 'annotations':autoannotations, 'locations':locations }
