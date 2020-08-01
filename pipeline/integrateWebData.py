@@ -29,6 +29,15 @@ def is_cjk(character):
 def is_cjk_string(text):
 	return any(is_cjk(ch) for ch in text)
 
+dashCharacters = ["-", "\u00ad", "\u2010", "\u2011", "\u2012", "\u2013", "\u2014", "\u2043", "\u2053"]
+def cleanup_dashes(list_of_text):
+	new_list = []
+	for item in list_of_text:
+		for dc in dashCharacters:
+			item = item.replace(dc,'-')
+		new_list.append(item)
+	return new_list
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Integrate in metadata from web scraping')
 	parser.add_argument('--inJSON',required=True,type=str,help='Input JSON documents')
@@ -59,6 +68,8 @@ if __name__ == '__main__':
 			if url in webmetadata:
 				m.update(webmetadata[url])
 				
+		m = { k:cleanup_dashes(vals) if isinstance(vals,list) else vals for k,vals in m.items() }
+				
 		d['webmetadata'] = defaultdict(list,m)
 		
 	print("Normalizing journal names using web data...")
@@ -66,7 +77,7 @@ if __name__ == '__main__':
 	journal_fields = ['citation_journal_title', 'journal_title', 'journal', 'journalName', 'wkhealth_journal_title']
 
 	skip_journal_list = ['arxiv','medrxiv','biorxiv','chemrxiv']
-
+	
 	journal_mapping = defaultdict(list)
 	for d in documents:
 		if any(skip_journal in d['journal'].lower() for skip_journal in skip_journal_list):
@@ -89,7 +100,7 @@ if __name__ == '__main__':
 	
 	print("Extracting article type metadata...")
 	
-	articletype_fields = ['DC.Subject', 'DC.Type.articleType', 'DC.subject', 'WT.cg_s', 'WT.z_cg_type', 'WT.z_primary_atype', 'article:section', 'articleType', 'category', 'citation_article_type', 'citation_categories', 'citation_keywords', 'citation_section', 'dc.Type', 'dc.type', 'prism.section', 'wkhealth_toc_section', 'wkhealth_toc_sub_section']
+	articletype_fields = ['DC.Subject', 'DC.Type.articleType', 'DC.subject', 'WT.cg_s', 'WT.z_cg_type', 'WT.z_primary_atype', 'article:section', 'articleType', 'category', 'citation_article_type', 'citation_categories', 'citation_keywords', 'citation_section', 'dc.Type', 'dc.type', 'prism.section', 'wkhealth_toc_section', 'wkhealth_toc_sub_section','article-header__journal']
 	
 	for d in documents:
 		wm_articletypes = sum([ d['webmetadata'][f] for f in articletype_fields ], [])
@@ -101,6 +112,7 @@ if __name__ == '__main__':
 	
 	abstract_fields = ['Abstract', 'DC.Description.Abstract', 'DC.abstract', 'abstract', 'citation_abstract', 'eprints.abstract']
 
+	added_abstract_count = 0
 	for d in documents:
 		if d['abstract'] == '':
 			candidate_abstracts = sum([ d['webmetadata'][f] for f in abstract_fields ], [])
@@ -112,6 +124,9 @@ if __name__ == '__main__':
 			candidate_abstracts = sorted(set(candidate_abstracts), key=lambda x: len(x), reverse=True)
 			if candidate_abstracts:
 				d['abstract'] = candidate_abstracts[0]
+				added_abstract_count += 1
+				
+	print("Added %d new abstracts using web data" % added_abstract_count)
 		
 	for d in documents:
 		del d['webmetadata']
