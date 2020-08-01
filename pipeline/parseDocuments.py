@@ -3,6 +3,7 @@ import argparse
 import pickle
 import json
 import os
+import sys
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Parse a set of documents and save a pickled form')
@@ -14,21 +15,25 @@ if __name__ == '__main__':
 	use_previous_parses = (args.prevPickle and os.path.isfile(args.prevPickle))
 	
 	print("Loading documents...")
+	sys.stdout.flush()
 	with open(args.inJSON) as f:
 		documents = json.load(f)
 		
 	existing_mapping = {}
 	if use_previous_parses:
 		print("Loading previous parses for reuse...")
+		sys.stdout.flush()
 		with open(args.prevPickle,'rb') as f:
 			previously_parsed_corpus = pickle.load(f)
 			
 		print("Setting up lookup for previous parses...")
+		sys.stdout.flush()
 		for kindred_doc in previously_parsed_corpus.documents:
 			identifier = kindred_doc.text
 			existing_mapping[identifier] = kindred_doc
 	
 	print("Checking which documents need to be parsed...")
+	sys.stdout.flush()
 	needs_parsing,already_parsed = [],[]
 	for doc in documents:
 		title_plus_abstract = doc['title'] + "\n" + doc['abstract']
@@ -41,6 +46,7 @@ if __name__ == '__main__':
 	if use_previous_parses:
 		print("Found %d documents with existing parses" % len(already_parsed))
 	print("Found %d documents to parse" % len(needs_parsing))
+	sys.stdout.flush()
 	
 	corpus = kindred.Corpus()
 	for title_plus_abstract in needs_parsing:
@@ -48,12 +54,14 @@ if __name__ == '__main__':
 		corpus.addDocument(kindred_doc)
 		
 	print("Parsing...")
+	sys.stdout.flush()
 	parser = kindred.Parser(model='en_core_sci_sm')
 	parser.parse(corpus)
 	
 	corpus.documents += already_parsed
 	
 	print("Saving %d parses..." % len(corpus.documents))
+	sys.stdout.flush()
 	with open(args.outPickle,'wb') as outF:
 		pickle.dump(corpus,outF)
 
