@@ -1,11 +1,14 @@
 #!/bin/bash
 set -ex
 
-mkdir -p cord19
+outdir=$PWD/cord19
+tmp_cord=$SCRATCH/tmp_cord
 
-rm -fr tmp_cord
-mkdir tmp_cord
-cd tmp_cord
+mkdir -p $outdir
+
+rm -fr $tmp_cord
+mkdir $tmp_cord
+cd $tmp_cord
 
 curl --silent https://ai2-semanticscholar-cord-19.s3-us-west-2.amazonaws.com/historical_releases.html |\
 grep -oP "https://ai2-semanticscholar-cord-19.s3-us-west-2.amazonaws.com/historical_releases/cord-19_.*?.tar.gz" |\
@@ -25,9 +28,9 @@ wget $file_url
 
 tar -zxvf cord-19_$file_date.tar.gz $file_date/metadata.csv
 
-mv $file_date/metadata.csv ../cord19/metadata.csv
-echo $file_date > ../cord19/date.txt
+mv $file_date/metadata.csv $outdir/metadata.csv
+echo $file_date > $outdir/date.txt
 
-cd ..
-rm -fr tmp_cord
+cd -
+rm -fr $tmp_cord
 

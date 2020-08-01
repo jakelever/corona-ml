@@ -7,6 +7,9 @@ from html.parser import HTMLParser
 import re
 import calendar
 import unicodedata
+from datetime import date
+import string
+import calendar
 
 pubTypeSkips = {"Research Support, N.I.H., Intramural","Research Support, Non-U.S. Gov't","Research Support, U.S. Gov't, P.H.S.","Research Support, N.I.H., Extramural","Research Support, U.S. Gov't, Non-P.H.S.","English Abstract"}
 
@@ -192,6 +195,7 @@ def getPubmedEntryDate(elem,pmid):
 
 	return pubYear,pubMonth,pubDay
 
+doiRegex = re.compile(r'^[0-9\.]+\/.+[^\/]$')
 def processElem(elem):
 	pmidField = elem.find('./MedlineCitation/PMID')
 	pmid = pmidField.text
@@ -272,6 +276,9 @@ def processElem(elem):
 
 	titleElems = elem.findall('./MedlineCitation/Article/ArticleTitle')
 	titleText = extractTextFromElemList(titleElems)
+	if not titleText or all( t is None or t=='' for t in titleText) :
+		titleElems = elem.findall('./MedlineCitation/Article/VernacularTitle')
+		titleText = extractTextFromElemList(titleElems)
 	titleText = [ removeWeirdBracketsFromOldTitles(t) for t in titleText ]
 	titleText = [ t for t in titleText if t ]
 	titleText = [ htmlUnescape(t) for t in titleText ]
@@ -288,14 +295,6 @@ def processElem(elem):
 		referenceElems = elem.findall('./PubmedData/ReferenceList/Reference')
 		referenceCount = len(referenceElems)
 	
-	#if pmid == '28003490':
-	#	print(pmid)
-	#	print(titleText)
-	#	print('#'*30)
-	#	print(abstractElems)
-	#	print(abstractText)
-	#	#assert False
-
 	journalTitleElems = elem.findall('./MedlineCitation/Article/Journal/Title')
 	journalTitleISOElems = elem.findall('./MedlineCitation/Article/Journal/ISOAbbreviation')
 	journalTitle = " ".join( e.text for e in journalTitleElems )
@@ -304,8 +303,10 @@ def processElem(elem):
 	doiElems = elem.findall("./PubmedData/ArticleIdList/ArticleId[@IdType='doi']")
 	assert len(doiElems) <= 1
 	doi = None
-	if len(doiElems) == 1:
+	if len(doiElems) == 1 and doiElems[0].text:
 		doi = doiElems[0].text
+		if not doiRegex.match(doi):
+			doi = None
 
 	pmcElems = elem.findall("./PubmedData/ArticleIdList/ArticleId[@IdType='pmc']")
 	assert len(pmcElems) <= 1
@@ -316,7 +317,10 @@ def processElem(elem):
 	pubTypeElems = elem.findall('./MedlineCitation/Article/PublicationTypeList/PublicationType')
 	pubType = [ e.text for e in pubTypeElems if not e.text in pubTypeSkips ]
 
-	assert len(titleText) == 1
+	# Some articles are missing a title
+	if len(titleText) == 0:
+		return None
+	assert len(titleText) == 1, "Unexpected number of titles for PMID:%s. Expected 1, got: %s" % (pmid,titleText)
 
 	article = {}
 	article['pubmed_id'] = pmid
@@ -333,7 +337,7 @@ def processElem(elem):
 	article['publish_year'] = pubYear
 	article['publish_month'] = pubMonth
 	article['publish_day'] = pubDay
-	article['pub_type'] = pubType
+	article['medline_pubtype'] = pubType
 	article['reference_count'] = referenceCount
 	article['url'] = 'https://www.ncbi.nlm.nih.gov/pubmed/' + pmid
 
@@ -344,6 +348,7 @@ def processPubMed(inDir):
 
 	allData = {}
 	for pubmedFile in pubmedFiles:
+
 		print(os.path.basename(pubmedFile))
 		for event, elem in etree.iterparse(pubmedFile, events=('start', 'end', 'start-ns', 'end-ns')):
 			if (event=='end' and elem.tag=='PubmedArticle'):
@@ -356,7 +361,6 @@ def processPubMed(inDir):
 				elem.clear()
 
 	return allData
-
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Collect all relevant papers into one big file')
@@ -373,23 +377,28 @@ if __name__ == '__main__':
 	with open(args.kaggleMetadata, newline='') as csvfile:
 		csvreader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
 		#kaggle_by_source = defaultdict(dict)
-		doi_to_doc = {}
+
 		for i,row in enumerate(csvreader):
-			doi = row['doi']
-			source = row['source_x']
-			if row['pubmed_id'] in pubmed:
-				article = pubmed[row['pubmed_id']]
-				article['cord_uid'] = row['cord_uid']
-			elif doi and doi in doi_to_doc:
-				if source == 'PMC':
-					doc = doi_to_doc[doi]
-					doc.update(row)
-			else:
-				kaggle.append(row)
-				if doi:
-					doi_to_doc[doi] = row
-				#assert 
-				#kaggle_by_source[source][doi] = 
+			kaggle.append(row)
+
+		if False:
+			doi_to_doc = {}
+			for i,row in enumerate(csvreader):
+				doi = row['doi']
+				source = row['source_x']
+				if row['pubmed_id'] in pubmed:
+					article = pubmed[row['pubmed_id']]
+					article['cord_uid'] = row['cord_uid']
+				elif doi and doi in doi_to_doc:
+					if source == 'PMC':
+						doc = doi_to_doc[doi]
+						doc.update(row)
+				else:
+					kaggle.append(row)
+					if doi:
+						doi_to_doc[doi] = row
+					#assert 
+					#kaggle_by_source[source][doi] = 
 
 	print("Loaded %d from Kaggle" % len(kaggle))
 
@@ -402,6 +411,7 @@ if __name__ == '__main__':
 
 	print("Loaded %d in total" % len(combined))
 
+	print("Saving...")
 	with open(args.outFile,'w') as outF:
 		if args.pretty:
 			json.dump(combined,outF,indent=2,sort_keys=True)
