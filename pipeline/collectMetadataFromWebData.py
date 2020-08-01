@@ -13,7 +13,10 @@ if __name__ == '__main__':
 	
 	inFiles = sorted( inFile for inFile in os.listdir(args.inDir) if inFile.endswith('.json') )
 	
-	toStrip = {'robots','viewport','referrer','google-site-verification'}
+	toStrip = {"robots","viewport","referrer","google-site-verification","sessionEvt-audSegment","sessionEvt-freeCntry","sessionEvt-idGUID","sessionEvt-individual","sessionEvt-instId","sessionEvt-instProdCode","sessionEvt-nejmSource","sessionEvt-offers","sessionEvt-prodCode","evt-ageContent","evt-artView","format-detection"}
+	  
+	spanClassesToCheck = ['article-header__journal']
+	  
 	all_metadata = {}
 	for inFile in inFiles:
 		print("Processing %s..." % inFile)
@@ -55,6 +58,11 @@ if __name__ == '__main__':
 					assert not name in ['status_code','url_history','resolved_url']
 						
 					meta_dict[name].append(value)
+					
+				for className in spanClassesToCheck
+					for s in spans:
+						if 'class' in s.attrs and s.attrs['class'] == className:
+							meta_dict[className] = s.gettext()
 				
 			all_metadata[url] = dict(meta_dict)
 			#break

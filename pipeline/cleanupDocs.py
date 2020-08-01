@@ -60,9 +60,6 @@ def cleanup_documents(documents):
 		# no space after a colon.
 		doc['abstract'] = colonWithNoSpaceRegex.sub('\\1: \\2',doc['abstract'])
 
-		if 'journaliso' in doc:
-			doc['journal'] = doc['journaliso']
-
 		if 'source_x' in doc and doc['source_x'].lower() in ['biorxiv','medrxiv','arxiv']:
 			doc['journal'] = doc['source_x']
 

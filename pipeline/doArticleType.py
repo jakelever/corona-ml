@@ -27,7 +27,7 @@ if __name__ == '__main__':
 	
 	web_article_groups = {}
 	web_article_groups['Research'] = "research-article,research,research letter,original research".split(',')
-	web_article_groups['Comment/Editorial'] = "editorial,editorialnotes,commentary,viewpoint,comments & opinion,comment,perspective,article commentary,reply,editorials,opinion,correspondence response,perspectives,opinion piece,n-perspective".split(',')
+	web_article_groups['Comment/Editorial'] = "editorial,editorialnotes,commentary,viewpoint,comments & opinion,comment,perspective,article commentary,reply,editorials,correspondence response,perspectives,opinion piece,n-perspective,letter to the editor,letters to the editor,editorial/personal viewpoint,guest editorial,ce - letter to the editor,world view,current opinion,rapid response opinion,commentaries,invited commentary,article-commentary".split(',')
 	web_article_groups['Review'] = "review article,reviewpaper,review,review-article,reviews,short review,summary review".split(',')
 	web_article_groups['Meta-analysis'] = "meta-analysis".split(',')
 	web_article_groups['News'] = "news".split(',')
@@ -128,8 +128,11 @@ if __name__ == '__main__':
 		
 		d['article_type'] = predicted_articletype
 			
-			
 	print(Counter( d['article_type'] for d in documents))
+	
+	print("Cleaning up...")
+	for d in documents:
+		del d['web_articletypes']
 			
 	print("Saving JSON file...")
 	with open(args.outJSON,'w') as f:
