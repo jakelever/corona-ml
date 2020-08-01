@@ -33,10 +33,13 @@ if __name__ == '__main__':
 	web_article_groups['News'] = "news".split(',')
 	web_article_groups['Erratum'] = "erratum,correction".split(',')
 	web_article_groups['Book chapter'] = "chapter".split(',')
+	web_article_groups['Case Reports'] = "case report,case-report,clinical case report".split(',')
 	
-	selected_annotations = ['Review','Updates','Comment/Editorial','Meta-analysis','News','NotRelevant','Research','Book chapter','Erratum']
+	selected_annotations = ['Review','Updates','Comment/Editorial','Meta-analysis','News','NotRelevant','Research','Book chapter','Erratum','Case Reports']
 	
 	#updates_journals = set(['MMWR. Morbidity and mortality weekly report','MMWR Morb Mortal Wkly Rep'])
+	
+	assert any( 'pub_type' in d for d in documents )
 	
 	for d in documents:
 		confident_article_type = None
@@ -72,6 +75,8 @@ if __name__ == '__main__':
 			confident_article_type = 'Meta-analysis'
 		elif 'Review' in types_from_webdata:
 			confident_article_type = 'Review'
+		elif 'Case Reports' in types_from_webdata or 'Case Reports' in mesh_pubtypes:
+			confident_article_type = 'Case Reports'
 		elif 'Research' in types_from_webdata or any('Clinical Trial' in pt for pt in mesh_pubtypes):
 			confident_article_type = 'Research'
 			

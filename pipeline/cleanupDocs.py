@@ -56,6 +56,9 @@ def cleanup_documents(documents):
 			if doc['abstract'].lower().startswith(prefix):
 				doc['abstract'] = doc['abstract'][len(prefix):].lstrip(': ').strip()
 				
+		if doc['title'].startswith('[') and (doc['title'].endswith(']') or doc['title'].endswith('].')):
+			doc['title'] = doc['title'].lstrip('[').rstrip('.').rstrip(']')
+				
 		# Cleanup some messy section headings in the abstract where there is
 		# no space after a colon.
 		doc['abstract'] = colonWithNoSpaceRegex.sub('\\1: \\2',doc['abstract'])
