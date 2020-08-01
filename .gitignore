@@ -4,6 +4,10 @@
 *.zip
 *.pickle
 *.txt
+*.prev
+*.ipynb
+*.npy
+*.xlsx
 
 __pycache__/
 .snakemake/

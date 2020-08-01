@@ -85,6 +85,7 @@ if __name__ == '__main__':
 		if len(docs) > 1:
 			
 			# Get all the unique identifiers in all the papers in this group and do some sorting
+			cord_uids = sorted(set( d['cord_uid'] for d in docs if d['cord_uid'] ))
 			dois = sorted(set( d['doi'] for d in docs if d['doi'] ))
 			pubmed_ids = sorted(set( d['pubmed_id'] for d in docs if d['pubmed_id'] ))
 			pmcids = sorted(set( d['pmcid'] for d in docs if d['pmcid'] ))
@@ -94,11 +95,15 @@ if __name__ == '__main__':
 			urls = [ url.rstrip('/') for url in urls if 'www.ncbi.nlm.nih.gov/pubmed/' in url ]
 			urls = sorted(set( url for url in urls if url ))
 			
-			all_ids = {'doi':dois,'pubmed_id':pubmed_ids,'pmcid':pmcids,'url':urls}
+			all_ids = {'doi':dois,'pubmed_id':pubmed_ids,'pmcid':pmcids,'url':urls, 'cord_uid':cord_uids}
 			
-			# Sort the documents by title then abstract length (so that shorter abstracts get overwritten)
-			docs = sorted(docs, key=lambda x:(len(x['title']),len(x['abstract'])))
-			
+			# Order documents with preprints before nonpreprints, and then by title/abstract length
+			preprints = [ d for d in docs if d['journal'] in ['arXiv','bioRxiv','ChemRxiv','medRxiv'] ]
+			preprints = sorted(preprints, key=lambda x:x['journal'])
+			nonpreprints = [ d for d in docs if not d['journal'] in ['arXiv','bioRxiv','ChemRxiv','medRxiv'] ]
+			nonpreprints = sorted(nonpreprints, key=lambda x:(len(x['title']),len(x['abstract'])))
+			docs = preprints + nonpreprints
+						
 			# Create a single merged document, initially with empty values for each key
 			keys = sorted(set(sum([list(d.keys()) for d in docs],[])))
 			merged_doc = { k:'' for k in keys }

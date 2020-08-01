@@ -31,9 +31,11 @@ if __name__ == '__main__':
 
 	annotated = [ d for d in annotated if not any (f in d['annotations'] for f in toRemoveFromTraining) ]
 
+	article_types = ['Review','Comment/Editorial','Meta-analysis','News','NotRelevant','Updates','Book chapter','Talk','Erratum','Case Reports']
+
 	annotationsToStrip = ['SARS-CoV','MERS-CoV','SARS-CoV-2','None','NotMainFocus']
 	annotationsToStrip.append('Clinical Trial')
-	annotationsToStrip.extend(['Review','Comment/Editorial','Meta-analysis','News','NotRelevant','Updates','Book chapter','Talk'])
+	annotationsToStrip.extend(article_types)
 	annotationsToStrip.extend(toRemoveFromTraining)
 	
 	groupings = {}

@@ -6,6 +6,28 @@ from collections import Counter
 import time
 import datetime
 import ray
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+# From: https://www.peterbe.com/plog/best-practice-with-retries-with-requests
+def requests_retry_session(
+    retries=3,
+    backoff_factor=0.3,
+    status_forcelist=(500, 502, 504),
+    session=None,
+):
+	session = session or requests.Session()
+	retry = Retry(
+		total=retries,
+		read=retries,
+		connect=retries,
+		backoff_factor=backoff_factor,
+		status_forcelist=status_forcelist,
+	)
+	adapter = HTTPAdapter(max_retries=retry)
+	session.mount('http://', adapter)
+	session.mount('https://', adapter)
+	return session
 	
 def nice_time(seconds):
 	days = int(seconds) // (24*60*60)
@@ -75,10 +97,11 @@ def get_altmetric_for_doc(apiKey,d):
 		altmetric_url = None
 		#counts['no identifier'] += 1
 		
+	s = requests.Session()
 		
 	doc_data = {'cord_uid':cord_uid,'pubmed_id':pubmed_id,'doi':doi, 'altmetric':{'response':False}}
 	if altmetric_url:
-		response = requests.get(altmetric_url)
+		response = requests_retry_session(session=s).get(altmetric_url)
 		if response.text == 'Not Found':
 			#counts['not found'] += 1
 			pass

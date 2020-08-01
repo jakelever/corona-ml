@@ -67,8 +67,7 @@ if __name__ == '__main__':
 	#update_altmetric_sql = "UPDATE documents SET altmetric_id=%s, altmetric_score=%s, altmetric_score_1day=%s, altmetric_score_1week=%s, altmetric_openaccess=%s, altmetric_badgetype=%s, altmetric_lastupdated=NOW() WHERE document_id=%s"
 	insert_altmetric_sql = "INSERT INTO tmp_altmetric(altmetric_id,altmetric_score,altmetric_score_1day,altmetric_score_1week,altmetric_openaccess,altmetric_badgetype,document_id) VALUES(%s,%s,%s,%s,%s,%s,%s)"
 		
-	#updatesByDoc = {}
-	updates = []
+	updatesByDoc = {}
 	for record in records:
 		if record['altmetric']['response'] == False:
 			continue
@@ -97,13 +96,9 @@ if __name__ == '__main__':
 		altmetric_badgetype = badgeMatch.groupdict()['badgetype']
 		
 		update = [ altmetric_id, altmetric_score, altmetric_score_1day, altmetric_score_1week, altmetric_openaccess, altmetric_badgetype, document_id ]
-		updates.append(update)
-		#updatesByDoc[document_id] = update
-		#print(document_id)
+		updatesByDoc[document_id] = update
 		
-		#break
-		
-	#updates = sorted(updatesByDoc.values())
+	updates = sorted(updatesByDoc.values())
 		
 	chunk_size = 1000
 	for i,chunk in enumerate(chunks(updates, chunk_size)):

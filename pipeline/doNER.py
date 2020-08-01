@@ -11,6 +11,38 @@ def doesLocationCapitalizationMatch(allEntities,e):
 		
 	aliases = allEntities[e['id']]['aliases']
 	return e['text'] in aliases
+	
+def filterVirusesBasedOnPublishYear(d,kindred_doc):
+	#virusIDs = {'SARS-CoV-2':'Q82069695','SARS-CoV':'Q85438966','MERS-CoV':'Q4902157'}
+	
+	SARS_CoV_2 = 'Q82069695'
+	SARS_CoV = 'Q85438966'
+	MERS_CoV = 'Q4902157'
+
+	viruses = sorted(set([ e.externalID for e in kindred_doc.entities if e.entityType == 'Virus']))
+	if d['publish_year']:
+				
+		if d['publish_year'] < 2002 and SARS_CoV in viruses:
+			viruses.remove(SARS_CoV)
+		if d['publish_year'] < 2012 and MERS_CoV in viruses:
+			viruses.remove(MERS_CoV)
+		if d['publish_year'] < 2019 and SARS_CoV_2 in viruses:
+			viruses.remove(SARS_CoV_2)
+			
+	if SARS_CoV_2 in viruses:
+		viruses = [SARS_CoV_2]
+		
+	kindred_doc.entities = [ e for e in kindred_doc.entities if e.entityType != 'Virus' or e.externalID in viruses ]
+		
+def undoMergingOfEntitiesInSamePosition(kindred_doc):
+	entitiesWithoutMergedExternalIDs = []
+	for e in kindred_doc.entities:
+		for externalID in e.externalID.split(';'):
+			e2 = e.clone()
+			e2.externalID = externalID
+			entitiesWithoutMergedExternalIDs.append(e2)
+			
+	kindred_doc.entities = entitiesWithoutMergedExternalIDs
 		
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Run named entity recognition on parsed documents and integrate it into the JSON data')
@@ -102,38 +134,55 @@ if __name__ == '__main__':
 	print("N.B. NO AMBIGUITY ALLOWED (in current implementation)")
 	#termLookup = defaultdict(set,{ k:v for k,v in termLookup.items() if len(v) == 1 })
 	
+	print("Loading and integrating with JSON file...")
+	with open(args.inJSON) as f:
+		documents = json.load(f)
+	
+	
 	#for alias,entities in termLookup.items():
 	#	if len(entities) > 1:
 	#		print("%s\t%d" % (alias,len(entities)))
 	
-	print("Loading corpus...")
-	with open(args.inParsed,'rb') as f:
-		corpus = pickle.load(f)
+	testMode = False #"10.1101/2020.04.26.061705"
+	
+	
+	if not testMode:
+		print("Loading corpus...")
+		with open(args.inParsed,'rb') as f:
+			corpus = pickle.load(f)
+	else:
+		print("RUNNING IN TEST MODE for doc: %s" % testMode)
 		
-	#corpus = kindred.Corpus(text = "Reports are coming from Wuhan in China")
-	#corpus.documents[0].metadata = {"title":"-"*100}
-	#parser = kindred.Parser(model='en_core_sci_sm')
-	#parser.parse(corpus)
+		documents = [ d for d in documents if d['doi'] == testMode ]
+		assert len(documents) == 1
+		text = documents[0]['title'] + "\n" + documents[0]['abstract']
+		
+		print("Title: %s" % documents[0]['title'])
+		print("Abstract: %s" % documents[0]['abstract'])
+		
+		corpus = kindred.Corpus(text = text)
+		corpus.documents[0].metadata = {"title":documents[0]['title']}
+		parser = kindred.Parser(model='en_core_sci_sm')
+		parser.parse(corpus)
 	
 	print("Annotating corpus...")
 	corpus.removeEntities()
 	ner = kindred.EntityRecognizer(termLookup, mergeTerms=True)
 	ner.annotate(corpus)
 	
-	#doc = corpus.documents[0]
-	#print(doc.entities) 	
+	if testMode:
+		doc = corpus.documents[0]
+		for e in doc.entities:
+			print("  %s" % str(e))
+		#print(doc.entities) 	
 	
 	#assert False
-	
-	print("Loading and integrating with JSON file...")
-	with open(args.inJSON) as f:
-		documents = json.load(f)
 	
 	corpusMap = {}
 	for kindred_doc in corpus.documents:
 		corpusMap[kindred_doc.text] = kindred_doc
 
-	for d in documents:
+	for d in documents:				
 		key = d['title'] + "\n" + d['abstract']
 		kindred_doc = corpusMap[key]
 		
@@ -141,14 +190,10 @@ if __name__ == '__main__':
 		kindred_doc.entities = [ e for e in kindred_doc.entities if not e.entityType == 'conflicting' ]
 		
 		# This is "undoing" the merge of externalIDs for merged terms in Kindred
-		entitiesWithoutMergedExternalIDs = []
-		for e in kindred_doc.entities:
-			for externalID in e.externalID.split(';'):
-				e2 = e.clone()
-				e2.externalID = externalID
-				entitiesWithoutMergedExternalIDs.append(e2)
-		kindred_doc.entities = entitiesWithoutMergedExternalIDs
+		undoMergingOfEntitiesInSamePosition(kindred_doc)
 		
+		# Clean up viruses so that they make sense given the publication year (and also if SARS-CoV-2 appears, it's a SARS-CoV-2 paper, and not another one - for now)
+		filterVirusesBasedOnPublishYear(d,kindred_doc)
 		
 		virusesInDoc = sorted(set( allEntities[e.externalID]['name'] for e in kindred_doc.entities if e.entityType == 'Virus'))
 		

@@ -48,7 +48,19 @@ rule:
 	shell: "python getGeonamesFromWikidata.py --outJSON {output}"
 	
 rule:
-	input: join(outDir,"alldocuments.json")
+	input: 
+		documents=join(outDir,"alldocuments.json"),
+		webmetadata=join(outDir,"webmetadata.json")
+	output: join(outDir,"alldocuments.webdata.json")
+	shell: "python integrateWebData.py --inJSON {input.documents} --webmetadata {input.webmetadata} --outJSON {output}"
+	
+rule:
+	input: join(outDir,"alldocuments.webdata.json")
+	output: join(outDir,"alldocuments.cleaned.json")
+	shell: "python cleanupDocs.py --inJSON {input} --outJSON {output}"
+	
+rule:
+	input: join(outDir,"alldocuments.cleaned.json")
 	output: join(outDir,"alldocuments.noduplicates.json")
 	shell: "python mergeDuplicates.py --inJSON {input} --outJSON {output}"
 	
@@ -76,17 +88,19 @@ rule:
 	shell: "python doNER.py --inJSON {input.json} --entities {input.entities} --stopwords {input.stopwords} --removals {input.removals} --inParsed {input.parsed} --outJSON {output}"
 
 rule:
-	input: join(outDir,"alldocuments.ner.json"),
+	input: 
+		json=join(outDir,"alldocuments.ner.json"),
+		annotations="annotations.json"
 	output: join(outDir,"alldocuments.withannotations.json")
-	shell: "python integrateAnnotations.py --inJSON {input} --outJSON {output}"
+	shell: "python integrateAnnotations.py --inJSON {input.json} --annotations {input.annotations} --outJSON {output}"
 
 rule:
 	input: join(outDir,"alldocuments.withannotations.json"),
-	output: join(outDir,"alldocuments.pubtype.json")
-	shell: "python doPubType.py --inJSON {input} --outJSON {output}"
+	output: join(outDir,"alldocuments.articletype.json")
+	shell: "python doArticleType.py --inJSON {input} --outJSON {output}"
 
 rule:
-	input: join(outDir,"alldocuments.pubtype.json"),
+	input: join(outDir,"alldocuments.articletype.json"),
 	output: join(outDir,"alldocuments.topics.json")
 	shell: "python doTopics.py --inJSON {input} --outJSON {output}"
 	

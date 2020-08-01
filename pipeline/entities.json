@@ -1,0 +1,34 @@
+[
+	{
+		"type": "Virus",
+		"filename": "predefined/terms_viruses.json"
+	},
+	{
+		"type": "Drug",
+		"filename": "data/terms_drugs.json"
+	},
+	{
+		"type": "Location",
+		"filename": "data/terms_locations.json"
+	},
+	{
+		"type": "Symptom",
+		"filename": "data/terms_symptoms.json"
+	},
+	{
+		"type": "Medical Specialty",
+		"filename": "data/terms_medicaldisciplines.json"
+	},
+	{
+		"type": "Gene or Protein",
+		"filename": "data/terms_genes_and_proteins.json"
+	},
+	{
+		"type": "Gene or Protein",
+		"filename": "data/terms_coronavirus_proteins.json"
+	},
+	{
+		"type": "custom",
+		"filename": "data/terms_custom.json"
+	}
+]

@@ -34,22 +34,22 @@ if __name__ == '__main__':
 
 	mycursor = mydb.cursor()
 	
-	sql = "DELETE FROM annotations"
-	print(sql)
-	mycursor.execute(sql)
+	#sql = "DELETE FROM annotations"
+	#print(sql)
+	#mycursor.execute(sql)
 	
-	sql = "DELETE FROM annotationpositions"
-	print(sql)
-	mycursor.execute(sql)
+	#sql = "DELETE FROM annotationspans"
+	#print(sql)
+	#mycursor.execute(sql)
 	
 	
-	sql = "DELETE FROM entities"
-	print(sql)
-	mycursor.execute(sql)
+	#sql = "DELETE FROM entities"
+	#print(sql)
+	#mycursor.execute(sql)
 	
-	sql = "DELETE FROM entitytypes"
-	print(sql)
-	mycursor.execute(sql)
+	#sql = "DELETE FROM entitytypes"
+	#print(sql)
+	#mycursor.execute(sql)
 
 	sql = "SELECT document_id,pubmed_id,cord_uid FROM documents"
 	print(sql)
@@ -73,11 +73,11 @@ if __name__ == '__main__':
 	entitytype_to_id = { (name,):entitytype_id for entitytype_id,name in myresult }
 	print("Found %d existing entity types" % len(entitytype_to_id))
 	
-	sql = "SELECT entity_id,name,entitytype_id FROM entities"
+	sql = "SELECT entity_id,name,entitytype_id,external_id FROM entities"
 	print(sql)
 	mycursor.execute(sql)
 	myresult = mycursor.fetchall()
-	entity_to_id = { (name,entitytype_id):entity_id for entity_id,name,entitytype_id in myresult }
+	entity_to_id = { (name,entitytype_id,external_id):entity_id for entity_id,name,entitytype_id,external_id in myresult }
 	print("Found %d existing entities" % len(entity_to_id))
 	
 	sql = "SELECT annotation_id,document_id,entity_id,is_automatic,is_positive FROM annotations"
@@ -88,12 +88,12 @@ if __name__ == '__main__':
 	print("Found %d existing annotations" % len(annotation_to_id))
 	
 	
-	sql = "SELECT annotationposition_id,annotation_id,in_title,start_pos,end_pos FROM annotationpositions"
+	sql = "SELECT annotationspan_id,annotation_id,in_title,start_pos,end_pos FROM annotationspans"
 	print(sql)
 	mycursor.execute(sql)
 	myresult = mycursor.fetchall()
-	annotationposition_to_id = { (annotation_id,in_title,start_pos,end_pos):annotationposition_id for annotationposition_id,annotation_id,in_title,start_pos,end_pos in myresult }
-	print("Found %d existing annotation positions" % len(annotationposition_to_id))
+	annotationspan_to_id = { (annotation_id,in_title,start_pos,end_pos):annotationspan_id for annotationspan_id,annotation_id,in_title,start_pos,end_pos in myresult }
+	print("Found %d existing annotation positions" % len(annotationspan_to_id))
 	
 	print()
 	
@@ -104,6 +104,8 @@ if __name__ == '__main__':
 		pubmed_id = anno['pubmed_id']
 		entity_name = anno['entity_name']
 		entity_type = anno['entity_type']
+		
+		assert 'external_id' in anno and anno['external_id'], "Found empty external_id for annotation: %s" % str(anno)
 
 		if cord_uid in cord_to_document_id:
 			document_id = cord_to_document_id[cord_uid]
@@ -180,7 +182,7 @@ if __name__ == '__main__':
 	
 	
 	position_records = []
-	insert_annotationposition_sql = "INSERT INTO annotationpositions(annotationposition_id,annotation_id,in_title,start_pos,end_pos) VALUES(%s,%s,%s,%s,%s)"
+	insert_annotationspan_sql = "INSERT INTO annotationspans(annotationspan_id,annotation_id,in_title,start_pos,end_pos) VALUES(%s,%s,%s,%s,%s)"
 	annotationsWithPositions = [ anno for anno in annotations if all( k in anno for k in ['section','start_pos','end_pos'] ) ]
 	for anno in annotationsWithPositions:
 		document_id = anno['document_id']
@@ -204,7 +206,7 @@ if __name__ == '__main__':
 		position_record = (annotation_id,in_title,start_pos,end_pos)
 		position_records.append(position_record)
 		
-	sortNewFromOldAndAddToDB(position_records, annotationposition_to_id, insert_annotationposition_sql)
+	sortNewFromOldAndAddToDB(position_records, annotationspan_to_id, insert_annotationspan_sql)
 			
 	
 	
