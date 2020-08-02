@@ -22,22 +22,6 @@ if __name__ == '__main__':
 	
 	print("Preprocessing topic annotations...")	
 	
-	annotated = [ d for d in documents if len(d['annotations']) > 0 ]
-    
-	toRemoveFromTraining = {'RemoveFromCorpus?','NotAllEnglish','NotRelevant','Skip','Maybe','FixAbstract'}
-	#toRemoveFromTraining.update({'Review','Updates','Comment/Editorial','News','Meta-analysis'})
-	#toRemoveFromTraining.update({'Updates','Comment/Editorial','News','Meta-analysis','Guidelines'})
-	#toRemoveFromTraining.update({'News'})
-
-	annotated = [ d for d in annotated if not any (f in d['annotations'] for f in toRemoveFromTraining) ]
-
-	article_types = ['Review','Comment/Editorial','Meta-analysis','News','NotRelevant','Updates','Book chapter','Talk','Erratum','Case Reports']
-
-	annotationsToStrip = ['SARS-CoV','MERS-CoV','SARS-CoV-2','None','NotMainFocus']
-	annotationsToStrip.append('Clinical Trial')
-	annotationsToStrip.extend(article_types)
-	annotationsToStrip.extend(toRemoveFromTraining)
-	
 	groupings = {}
 	groupings['Host Biology'] = 'Molecular Biology'
 	groupings['Viral Biology'] = 'Molecular Biology'
@@ -45,14 +29,25 @@ if __name__ == '__main__':
 	groupings['Drug Repurposing'] = 'Therapeutics'
 	groupings['Novel Therapeutics'] = 'Therapeutics'
 	
+	allowedTopics = {'Diagnostics', 'Disease Spread', 'Forecasting & Modelling', 'Healthcare Workers', 'Imaging', 'Immunology', 'Medical Devices', 'Model Systems & Tools', 'Molecular Biology', 'Non-human', 'Pediatrics', 'Prevalence', 'Prevention', 'Psychology', 'Risk Factors', 'Surveillance', 'Symptoms', 'Therapeutics', 'Transmission', 'Vaccines'}
+	
 	for g in groupings:
 		assert any( a == g for d in documents for a in d['annotations']), "Couldn't find any annotations for %s" % g
-	
+		
 	for d in documents:
 		d['annotated_topics'] = d['annotations']
-		d['annotated_topics'] = [ a for a in d['annotated_topics'] if not a in annotationsToStrip ]
 		d['annotated_topics'] = [ (groupings[a] if a in groupings else a) for a in d['annotated_topics'] ]
+		d['annotated_topics'] = [ a for a in d['annotated_topics'] if a in allowedTopics ]
 		d['annotated_topics'] = sorted(set(d['annotated_topics']))
+		
+	for t in allowedTopics:
+		assert any( a == t for d in documents for a in d['annotated_topics']), "Couldn't find any annotations for %s" % t
+	
+		
+	annotated = [ d for d in documents if len(d['annotated_topics']) > 0 ]
+	
+	toRemoveFromTraining = {'RemoveFromCorpus?','NotAllEnglish','NotRelevant','Skip','Maybe','FixAbstract'}
+	annotated = [ d for d in annotated if not any (f in d['annotations'] for f in toRemoveFromTraining) ]
 		
 	#print(Counter( at for d in annotated for at in d['annotated_topics'] ))
 	#assert False
@@ -90,7 +85,6 @@ if __name__ == '__main__':
 		if not 'topics' in d:
 			d['topics'] = []
 	
-	topicCounter = Counter()
 	for doc_index,label_index in zip(*probs.nonzero()):
 		d = documents[doc_index]
 		#print(doc_index,label_index)
@@ -100,7 +94,28 @@ if __name__ == '__main__':
 		else:
 			topic = encoder.classes_[label_index]
 			d['topics'].append(topic)
-			topicCounter[topic] += 1
+			
+			
+	title_keywords = ['misinformation','cord19','cord-19','cord 19','conspiracy','journalism']
+	journal_keywords = ['economic','political','water','economische','journalism','legal']
+	journal_regexes = [ re.compile(r'\b%s\b' % k,flags=re.IGNORECASE) for k in ['econ','law'] ]
+	nonmedical_journals = {'joule'}
+	# Rule-based for non-medical
+	for d in documents:
+		is_nonmedical = False
+		if any( k in d['title'].lower() for k in title_keywords ):
+			is_nonmedical = True
+		elif any( k in d['journal'].lower() for k in journal_keywords ):
+			is_nonmedical = True
+		elif any( regex.search(d['journal']) for regex in journal_regexes ):
+			is_nonmedical = True
+		elif d['journal'].lower() in nonmedical_journals:
+			is_nonmedical = True
+		elif 'Non-medical' in d['annotations']:
+			is_nonmedical = True
+			
+		if is_nonmedical:
+			d['topics'] = ['Non-medical']
 						
 	# Cleanup and note the documents that were excluded
 	for d in documents:
@@ -108,6 +123,8 @@ if __name__ == '__main__':
 		d['exclude'] = any (f in d['annotations'] for f in toRemoveFromTraining)
 		del d['annotated_topics']
 						
+						
+	topicCounter = Counter( t for d in documents for t in d['topics'] )
 	print(topicCounter)
 		
 	print("Saving JSON file...")
