@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
 	for page in pages_to_poke:
 		print("Poking %s... " % page)
-		response = requests.get('https://www.coronacentral.ai' + page )
+		response = requests.get('https://www.coronacentral.ai' + page + '?notrack' )
 		assert response.status_code == 200
 		time.sleep(5)
 	
