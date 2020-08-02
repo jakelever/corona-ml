@@ -119,6 +119,10 @@ def cleanup_documents(documents):
 				doc['publish_year'] = date.today().year
 				doc['publish_month'] = doc['publish_month'] if doc['publish_month'] == date.today().month else None
 				doc['publish_day'] = None
+				
+		# PubMed IDs must be numbers
+		if doc['pubmed_id'] and not re.match('^\d+$',doc['pubmed_id']):
+			doc['pubmed_id'] = ''
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Integrate in metadata from web scraping')
