@@ -8,7 +8,7 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 	
 	print("Fetching list of pages to poke directly from CoronaCentral")
-	response = requests.get('https://www.coronacentral.ai/')
+	response = requests.get('https://www.coronacentral.ai/?notrack')
 	
 	pages_to_poke = re.findall('"/[a-z]+"',response.text)
 	pages_to_poke = sorted(set( page.strip('"') for page in pages_to_poke))
