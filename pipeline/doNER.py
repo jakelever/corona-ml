@@ -4,6 +4,7 @@ import pickle
 import json
 from collections import defaultdict,Counter
 from scipy.spatial import distance_matrix
+import sys
 
 def doesLocationCapitalizationMatch(allEntities,e):
 	if e['type'] != 'Location':
@@ -148,6 +149,7 @@ if __name__ == '__main__':
 	
 	if not testMode:
 		print("Loading corpus...")
+		sys.stdout.flush()
 		with open(args.inParsed,'rb') as f:
 			corpus = pickle.load(f)
 	else:
@@ -166,6 +168,7 @@ if __name__ == '__main__':
 		parser.parse(corpus)
 	
 	print("Annotating corpus...")
+	sys.stdout.flush()
 	corpus.removeEntities()
 	ner = kindred.EntityRecognizer(termLookup, mergeTerms=True)
 	ner.annotate(corpus)
@@ -275,6 +278,7 @@ if __name__ == '__main__':
 	print("Found:", entity_counter)
 		
 	print("Saving JSON file...")
+	sys.stdout.flush()
 	with open(args.outJSON,'w') as f:
 		json.dump(documents,f,indent=2,sort_keys=True)
 	
