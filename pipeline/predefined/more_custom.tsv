@@ -1,14 +1,14 @@
 conflicting	Q344873	acute respiratory distress syndrome
-conflicting	Q305481	alanine aminotransferase
+conflicting	Q305481	alanine aminotransferase
 conflicting	Q288280	angiotensin-converting enzyme inhibitors|angiotensin-converting enzyme inhibitor
-conflicting	Q5338245	Edinburgh Postpartum Depression Scale
+conflicting	Q5338245	Edinburgh Postpartum Depression Scale
 conflicting	Q18354214	European Academy of Neurology
-conflicting	Q12192	pneumonia 
+conflicting	Q12192	pneumonia
 conflicting	Q183290	serine
 conflicting	Q7973735	water insecurity
 Drug	Q12187	antibiotics
 Drug	Q4860707	baricitinib
-Drug	Q4391540	"recombinant interferon ?-2b|interferon Alfa-2b, Recombinant|interferon Alfa-2b|IFN-?2b"
+Drug	Q4391540	recombinant interferon Î±-2b|interferon Alfa-2b, Recombinant|interferon Alfa-2b|IFN-Î±2b
 Drug	Q177911	steroids
 Gene or Protein	Q14875321	ACE2|angiotensin-converting enzyme 2|angiotensin-converting enzyme 2 receptor|angiotensin converting enzyme 2|angiotensin converting enzyme 2 receptor|angiotensin-converting-enzyme 2|angiotensin-converting-enzyme 2 receptor|angiotensin-converting-enzyme-2|angiotensin-converting-enzyme-2 receptor
 Medical Specialty	Q186005	physiotherapy
@@ -32,7 +32,7 @@ Risk Factor	Q490539	eosinopenia
 Risk Factor	Q1542839	glomerular filtration rate
 Risk Factor	Q1641062	hyperphosphatemia
 Risk Factor	Q95566669	hypertension
-Risk Factor	Q794086	hypokalemia 
+Risk Factor	Q794086	hypokalemia
 Risk Factor	Q1641384	hypophosphatemia
 Risk Factor	Q105688	hypoxia
 Risk Factor	Q476921	kidney failure|impaired renal function
@@ -86,7 +86,7 @@ Transmission Type	Q26305989	blood-borne transmission
 Transmission Type	Q15304512	contact transmission
 Transmission Type	Q16000070	cross-species transmission
 Transmission Type	Q871752	droplet transmission|droplets
-Transmission Type	Q2272069	fecal–oral transmission
+Transmission Type	Q2272069	fecal oral transmission
 Transmission Type	Q26305696	food-borne transmission
 Transmission Type	Q88812586	nosocomial transmission
 Transmission Type	Q12059568	placental transmission
