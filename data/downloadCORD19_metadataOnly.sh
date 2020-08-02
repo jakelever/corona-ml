@@ -24,7 +24,7 @@ fi
 file_date=`grep -oP "\d\d\d\d-\d\d-\d\d" cord19_listing.txt`
 file_url=`cat cord19_listing.txt`
 
-wget $file_url
+wget -nv $file_url
 
 tar -zxvf cord-19_$file_date.tar.gz $file_date/metadata.csv
 
