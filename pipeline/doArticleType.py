@@ -39,7 +39,7 @@ if __name__ == '__main__':
 	
 	#updates_journals = set(['MMWR. Morbidity and mortality weekly report','MMWR Morb Mortal Wkly Rep'])
 	
-	assert any( 'pub_type' in d for d in documents )
+	assert any( 'medline_pubtype' in d for d in documents )
 	
 	for d in documents:
 		confident_article_type = None
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 		if 'Skip' in d['annotations'] or 'Maybe' in d['annotations']:
 			annotated_articletypes = []
 			
-		mesh_pubtypes = d['pub_type'] if 'pub_type' in d else []
+		mesh_pubtypes = d['medline_pubtype'] if 'medline_pubtype' in d else []
 		
 		types_from_webdata = [ group for group,names in web_article_groups.items() if any ( at in names for at in d['web_articletypes'] ) ]
 		
@@ -115,7 +115,7 @@ if __name__ == '__main__':
 			
 		reference_count = int(d['reference_count']) if 'reference_count' in d and d['reference_count'] else 0
 			
-		mesh_pubtypes = d['pub_type'] if 'pub_type' in d else []
+		mesh_pubtypes = d['medline_pubtype'] if 'medline_pubtype' in d else []
 		if 'Review' in mesh_pubtypes: # If it's tagged as a Review, it's definitely not research or news, but could be more than Review
 			probs[i,class_to_column['Research']] = -1
 			probs[i,class_to_column['News']] = -1
@@ -142,3 +142,4 @@ if __name__ == '__main__':
 	print("Saving JSON file...")
 	with open(args.outJSON,'w') as f:
 		json.dump(documents,f,indent=2,sort_keys=True)
+	
