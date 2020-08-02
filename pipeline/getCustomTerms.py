@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
 	entities = defaultdict(dict)
 	print("Loading and expanding terms using Wikidata...")
-	with open(args.termsToExpand) as f:
+	with open(args.termsToExpand,encoding='utf8') as f:
 		for line in f:
 			entityType,wikidataID,terms = line.strip('\n').split('\t')
 			terms = terms.split('|')
