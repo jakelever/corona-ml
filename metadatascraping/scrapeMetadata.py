@@ -8,6 +8,7 @@ import datetime
 import urllib.parse
 import random
 from collections import OrderedDict
+import sys
 
 from bs4 import BeautifulSoup
 
@@ -112,10 +113,17 @@ if __name__ == '__main__':
 	random.seed(0)
 	random.shuffle(urls)
 	
-	urls = urls[:250]
+	#urls = urls[:250]
 	
 	start = time.time()
 	for i,url in enumerate(urls):
+
+		if (i%1000) == 0:
+			#waypointFile = "%s.%08d.json" % (args.outData.replace('.json',''),i)
+			waypointFile = "waypoint.json"
+			print("Saving waypoint (%s)..." % waypointFile)
+			with open(waypointFile,'w',encoding='utf8') as f:
+				json.dump(scraped,f)
 		
 		if (i%10) == 0:
 			now = time.time()
@@ -134,6 +142,13 @@ if __name__ == '__main__':
 			print("remaining_time = %.1fs (%s)" % (remaining_time,nice_time(remaining_time)))
 			print("total_time = %.1fs (%s)" % (total_time,nice_time(total_time)))
 			print('-'*30)
+
+			numWithMetas = len( [ v for v in scraped.values() if len(v) > 10 ] )
+
+			print("Got %d with more than 10 fields" % numWithMetas)
+			print(Counter( d['status_code'] for d in scraped.values() ))
+			print()
+			sys.stdout.flush()
 		
 		scraped[url] = scrapeURL(url)
 		#print(d['doi'], scraped[url]['status_code'], len(scraped[url]))
