@@ -8,6 +8,7 @@ import datetime
 import ray
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+import sys
 
 # From: https://www.peterbe.com/plog/best-practice-with-retries-with-requests
 def requests_retry_session(
@@ -195,6 +196,7 @@ if __name__ == '__main__':
 			print("remaining_time = %.1fs (%s)" % (remaining_time,nice_time(remaining_time)))
 			print("total_time = %.1fs (%s)" % (total_time,nice_time(total_time)))
 			print('-'*30)
+			sys.stdout.flush()
 			
 			if len(todo) == 0:
 				break
