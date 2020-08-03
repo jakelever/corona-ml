@@ -119,7 +119,7 @@ if __name__ == '__main__':
 	
 	urls = ['https://doi.org/%s' % d['doi'] for d in documents if d['doi'] ]
 	urls += [ d['url'] for d in documents if d['url'] and not 'pubmed' in d['url'] ]
-	urls += [ url in urls if not url.endswith('.pdf') ]
+	urls += [ url for url in urls if not url.endswith('.pdf') ]
 	urls = sorted(set(urls))
 	
 	print("Documents contain %d URLs" % len(urls))
