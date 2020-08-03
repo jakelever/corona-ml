@@ -100,7 +100,6 @@ if __name__ == '__main__':
 			with open(prev_file) as f:
 				prev_data = json.load(f)
 				predone_urls += list(prev_data.keys())
-				break
 		predone_urls = set(predone_urls)
 		
 		print("Saving listing file with predone")
@@ -170,7 +169,6 @@ if __name__ == '__main__':
 			sys.stdout.flush()
 		
 		scraped[url] = scrapeURL(url)
-		break
 		#print(d['doi'], scraped[url]['status_code'], len(scraped[url]))
 	
 	#print(json.dumps(scraped,indent=2,sort_keys=True))
