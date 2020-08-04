@@ -50,9 +50,10 @@ rule:
 rule:
 	input: 
 		documents=join(outDir,"alldocuments.json"),
+		spotfixes="spotFixes.json",
 		webmetadata=join(outDir,"webmetadata.json")
 	output: join(outDir,"alldocuments.webdata.json")
-	shell: "python integrateWebData.py --inJSON {input.documents} --webmetadata {input.webmetadata} --outJSON {output}"
+	shell: "python integrateWebDataAndSpotfixes.py --inJSON {input.documents} --spotfixes {input.spotfixes} --webmetadata {input.webmetadata} --outJSON {output}"
 	
 rule:
 	input: join(outDir,"alldocuments.webdata.json")
