@@ -95,7 +95,7 @@ if __name__ == '__main__':
 			predone_urls = set(predone_urls)
 	else:
 		prev_files = [ os.path.join(args.webDir,f) for f in os.listdir(args.webDir) if f.endswith('.json') ]
-		for prev_file in prev_files:
+		for prev_file in sorted(prev_files):
 			print("Loading previous file %s to check URLs" % prev_file)
 			with open(prev_file) as f:
 				prev_data = json.load(f)
@@ -129,7 +129,11 @@ if __name__ == '__main__':
 	print("Need to process %d URLs" % len(needs_doing))
 	
 	random.seed(0)
-	random.shuffle(urls)
+	random.shuffle(needs_doing)
+	
+	#with open('url_list.json','w') as f:
+	#	json.dump(needs_doing,f,indent=2,sort_keys=True)
+	#assert False
 	
 	#urls = urls[:250]
 	

@@ -8,13 +8,19 @@ from collections import defaultdict
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Collect relevant publication metadata from web scraped data')
 	parser.add_argument('--inDir',type=str,required=True,help='Directory with JSON files')
+	parser.add_argument('--prevData',type=str,required=False,help='Optional previous output, to avoid reparsing things')
 	parser.add_argument('--outData',type=str,required=True,help='JSON file with metadata for each URL')
 	args = parser.parse_args()
 	
+	prevData = {}
+	if args.prevData and os.path.isfile(args.prevData):
+		with open(args.prevData,'r',encoding='utf8') as f:
+			prevData = json.load(f)
+			
 	inFiles = sorted( inFile for inFile in os.listdir(args.inDir) if inFile.endswith('.json') )
 	
 	toStrip = {"robots","viewport","referrer","google-site-verification","sessionEvt-audSegment","sessionEvt-freeCntry","sessionEvt-idGUID","sessionEvt-individual","sessionEvt-instId","sessionEvt-instProdCode","sessionEvt-nejmSource","sessionEvt-offers","sessionEvt-prodCode","evt-ageContent","evt-artView","format-detection"}
-	  
+
 	spanClassesToCheck = ['article-header__journal']
 	  
 	all_metadata = {}
@@ -24,6 +30,10 @@ if __name__ == '__main__':
 			raw_web_data = json.load(f)
 			
 		for url,page in raw_web_data.items():
+		
+			if url in prevData:
+				all_metadata[url] = prevData[url]
+				continue
 		
 			meta_dict = defaultdict(list)
 			meta_dict['status_code'] = page['status_code']
@@ -59,7 +69,7 @@ if __name__ == '__main__':
 						
 					meta_dict[name].append(value)
 					
-				for className in spanClassesToCheck
+				for className in spanClassesToCheck:
 					for s in spans:
 						if 'class' in s.attrs and s.attrs['class'] == className:
 							meta_dict[className] = s.gettext()
