@@ -97,7 +97,7 @@ if __name__ == '__main__':
 			
 			
 	title_keywords = ['misinformation','cord19','cord-19','cord 19','conspiracy','journalism']
-	journal_keywords = ['economic','political','water','economische','journalism','legal']
+	journal_keywords = ['economic','political','water','economische','journalism','legal','finance','financ.','financial']
 	journal_regexes = [ re.compile(r'\b%s\b' % k,flags=re.IGNORECASE) for k in ['econ','law'] ]
 	nonmedical_journals = {'joule'}
 	# Rule-based for non-medical
