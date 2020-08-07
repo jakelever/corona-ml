@@ -48,8 +48,15 @@ rule:
 	shell: "python getGeonamesFromWikidata.py --outJSON {output}"
 
 rule:
-	input:
+	input: 
 		documents=join(outDir,"alldocuments.json"),
+		spotfixes="spotFixes.json",
+	output: join(outDir,"alldocuments.spotfixed.json")
+	shell: "python applySpotfixes.py --inJSON {input.documents} --spotfixes {input.spotfixes} --outJSON {output}"
+
+rule:
+	input:
+		documents=join(outDir,"alldocuments.spotfixed.json"),
 		webDir="webdata"
 	output: join(outDir,"scraped.flag")
 	shell: "python scrapeWebdata.py --documents {input.documents} --webDir {input.webDir} --outFlagFile {output}"
@@ -63,11 +70,10 @@ rule:
 	
 rule:
 	input: 
-		documents=join(outDir,"alldocuments.json"),
-		spotfixes="spotFixes.json",
+		documents=join(outDir,"alldocuments.spotfixed.json"),
 		webmetadata=join(outDir,"webmetadata.json")
 	output: join(outDir,"alldocuments.webdata.json")
-	shell: "python integrateWebDataAndSpotfixes.py --inJSON {input.documents} --spotfixes {input.spotfixes} --webmetadata {input.webmetadata} --outJSON {output}"
+	shell: "python integrateWebData.py --inJSON {input.documents} --webmetadata {input.webmetadata} --outJSON {output}"
 	
 rule:
 	input: join(outDir,"alldocuments.webdata.json")
