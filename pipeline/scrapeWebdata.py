@@ -10,6 +10,7 @@ import random
 from collections import OrderedDict
 import sys
 import os
+import re
 
 from bs4 import BeautifulSoup
 
@@ -100,6 +101,13 @@ if __name__ == '__main__':
 			with open(prev_file) as f:
 				prev_data = json.load(f)
 				predone_urls += list(prev_data.keys())
+				
+			sublisting_file = re.sub(r'\.json$','.listing.txt',prev_file)
+			if not os.path.isfile(sublisting_file):
+				with open(sublisting_file,'w') as f:
+					for url in sorted(prev_data.keys()):
+						f.write("%s\n" % url)
+			
 		predone_urls = set(predone_urls)
 		
 		print("Saving listing file with predone")
@@ -164,10 +172,6 @@ if __name__ == '__main__':
 			print("remaining_time = %.1fs (%s)" % (remaining_time,nice_time(remaining_time)))
 			print("total_time = %.1fs (%s)" % (total_time,nice_time(total_time)))
 			print('-'*30)
-
-			numWithMetas = len( [ v for v in scraped.values() if len(v) > 10 ] )
-
-			print("Got %d with more than 10 fields" % numWithMetas)
 			print(Counter( d['status_code'] for d in scraped.values() ))
 			print()
 			sys.stdout.flush()
@@ -192,6 +196,11 @@ if __name__ == '__main__':
 		print("Saving data to %s..." % outFilename)
 		with open(outFilename,'w',encoding='utf8') as f:
 			json.dump(scraped,f)
+			
+		sublisting_file = re.sub(r'\.json$','.listing.txt',outFilename)
+		with open(sublisting_file,'w') as f:
+			for url in sorted(scraped.keys()):
+				f.write("%s\n" % url)
 		
 	print("Updating listing file...")
 	all_urls = sorted(set(list(scraped.keys()) + list(predone_urls)))

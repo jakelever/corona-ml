@@ -46,6 +46,20 @@ rule:
 rule:
 	output: join(outDir,"terms_locations.json")
 	shell: "python getGeonamesFromWikidata.py --outJSON {output}"
+
+rule:
+	input:
+		documents=join(outDir,"alldocuments.json"),
+		webDir="webdata"
+	output: join(outDir,"scraped.flag")
+	shell: "python scrapeWebdata.py --documents {input.documents} --webDir {input.webDir} --outFlagFile {output}"
+	
+rule:
+	input:
+		webDir="webdata",
+		flag=join(outDir,"scraped.flag")
+	output: join(outDir,"webmetadata.json")
+	shell: "python collectMetadataFromWebData.py --inDir {input.webDir} --prevData {output}.prev --outData {output} && cp {output} {output}.prev"
 	
 rule:
 	input: 

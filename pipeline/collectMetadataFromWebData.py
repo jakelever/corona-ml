@@ -3,6 +3,8 @@ import argparse
 import json
 from bs4 import BeautifulSoup
 from collections import defaultdict
+import sys
+import re
 
 
 if __name__ == '__main__':
@@ -14,10 +16,12 @@ if __name__ == '__main__':
 	
 	prevData = {}
 	if args.prevData and os.path.isfile(args.prevData):
+		print("Loading previous data...")
+		sys.stdout.flush()
 		with open(args.prevData,'r',encoding='utf8') as f:
 			prevData = json.load(f)
 			
-	inFiles = sorted( inFile for inFile in os.listdir(args.inDir) if inFile.endswith('.json') )
+	inFiles = sorted( os.path.join(args.inDir,inFile) for inFile in os.listdir(args.inDir) if inFile.endswith('.json') )
 	
 	toStrip = {"robots","viewport","referrer","google-site-verification","sessionEvt-audSegment","sessionEvt-freeCntry","sessionEvt-idGUID","sessionEvt-individual","sessionEvt-instId","sessionEvt-instProdCode","sessionEvt-nejmSource","sessionEvt-offers","sessionEvt-prodCode","evt-ageContent","evt-artView","format-detection"}
 
@@ -25,11 +29,33 @@ if __name__ == '__main__':
 	  
 	all_metadata = {}
 	for inFile in inFiles:
-		print("Processing %s..." % inFile)
-		with open(os.path.join(args.inDir,inFile)) as f:
+		sublisting_file = re.sub(r'\.json$','.listing.txt',inFile)
+		assert os.path.isfile(sublisting_file), "Couldn't find sublisting file: %s" % sublisting_file
+		
+		print("Loading listing %s..." % sublisting_file)
+		with open(sublisting_file) as f:
+			sublisting = set([ line.strip() for line in f ])
+				
+		needs_processing = []
+		for url in sublisting:
+			if url in prevData:
+				all_metadata[url] = prevData[url]
+			else:
+				needs_processing.append(url)
+		
+		if len(needs_processing) == 0:
+			print("No extra URLs need to be processed in %s" % inFile)
+			continue
+		
+		print("Loading %s..." % inFile)
+		sys.stdout.flush()
+		with open(inFile) as f:
 			raw_web_data = json.load(f)
 			
-		for url,page in raw_web_data.items():
+		print("Processing %d URLs in %s..." % (len(needs_processing),inFile))
+		sys.stdout.flush()
+		for url in needs_processing:
+			page = raw_web_data[url]
 		
 			if url in prevData:
 				all_metadata[url] = prevData[url]
@@ -78,6 +104,7 @@ if __name__ == '__main__':
 			#break
 	
 	print("Saving data...")
+	sys.stdout.flush()
 	with open(args.outData,'w',encoding='utf8') as f:
 		json.dump(all_metadata,f)
 	

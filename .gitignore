@@ -9,6 +9,7 @@
 *.npy
 *.xlsx
 *.out
+*.flag
 
 __pycache__/
 .snakemake/
