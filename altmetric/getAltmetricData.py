@@ -83,6 +83,7 @@ def get_altmetric_for_doc(apiKey,d):
 	cord_uid = d['cord_uid']
 	pubmed_id = d['pubmed_id']
 	doi = d['doi']
+	arxiv_id = d['arxiv_id'] if 'arxiv_id' in d else None
 	url = d['url']
 	
 	if doi:
@@ -91,6 +92,9 @@ def get_altmetric_for_doc(apiKey,d):
 	elif pubmed_id:
 		altmetric_url = "https://api.altmetric.com/v1/pmid/%s?key=%s" % (pubmed_id,apiKey)
 		method = 'pmid'
+	elif arxiv_id:
+		altmetric_url = "https://api.altmetric.com/v1/uri/%s?key=%s" % (arxiv_id,apiKey)
+		method = 'arxiv'
 	elif url:
 		altmetric_url = "https://api.altmetric.com/v1/uri/%s?key=%s" % (urllib.parse.quote(url),apiKey)
 		method = 'uri'
@@ -100,7 +104,7 @@ def get_altmetric_for_doc(apiKey,d):
 		
 	s = requests.Session()
 		
-	doc_data = {'cord_uid':cord_uid,'pubmed_id':pubmed_id,'doi':doi, 'altmetric':{'response':False}}
+	doc_data = {'cord_uid':cord_uid,'pubmed_id':pubmed_id,'doi':doi,'arxiv_id':arxiv_id,'altmetric':{'response':False}}
 	if altmetric_url:
 		response = requests_retry_session(session=s).get(altmetric_url)
 		if response.text == 'Not Found':
