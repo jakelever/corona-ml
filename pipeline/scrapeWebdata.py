@@ -91,6 +91,7 @@ if __name__ == '__main__':
 	predone_urls = []
 	if os.path.isfile(listing_file):
 		print("Found listing file...")
+		sys.stdout.flush()
 		with open(listing_file) as f:
 			predone_urls = [ line.strip() for line in f ]
 			predone_urls = set(predone_urls)
@@ -98,6 +99,7 @@ if __name__ == '__main__':
 		prev_files = [ os.path.join(args.webDir,f) for f in os.listdir(args.webDir) if f.endswith('.json') ]
 		for prev_file in sorted(prev_files):
 			print("Loading previous file %s to check URLs" % prev_file)
+			sys.stdout.flush()
 			with open(prev_file) as f:
 				prev_data = json.load(f)
 				predone_urls += list(prev_data.keys())
@@ -111,6 +113,7 @@ if __name__ == '__main__':
 		predone_urls = set(predone_urls)
 		
 		print("Saving listing file with predone")
+		sys.stdout.flush()
 		with open(listing_file,'w') as f:
 			for url in sorted(predone_urls):
 				f.write("%s\n" % url)
@@ -135,6 +138,7 @@ if __name__ == '__main__':
 	needs_doing = [ url for url in urls if not url in predone_urls ]
 	
 	print("Need to process %d URLs" % len(needs_doing))
+	sys.stdout.flush()
 	
 	random.seed(0)
 	random.shuffle(needs_doing)
