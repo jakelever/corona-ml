@@ -93,7 +93,7 @@ def get_altmetric_for_doc(apiKey,d):
 		altmetric_url = "https://api.altmetric.com/v1/pmid/%s?key=%s" % (pubmed_id,apiKey)
 		method = 'pmid'
 	elif arxiv_id:
-		altmetric_url = "https://api.altmetric.com/v1/uri/%s?key=%s" % (arxiv_id,apiKey)
+		altmetric_url = "https://api.altmetric.com/v1/arxiv/%s?key=%s" % (arxiv_id,apiKey)
 		method = 'arxiv'
 	elif url:
 		altmetric_url = "https://api.altmetric.com/v1/uri/%s?key=%s" % (urllib.parse.quote(url),apiKey)
@@ -111,6 +111,7 @@ def get_altmetric_for_doc(apiKey,d):
 			#counts['not found'] += 1
 			pass
 		else:
+			assert response.status_code == 200
 			response_json = json.loads(response.text)
 			response_json['response'] = True
 			doc_data['altmetric'] = response_json
