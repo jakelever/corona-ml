@@ -35,6 +35,9 @@ if __name__ == '__main__':
 	web_article_groups['Book chapter'] = "chapter".split(',')
 	web_article_groups['Case Reports'] = "case report,case-report,clinical case report".split(',')
 	
+	web_article_groups_by_journal = defaultdict(dict)
+	web_article_groups_by_journal['Science']['Comment/Editorial'] = [ 'letter' ]
+	
 	selected_annotations = ['Review','Updates','Comment/Editorial','Meta-analysis','News','NotRelevant','Research','Book chapter','Erratum','Case Reports']
 	
 	#updates_journals = set(['MMWR. Morbidity and mortality weekly report','MMWR Morb Mortal Wkly Rep'])
@@ -56,6 +59,7 @@ if __name__ == '__main__':
 		mesh_pubtypes = d['medline_pubtype'] if 'medline_pubtype' in d else []
 		
 		types_from_webdata = [ group for group,names in web_article_groups.items() if any ( at in names for at in d['web_articletypes'] ) ]
+		types_from_webdata += [ group for group,names in web_article_groups_by_journal[d['journal']].items() if any ( at in names for at in d['web_articletypes'] ) ]
 		
 		
 		#if d['journal'] in updates_journals:
@@ -134,10 +138,6 @@ if __name__ == '__main__':
 		d['article_type'] = predicted_articletype
 			
 	print(Counter( d['article_type'] for d in documents))
-	
-	print("Cleaning up...")
-	for d in documents:
-		del d['web_articletypes']
 			
 	print("Saving JSON file...")
 	with open(args.outJSON,'w') as f:

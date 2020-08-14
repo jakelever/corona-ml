@@ -28,6 +28,11 @@ if __name__ == '__main__':
 	
 	filtered = [ d for d in filtered if not ('NotRelevant' in d['annotations'] or 'RemoveFromCorpus?' in d['annotations']) ]
 	print("%d documents after removing that are manually flagged for removal" % len(filtered))
+	
+	print("Cleaning up...")
+	for d in documents:
+		if 'web_articletypes' in d:
+			del d['web_articletypes']
 			
 	print("Saving JSON file...")
 	with open(args.outJSON,'w') as f:
