@@ -25,7 +25,7 @@ if __name__ == '__main__':
 	
 	toStrip = {"robots","viewport","referrer","google-site-verification","sessionEvt-audSegment","sessionEvt-freeCntry","sessionEvt-idGUID","sessionEvt-individual","sessionEvt-instId","sessionEvt-instProdCode","sessionEvt-nejmSource","sessionEvt-offers","sessionEvt-prodCode","evt-ageContent","evt-artView","format-detection"}
 
-	spanClassesToCheck = ['article-header__journal']
+	spanClassesToCheck = ['article-header__journal','primary-heading']
 	  
 	all_metadata = {}
 	for inFile in inFiles:

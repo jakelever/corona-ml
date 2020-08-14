@@ -100,11 +100,11 @@ if __name__ == '__main__':
 	
 	print("Extracting article type metadata...")
 	
-	articletype_fields = ['DC.Subject', 'DC.Type.articleType', 'DC.subject', 'WT.cg_s', 'WT.z_cg_type', 'WT.z_primary_atype', 'article:section', 'articleType', 'category', 'citation_article_type', 'citation_categories', 'citation_keywords', 'citation_section', 'dc.Type', 'dc.type', 'prism.section', 'wkhealth_toc_section', 'wkhealth_toc_sub_section','article-header__journal']
+	articletype_fields = ['DC.Subject', 'DC.Type.articleType', 'DC.subject', 'WT.cg_s', 'WT.z_cg_type', 'WT.z_primary_atype', 'article:section', 'articleType', 'category', 'citation_article_type', 'citation_categories', 'citation_keywords', 'citation_section', 'dc.Type', 'dc.type', 'prism.section', 'wkhealth_toc_section', 'wkhealth_toc_sub_section','article-header__journal','primary-heading']
 	
 	for d in documents:
 		wm_articletypes = sum([ d['webmetadata'][f] for f in articletype_fields ], [])
-		wm_articletypes = sorted(set( at.lower() for at in wm_articletypes if len(at) < 50 ))
+		wm_articletypes = sorted(set( at.strip().lower() for at in wm_articletypes if len(at) < 50 ))
 		
 		d['web_articletypes'] = wm_articletypes
 		
