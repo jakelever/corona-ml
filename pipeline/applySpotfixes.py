@@ -19,8 +19,20 @@ if __name__ == '__main__':
 		spotfixes = json.load(f)
 		
 	for spotfix in spotfixes:
-		field,fix_from,fix_to = spotfix['field'],spotfix['from'],spotfix['to']
-		search = [ d for d in documents if d[field] == fix_from ]
+		identifier_field,identifier_value = None,None
+		
+		if 'doi' in spotfix:
+			identifier_field = 'doi'
+		elif 'pubmed_id' in spotfix:
+			identifier_field = 'pubmed_id'
+		elif 'cord_uid' in spotfix:
+			identifier_field = 'cord_uid'
+		
+		assert identifier_field is not None, "Need doi, pubmed_id or cord_uid to identify spotfix"
+		identifier_value = spotfix[identifier_field]
+		
+		field,fix_to = spotfix['field'],spotfix['to']
+		search = [ d for d in documents if d[identifier_field] == identifier_value ]
 		assert len(search) > 0, "Couldn't find documents for spotfix: %s" % str(spotfix)
 		for d in search:
 			d[field] = fix_to
