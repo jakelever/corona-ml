@@ -97,16 +97,6 @@ if __name__ == '__main__':
 			del d['wm_journal']
 		elif d['journal'] and d['journal'].lower() in journal_mapping:
 			d['journal'] = journal_mapping[d['journal'].lower()]
-	
-	print("Extracting article type metadata...")
-	
-	articletype_fields = ['DC.Subject', 'DC.Type.articleType', 'DC.subject', 'WT.cg_s', 'WT.z_cg_type', 'WT.z_primary_atype', 'article:section', 'articleType', 'category', 'citation_article_type', 'citation_categories', 'citation_keywords', 'citation_section', 'dc.Type', 'dc.type', 'prism.section', 'wkhealth_toc_section', 'wkhealth_toc_sub_section','article-header__journal','primary-heading']
-	
-	for d in documents:
-		wm_articletypes = sum([ d['webmetadata'][f] for f in articletype_fields ], [])
-		wm_articletypes = sorted(set( at.strip().lower() for at in wm_articletypes if len(at) < 50 ))
-		
-		d['web_articletypes'] = wm_articletypes
 		
 	print("Finding abstracts for documents without abstracts...")
 	
@@ -127,9 +117,6 @@ if __name__ == '__main__':
 				added_abstract_count += 1
 				
 	print("Added %d new abstracts using web data" % added_abstract_count)
-		
-	for d in documents:
-		del d['webmetadata']
 		
 	print("Saving data...")
 	with open(args.outJSON,'w',encoding='utf8') as f:

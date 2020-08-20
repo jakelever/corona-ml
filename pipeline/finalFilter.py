@@ -34,6 +34,9 @@ if __name__ == '__main__':
 		if 'web_articletypes' in d:
 			del d['web_articletypes']
 			
+		if 'webmetadata' in d:
+			del d['webmetadata']
+			
 	print("Saving JSON file...")
 	with open(args.outJSON,'w') as f:
 		json.dump(filtered,f,indent=2,sort_keys=True)

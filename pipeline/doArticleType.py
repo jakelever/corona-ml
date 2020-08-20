@@ -18,6 +18,18 @@ if __name__ == '__main__':
 	
 	with open(args.inJSON) as f:
 		documents = json.load(f)
+		
+	print("Extracting article type metadata from web data...")
+	
+	articletype_fields = ['DC.Subject', 'DC.Type.articleType', 'DC.subject', 'WT.cg_s', 'WT.z_cg_type', 'WT.z_primary_atype', 'article:section', 'articleType', 'category', 'citation_article_type', 'citation_categories', 'citation_keywords', 'citation_section', 'dc.Type', 'dc.type', 'prism.section', 'wkhealth_toc_section', 'wkhealth_toc_sub_section','article-header__journal','primary-heading']
+	
+	for d in documents:
+		document_webmetadata = defaultdict(list,d['webmetadata'])
+		
+		wm_articletypes = sum([ document_webmetadata[f] for f in articletype_fields ], [])
+		wm_articletypes = sorted(set( at.strip().lower() for at in wm_articletypes if len(at) < 50 ))
+		
+		d['web_articletypes'] = wm_articletypes
 	
 	#articleTypes = Counter( at for d in documents for at in d['web_articletypes'] )
 	#articleTypes = [ (count,at) for at,count in articleTypes.items() ]
