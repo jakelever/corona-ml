@@ -8,5 +8,10 @@
 		"doi": "10.26434/chemrxiv.11860011.v2",
 		"field": "abstract",
 		"to": "The cases of 2019 novel coronavirus (SARS-CoV-2) infection have been continuously increasing ever since its outbreak in China last December. Currently, there are no approved drugs to treat the infection. In this scenario, there is a need to utilize the existing repertoire of FDA approved drugs to treat the disease. The rational selection of these drugs could be made by testing their ability to inhibit any SARS-CoV-2 proteins essential for viral life-cycle. We chose one such crucial viral protein, the papain-like protease (PLpro), to screen the FDA approved drugs in silico. The homology model of the protease was built based on the SARS-coronavirus PLpro structure, and the drugs were docked in S3/S4 pockets of the active site of the enzyme. In our docking studies, sixteen FDA approved drugs, including chloroquine and formoterol, was found to bind the target enzyme with significant affinity and good geometry, suggesting their potential to be utilized against the virus."
+	},
+	{
+		"doi": "10.1101/2020.07.01.20139857",
+		"field": "url",
+		"to": "https://www.medrxiv.org/content/10.1101/2020.07.01.20139857v1"
 	}
 ]

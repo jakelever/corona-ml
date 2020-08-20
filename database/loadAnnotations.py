@@ -51,7 +51,7 @@ if __name__ == '__main__':
 	#print(sql)
 	#mycursor.execute(sql)
 
-	sql = "SELECT document_id,pubmed_id,cord_uid FROM documents"
+	sql = "SELECT document_id,pubmed_id,cord_uid,doi FROM documents"
 	print(sql)
 	mycursor.execute(sql)
 	myresult = mycursor.fetchall()
@@ -59,11 +59,13 @@ if __name__ == '__main__':
 	pubmed_to_document_id = {}
 	cord_to_document_id = {}
 
-	pubmed_to_document_id = {str(pubmed_id):document_id for document_id,pubmed_id,cord_ui in myresult if pubmed_id }
-	cord_to_document_id = {cord_ui:document_id for document_id,pubmed_id,cord_ui in myresult if cord_ui }
+	pubmed_to_document_id = {str(pubmed_id):document_id for document_id,pubmed_id,cord_ui,doi in myresult if pubmed_id }
+	cord_to_document_id = {cord_ui:document_id for document_id,pubmed_id,cord_ui,doi in myresult if cord_ui }
+	doi_to_document_id = {doi:document_id for document_id,pubmed_id,cord_ui,doi in myresult if doi }
 
 	print("Found %d Pubmed mappings" % len(pubmed_to_document_id))
 	print("Found %d CORD mappings" % len(cord_to_document_id))
+	print("Found %d DOI mappings" % len(doi_to_document_id))
 	print()
 		
 	sql = "SELECT entitytype_id,name FROM entitytypes"
@@ -102,15 +104,19 @@ if __name__ == '__main__':
 	for anno in annotations:
 		cord_uid = anno['cord_uid']
 		pubmed_id = anno['pubmed_id']
+		doi = anno['doi']
+		
 		entity_name = anno['entity_name']
 		entity_type = anno['entity_type']
 		
 		assert 'external_id' in anno and anno['external_id'], "Found empty external_id for annotation: %s" % str(anno)
 
-		if cord_uid in cord_to_document_id:
+		if cord_uid and cord_uid in cord_to_document_id:
 			document_id = cord_to_document_id[cord_uid]
-		elif pubmed_id in pubmed_to_document_id:
+		elif pubmed_id and pubmed_id in pubmed_to_document_id:
 			document_id = pubmed_to_document_id[pubmed_id]
+		elif doi and doi in doi_to_document_id:
+			document_id = doi_to_document_id[doi]
 		else:
 			continue
 			#raise RuntimeError("Couldn't find matching document for annotation with cord_uid=%s and pubmed_id=%s" % (cord_uid,pubmed_id))

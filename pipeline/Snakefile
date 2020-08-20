@@ -50,9 +50,10 @@ rule:
 rule:
 	input: 
 		documents=join(outDir,"alldocuments.json"),
+		additions="additions.json",
 		spotfixes="spotFixes.json",
 	output: join(outDir,"alldocuments.spotfixed.json")
-	shell: "python applySpotfixes.py --inJSON {input.documents} --spotfixes {input.spotfixes} --outJSON {output}"
+	shell: "python applySpotfixesAndAddCustomDocs.py --inJSON {input.documents} --additions {input.additions} --spotfixes {input.spotfixes} --outJSON {output}"
 
 rule:
 	input:

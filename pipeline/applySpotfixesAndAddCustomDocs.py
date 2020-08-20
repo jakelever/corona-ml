@@ -6,6 +6,7 @@ import re
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Apply some minor spotfixes to go in at the beginning of the pipeline')
 	parser.add_argument('--inJSON',required=True,type=str,help='Input JSON documents')
+	parser.add_argument('--additions',required=True,type=str,help='Custom additional documents to add to corpus')
 	parser.add_argument('--spotfixes',required=True,type=str,help='List of mini fixes to corpus')
 	parser.add_argument('--outJSON',required=True,type=str,help='Output JSON with added metadata')
 	args = parser.parse_args()
@@ -13,7 +14,16 @@ if __name__ == '__main__':
 	print("Loading documents...")
 	with open(args.inJSON) as f:
 		documents = json.load(f)
-		
+	
+	required_fields = ['cord_uid', 'pubmed_id', 'doi', 'pmcid', 'title', 'abstract', 'publish_day', 'publish_month', 'publish_year', 'authors']
+	print("Loading additions...")
+	with open(args.additions) as f:
+		additions = json.load(f)
+		for additional_document in additions:
+			missing_fields = [ f for f in required_fields if not f in additional_document ]
+			assert len(missing_fields) == 0, "Additional document is lacking fields: %s" % missing_fields
+		documents += additions
+	
 	print("Applying spot fixes...")
 	with open(args.spotfixes) as f:
 		spotfixes = json.load(f)

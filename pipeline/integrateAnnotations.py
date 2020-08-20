@@ -24,7 +24,12 @@ if __name__ == '__main__':
 	for doc in documents:
 		cord_uid = doc['cord_uid']
 		pubmed_id = doc['pubmed_id']
-		doc['annotations'] = set()
+		
+		if 'annotations' in doc:
+			doc['annotations'] = set(doc['annotations'])
+		else:
+			doc['annotations'] = set()
+			
 		doc['annotations'].update(annotations_by_cord[cord_uid])
 		doc['annotations'].update(annotations_by_pubmed_id[pubmed_id])
 			

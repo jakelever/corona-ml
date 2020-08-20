@@ -211,4 +211,4 @@ if __name__ == '__main__':
 		
 	print("Saving data...")
 	with open(args.outData,'w',encoding='utf8') as f:
-		json.dump(output,f)
+		json.dump(output,f,indent=2,sort_keys=True)

@@ -26,18 +26,21 @@ if __name__ == '__main__':
 			
 		cord_uid = d['cord_uid']
 		pubmed_id = d['pubmed_id']
+		doi = d['doi']
+		
+		assert cord_uid or pubmed_id or doi
 		
 		for topic in d['topics']:
-			aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':'topic', 'entity_name':topic, 'external_id':'topic_%s' % topic, 'is_positive':True }
+			aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'entity_type':'topic', 'entity_name':topic, 'external_id':'topic_%s' % topic, 'is_positive':True }
 			autoannotations.append(aa)
 			
 		#uniqueEntities = sorted(set([ (entity['id'],entity['type'],entity['normalized']) for entity in d['entities'] ]))
 		for entity in d['entities']:
 			#aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':entityType, 'entity_name':entityNormalized, 'external_id':entityID, 'is_positive':True}
-			aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':entity['type'], 'entity_name':entity['normalized'], 'external_id':entity['id'], 'start_pos':entity['start'], 'end_pos':entity['end'], 'section':entity['section'] }
+			aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'entity_type':entity['type'], 'entity_name':entity['normalized'], 'external_id':entity['id'], 'start_pos':entity['start'], 'end_pos':entity['end'], 'section':entity['section'] }
 			autoannotations.append(aa)
 			
-		aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':'articletype', 'entity_name':d['article_type'],'external_id':'pubtype_%s' % d['article_type'] }
+		aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'entity_type':'articletype', 'entity_name':d['article_type'],'external_id':'pubtype_%s' % d['article_type'] }
 		autoannotations.append(aa)
 		
 	#output = { 'annotations':autoannotations, 'locations':locations }
