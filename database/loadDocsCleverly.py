@@ -58,6 +58,7 @@ if __name__ == '__main__':
 	columns['pubmed_id'] = 'INT NULL'
 	columns['cord_uid'] = 'VARCHAR(255) NULL'
 	columns['doi'] = 'VARCHAR(255) NULL'
+	columns['pmcid'] = 'INT NULL'
 	columns['publish_year'] = 'INT'
 	columns['publish_month'] = 'INT'
 	columns['publish_day'] = 'INT'
@@ -91,6 +92,8 @@ if __name__ == '__main__':
 			doc['pubmed_id'] = None
 		if not doc['cord_uid']:
 			doc['cord_uid'] = None
+		if not doc['pmcid']:
+			doc['pmcid'] = None
 	
 		#if doc['abstract'].lower().startswith('abstract'):
 		#	doc['abstract'] = doc['abstract'][len('abstract'):].strip()
