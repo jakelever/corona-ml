@@ -79,8 +79,12 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Prepare data for active learning')
 	parser.add_argument('--db',required=True,type=str,help='JSON with database settings')
 	parser.add_argument('--inDocs',required=True,type=str,help='Input file with all the documents')
-	parser.add_argument('--doi',required=True,type=str,help='DOI of document to add')
+	parser.add_argument('--doi',required=False,type=str,help='DOI of document to add')
+	parser.add_argument('--cord_uid',required=False,type=str,help='Cord UID of document to add')
+	parser.add_argument('--pubmed_id',required=False,type=str,help='Pubmed ID of document to add')
 	args = parser.parse_args()
+	
+	assert args.doi or args.cord_uid or args.pubmed_id
 	
 	task_id = 2
 	dochash = 'n/a'
@@ -93,7 +97,13 @@ if __name__ == '__main__':
 		documents = json.load(f)
 	load_document_id_mapping(mydb, documents)
 	
-	search = [ d for d in documents if d['doi'] == args.doi ]
+	if args.doi:
+		search = [ d for d in documents if d['doi'] == args.doi ]
+	elif args.cord_uid:
+		search = [ d for d in documents if d['cord_uid'] == args.cord_uid ]
+	elif args.pubmed_id:
+		search = [ d for d in documents if d['pubmed_id'] == args.pubmed_id ]
+		
 	assert len(search) == 1
 	doc_to_annotate = search[0]
 	assert not 'document_id' in doc_to_annotate, 'Document already in database'
