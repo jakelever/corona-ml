@@ -23,10 +23,10 @@ if __name__ == '__main__':
 			
 	inFiles = sorted( os.path.join(args.inDir,inFile) for inFile in os.listdir(args.inDir) if inFile.endswith('.json') )
 	
-	toStrip = {"robots","viewport","referrer","google-site-verification","sessionEvt-audSegment","sessionEvt-freeCntry","sessionEvt-idGUID","sessionEvt-individual","sessionEvt-instId","sessionEvt-instProdCode","sessionEvt-nejmSource","sessionEvt-offers","sessionEvt-prodCode","evt-ageContent","evt-artView","format-detection"}
+	toStrip = {'status_code','url_history','resolved_url',"robots","viewport","referrer","google-site-verification","sessionEvt-audSegment","sessionEvt-freeCntry","sessionEvt-idGUID","sessionEvt-individual","sessionEvt-instId","sessionEvt-instProdCode","sessionEvt-nejmSource","sessionEvt-offers","sessionEvt-prodCode","evt-ageContent","evt-artView","format-detection"}
 
-	spanClassesToCheck = ['article-header__journal','primary-heading']
-	  
+	spanClassesToCheck = set(['article-header__journal','primary-heading','highwire-article-collection-term'])
+	
 	all_metadata = {}
 	for inFile in inFiles:
 		sublisting_file = re.sub(r'\.json$','.listing.txt',inFile)
@@ -71,37 +71,43 @@ if __name__ == '__main__':
 				
 				soup = BeautifulSoup(page['content'], 'html.parser')
 				metas = soup.find_all('meta')
-				metas = [ m for m in metas if 'name' in m.attrs and 'content' in m.attrs ]
-				
-				for m in metas:
-					name = m.attrs['name']
-					value = m.attrs['content']
-					
-					if name in toStrip:
-						continue
-					
-					assert not name in ['status_code','url_history','resolved_url']
-						
-					meta_dict[name].append(value)
-					
-				# JAMA (and maybe others?) store some data in span elements too
 				spans = soup.find_all('span')
-				spans = [ s for s in spans if 'data-attribute' in s.attrs and 'data-value' in s.attrs ]
-				for s in spans:            
-					name = s.attrs['data-attribute']
-					value = s.attrs['data-value']
-										
-					assert not name in ['status_code','url_history','resolved_url']
-						
-					meta_dict[name].append(value)
+				
+				# Get the metadata tags (with name and content attributes)
+				metadata = [ (m.attrs['name'],m.attrs['content']) for m in metas if 'name' in m.attrs and 'content' in m.attrs ]
+				
+				# Some journals have span tags with data-attribute and data-value tags. Get those
+				data_spans = [ (s.attrs['data-attribute'],s.attrs['data-value']) for s in spans if 'data-attribute' in s.attrs and 'data-value' in s.attrs ]
 					
-				for className in spanClassesToCheck:
-					for s in spans:
-						if 'class' in s.attrs and s.attrs['class'] == className:
-							meta_dict[className] = s.gettext()
+				# Also get a custom set of span tags with a specific class and get the text contents
+				spans_with_class = [ s for s in spans if 'class' in s.attrs and s.attrs['class'] ]
+				selected_spans = [ (class_name,s.get_text()) for s in spans_with_class for class_name in spanClassesToCheck if class_name in s.attrs['class'] ]
+				
+				#if selected_spans:
+				#	print(selected_spans)
+				#	assert False
+				
+				#for s in spans_with_class:
+					#if 'class' in s.attrs:
+					#	assert isinstance(s.attrs['class'],list)
+					#print(s.attrs['class'])
+					#print(dir(s))
+					#assert False
+				
+				combined_data = metadata + data_spans + selected_spans
+				
+				# Filter for strings as name and value and remove any ones from the toStrip list
+				combined_data = [ (name,value) for name,value in combined_data if isinstance(name,str) and isinstance(value,str) ]
+				combined_data = [ (name,value) for name,value in combined_data if not name in toStrip ]
+				combined_data = sorted(set(combined_data))
+				
+				for name,value in combined_data:
+					meta_dict[name].append(value)
+				# 
 				
 			all_metadata[url] = dict(meta_dict)
 			#break
+		#assert False
 	
 	print("Saving data...")
 	sys.stdout.flush()
