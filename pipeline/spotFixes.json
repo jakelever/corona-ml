@@ -13,5 +13,10 @@
 		"doi": "10.1101/2020.07.01.20139857",
 		"field": "url",
 		"to": "https://www.medrxiv.org/content/10.1101/2020.07.01.20139857v1"
+	},
+	{
+		"doi": "10.1016/j.frl.2020.101682",
+		"field": "title",
+		"to": "Systemic risk: The impact of COVID-19"
 	}
 ]
