@@ -17,6 +17,11 @@ def cleanup_documents(documents):
 
 	title_prefixes_to_trim = ['full-length title', 'infographic title', 'complete title', 'original title', 'title']
 	abstract_prefixes_to_trim = ['accepted 7 july 2020abstract', 'physicians abstracts', 'unlabelled abstract', 'structured abstract', 'original abstracts', 'summary/abstract', 'original abstract', 'abstracts', ']abstract', 'abstract']
+	
+	copyright_phrases = [r'This article is protected by copyright\.?', r'All rights reserved\.?',r'Copyright (\u00a9 )?\d+.*',r'\(?\s*Copyright applies to all Abstracts\s*\)?', r'Copyright of .* is the property of .*', r'\[?\s*copyright information to be updated in production process\s*\]?']
+	copyright_regexes = [ re.compile(phrase, re.IGNORECASE) for phrase in copyright_phrases]
+	
+	editornameRegex = re.compile('Communicated by Ramaswamy (H\. )?Sarma\.?',re.IGNORECASE)
 
 	preprintRemapping = {}
 	preprintRemapping['medrxiv'] = 'medRxiv'
@@ -48,6 +53,9 @@ def cleanup_documents(documents):
 		abstract_no_punct = remove_punctuation(doc['abstract'].lower())
 		if abstract_no_punct in empty_abstracts:
 			doc['abstract'] = ''
+			        
+		# Remove ()s from the end of title
+		doc['title'] = re.sub("(\(\))+$","",doc['title'])
 
 		for prefix in title_prefixes_to_trim:
 			if doc['title'].lower().startswith(prefix):
@@ -62,6 +70,11 @@ def cleanup_documents(documents):
 		# Cleanup some messy section headings in the abstract where there is
 		# no space after a colon.
 		doc['abstract'] = colonWithNoSpaceRegex.sub('\\1: \\2',doc['abstract'])
+		
+		# Removed copyright notices and editor names from bottom of abstracts (that shouldn't be there)
+		for regex in copyright_regexes:
+			doc['abstract'] = regex.sub('',doc['abstract']).strip()
+		doc['abstract'] = editornameRegex.sub('',doc['abstract'])
 
 		if 'source_x' in doc and doc['source_x'].lower() in ['biorxiv','medrxiv','arxiv']:
 			doc['journal'] = doc['source_x']
