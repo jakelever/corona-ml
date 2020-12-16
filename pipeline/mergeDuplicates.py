@@ -162,7 +162,7 @@ if __name__ == '__main__':
 	
 	doiRegex = re.compile(r'^[0-9\.]+\/.+[^\/]$')
 	for d in merged_documents:
-		assert d['doi'] or d['pubmed_id'] or d['cord_uid'], "Found document that doesn't have a DOI, Pubmed ID or CORD UID"
+		assert d['doi'] or d['pubmed_id'] or d['cord_uid'] or d['url'], "Found document that doesn't have a DOI, Pubmed ID, CORD UID or URL"
 		
 		if d['doi']:
 			assert doiRegex.match(d['doi']), "Found unexpected DOI format: %s" % d['doi']
