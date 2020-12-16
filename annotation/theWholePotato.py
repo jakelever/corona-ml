@@ -235,7 +235,7 @@ def get_y_and_undecided_docs(annotated,challenge_docs,posThreshold,negThreshold)
 	
 def vectorizer_docs(annotated, undecided_docs):
 	pipeline = Pipeline([
-				("vectorizer", DocumentVectorizer(features=['titleabstract'])),
+				("vectorizer", DocumentVectorizer(features=['title'])),
 				("dimreducer", TruncatedSVD(n_components=64,random_state=0))
 	])
 
@@ -331,7 +331,7 @@ if __name__ == '__main__':
 	parser.add_argument('--posThreshold',required=False,default=0.7,type=float,help='Threshold above which is a confident positive (default=0.75)')
 	args = parser.parse_args()
 	
-	assert args.mode in ['bestoutcome','popular','focus']
+	assert args.mode in ['bestoutcome','popular','confident']
 	
 	task_id = 2
 	
@@ -384,13 +384,7 @@ if __name__ == '__main__':
 			dochash = hash(X_undecided.data.tobytes())
 			current_coverage = round(1 - (len(undecided_docs) / len(challenge_docs)),3)
 			print("Selected document (index=%d) with optimal outcome of %d" % (best_doc_index,best_doc_change))
-		elif args.mode == 'popular':
-			doc_to_annotate = sorted([ d for d in challenge_docs if 'altmetric' in d ],key=lambda x : x['altmetric']['score'])[-1]
-			dochash = "popular"
-			current_coverage = 0
-			print("Selected document with score of %d" % (doc_to_annotate['altmetric']['score']))
-		elif args.mode == 'focus':
-			assert args.focus_label, "Must provide focus_label when using --mode focus"
+		elif args.mode == 'popular' and args.focus_label:
 			scores, labels = get_multiscores_with_pipeline(annotated, challenge_docs)
 			assert args.focus_label in labels, "Focus label is not in labels: %s" % str(labels)
 			
@@ -403,6 +397,29 @@ if __name__ == '__main__':
 			dochash = "focus_%s" % args.focus_label
 			current_coverage = 0
 			print("Selected document with prediction score of %.3f and Altmetric score of %d" % (pred_score,doc_to_annotate['altmetric']['score']))
+		elif args.mode == 'popular' and not args.focus_label:
+			doc_to_annotate = sorted([ d for d in challenge_docs if 'altmetric' in d ],key=lambda x : x['altmetric']['score'])[-1]
+			dochash = "popular"
+			current_coverage = 0
+			print("Selected document with score of %d" % (doc_to_annotate['altmetric']['score']))
+		elif args.mode == 'confident' and args.focus_label:
+			scores, labels = get_multiscores_with_pipeline(annotated, challenge_docs)
+			assert args.focus_label in labels, "Focus label is not in labels: %s" % str(labels)
+			
+			label_index = labels.index(args.focus_label)
+			labeled_docs = [ (score,doc) for doc,score in zip(challenge_docs, scores[:,label_index]) ]
+			
+			# Sort by the score only
+			labeled_docs = sorted(labeled_docs, key=lambda x: x[0])
+			
+			pred_score, doc_to_annotate = labeled_docs[-1]
+			dochash = "focus_%s" % args.focus_label
+			current_coverage = 0
+			print("Selected document with prediction score of %.3f and Altmetric score of %d" % (pred_score,doc_to_annotate['altmetric']['score']))
+		elif args.mode == 'confident' and not args.focus_label:
+			raise NotImplementedError("--confident without --focus_label is not implemented")
+		
+		
 			
 			#assert False
 			
