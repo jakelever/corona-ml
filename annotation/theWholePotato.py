@@ -108,7 +108,7 @@ def associate_altmetric_data_with_documents(documents, altmetric_filename, filte
 	with open(altmetric_filename) as f:
 		altmetric_data = json.load(f)
 	
-	by_cord, by_pubmed, by_doi = {},{},{}
+	by_cord, by_pubmed, by_doi, by_url = {},{},{},{}
 	for ad in altmetric_data:
 		if ad['cord_uid']:
 			by_cord[ad['cord_uid']] = ad['altmetric']
@@ -116,6 +116,8 @@ def associate_altmetric_data_with_documents(documents, altmetric_filename, filte
 			by_pubmed[ad['pubmed_id']] = ad['altmetric']
 		if ad['doi']:
 			by_doi[ad['doi']] = ad['altmetric']
+		if ad['url']:
+			by_url[ad['url']] = ad['altmetric']
 	
 	for d in documents:
 		altmetric_for_doc = None
@@ -125,6 +127,8 @@ def associate_altmetric_data_with_documents(documents, altmetric_filename, filte
 			altmetric_for_doc = by_pubmed[d['pubmed_id']]
 		elif d['doi'] and d['doi'] in by_doi:
 			altmetric_for_doc = by_doi[d['doi']]
+		elif d['url'] and d['url'] in by_url:
+			altmetric_for_doc = by_url[d['url']]
 			
 		if altmetric_for_doc is None:
 			continue
