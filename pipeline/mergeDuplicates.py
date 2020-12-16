@@ -147,14 +147,14 @@ if __name__ == '__main__':
 	for d in merged_documents:
 		if d['doi']:
 			d['url'] = "https://doi.org/%s" % d['doi']
-		elif d['url']:
-			urls = [ u.strip() for u in d['url'].split(';') ]
-			assert not any('pubmed' in url for url in urls), "Found a document with a Pubmed URL (%s) but no PubMed ID" % str(urls)
-			d['url'] = urls[0]
 		elif d['pmcid']:
 			d['url'] = "https://www.ncbi.nlm.nih.gov/pmc/articles/%s" % d['pmcid']
 		elif d['pubmed_id']:
 			d['url'] = "https://pubmed.ncbi.nlm.nih.gov/%s" % d['pubmed_id']
+		elif d['url']:
+			urls = [ u.strip() for u in d['url'].split(';') ]
+			assert not any('pubmed' in url for url in urls), "Found a document with a Pubmed URL (%s) but no PubMed ID" % str(urls)
+			d['url'] = urls[0]
 		else:
 			d['url'] = None
 				
