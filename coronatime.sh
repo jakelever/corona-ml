@@ -57,7 +57,7 @@ python pokeWebsite.py
 
 #rmdir .coronalock
 
-sh handleTweet.sh
+sh twitter/dotweet.sh
 
 date
 
