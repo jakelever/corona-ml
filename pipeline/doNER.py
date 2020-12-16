@@ -276,6 +276,12 @@ if __name__ == '__main__':
 
 	entity_counter = Counter( [ e['type'] for d in documents for e in d['entities'] ] )
 	print("Found:", entity_counter)
+
+	assert all('entities' in d for d in documents), "Expected documents to all have entities extracted"
+	
+	print("Filtering for virus documents")
+	viruses = {'SARS-CoV-2','SARS-CoV','MERS-CoV'}
+	documents = [ d for d in documents if any(entity['type'] == 'Virus' for entity in d['entities']) or any( v in d['annotations'] for v in viruses) ]
 		
 	print("Saving JSON file...")
 	sys.stdout.flush()

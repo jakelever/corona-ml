@@ -24,12 +24,25 @@ fi
 file_date=`grep -oP "\d\d\d\d-\d\d-\d\d" cord19_listing.txt`
 file_url=`cat cord19_listing.txt`
 
-wget -nv $file_url
+need_download=1
+if [ -f $outdir/date.txt ]; then
+	prev_date=`cat $outdir/date.txt`
+	echo "Found previous download with date: $prev_date"
+	if [[ "$file_date" == "$prev_date" ]]; then
+		echo "Already got this version, so will not download"
+		need_download=0
+	fi
+fi
 
-tar -zxvf cord-19_$file_date.tar.gz $file_date/metadata.csv
+if [ $need_download -eq 1 ]; then
+	wget -nv $file_url
 
-mv $file_date/metadata.csv $outdir/metadata.csv
-echo $file_date > $outdir/date.txt
+	tar -zxvf cord-19_$file_date.tar.gz $file_date/metadata.csv
+
+	mv $file_date/metadata.csv $outdir/metadata.csv
+	touch $outdir/metadata.csv
+	echo $file_date > $outdir/date.txt
+fi
 
 cd -
 rm -fr $tmp_cord

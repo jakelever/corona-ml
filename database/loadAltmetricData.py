@@ -32,21 +32,20 @@ if __name__ == '__main__':
 	mycursor = mydb.cursor()
 	
 
-	sql = "SELECT document_id,pubmed_id,cord_uid,doi FROM documents"
+	sql = "SELECT document_id,pubmed_id,cord_uid,doi,url FROM documents"
 	print(sql)
 	mycursor.execute(sql)
 	myresult = mycursor.fetchall()
 
-	pubmed_to_document_id = {}
-	cord_to_document_id = {}
-
-	pubmed_to_document_id = {str(pubmed_id):document_id for document_id,pubmed_id,cord_ui,doi in myresult if pubmed_id }
-	cord_to_document_id = {cord_ui:document_id for document_id,pubmed_id,cord_ui,doi in myresult if cord_ui }
-	doi_to_document_id = {doi:document_id for document_id,pubmed_id,cord_ui,doi in myresult if doi }
+	pubmed_to_document_id = {str(pubmed_id):document_id for document_id,pubmed_id,cord_ui,doi,url in myresult if pubmed_id }
+	cord_to_document_id = {cord_ui:document_id for document_id,pubmed_id,cord_ui,doi,url in myresult if cord_ui }
+	doi_to_document_id = {doi:document_id for document_id,pubmed_id,cord_ui,doi,url in myresult if doi }
+	url_to_document_id = {url:document_id for document_id,pubmed_id,cord_ui,doi,url in myresult if url }
 
 	print("Found %d Pubmed mappings" % len(pubmed_to_document_id))
 	print("Found %d CORD mappings" % len(cord_to_document_id))
 	print("Found %d DOI mappings" % len(doi_to_document_id))
+	print("Found %d URL mappings" % len(url_to_document_id))
 	print()
 	
 	mycursor.execute("DROP TABLE IF EXISTS tmp_altmetric")
@@ -77,6 +76,7 @@ if __name__ == '__main__':
 		cord_uid = record['cord_uid']
 		pubmed_id = record['pubmed_id']
 		doi = record['doi']
+		url = record['url']
 
 		if cord_uid and cord_uid in cord_to_document_id:
 			document_id = cord_to_document_id[cord_uid]
@@ -84,6 +84,8 @@ if __name__ == '__main__':
 			document_id = pubmed_to_document_id[pubmed_id]
 		elif doi and doi in doi_to_document_id:
 			document_id = doi_to_document_id[doi]
+		elif url and url in url_to_document_id:
+			document_id = url_to_document_id[url]
 		else:
 			continue
 			#raise RuntimeError("Couldn't find matching document for annotation with cord_uid=%s and pubmed_id=%s" % (cord_uid,pubmed_id))

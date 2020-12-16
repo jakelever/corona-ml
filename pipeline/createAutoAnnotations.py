@@ -3,13 +3,8 @@ import json
 import re
 from collections import Counter
 
-from utils import DocumentVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import MultiLabelBinarizer
-from sklearn.multiclass import OneVsRestClassifier
-
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser('Annotate the topics of the documents')
+	parser = argparse.ArgumentParser('Create annotation data to load into the CoronaCentral database for use on the website')
 	parser.add_argument('--inJSON',required=True,type=str,help='Filename of JSON documents')
 	parser.add_argument('--outJSON',required=True,type=str,help='Output JSON with annotations')
 	args = parser.parse_args()
@@ -27,23 +22,22 @@ if __name__ == '__main__':
 		cord_uid = d['cord_uid']
 		pubmed_id = d['pubmed_id']
 		doi = d['doi']
+		url = d['url']
 		
-		assert cord_uid or pubmed_id or doi
+		assert cord_uid or pubmed_id or doi or url
 		
-		for topic in d['topics']:
-			aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'entity_type':'topic', 'entity_name':topic, 'external_id':'topic_%s' % topic, 'is_positive':True }
+		for category in d['categories']:
+			aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'url':url, 'entity_type':'category', 'entity_name':category, 'external_id':'category_%s' % category, 'is_positive':True }
 			autoannotations.append(aa)
 			
 		#uniqueEntities = sorted(set([ (entity['id'],entity['type'],entity['normalized']) for entity in d['entities'] ]))
 		for entity in d['entities']:
 			#aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'entity_type':entityType, 'entity_name':entityNormalized, 'external_id':entityID, 'is_positive':True}
-			aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'entity_type':entity['type'], 'entity_name':entity['normalized'], 'external_id':entity['id'], 'start_pos':entity['start'], 'end_pos':entity['end'], 'section':entity['section'] }
+			aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'url':url, 'entity_type':entity['type'], 'entity_name':entity['normalized'], 'external_id':entity['id'], 'start_pos':entity['start'], 'end_pos':entity['end'], 'section':entity['section'] }
 			autoannotations.append(aa)
 			
-		aa = { 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'entity_type':'articletype', 'entity_name':d['article_type'],'external_id':'pubtype_%s' % d['article_type'] }
-		autoannotations.append(aa)
-		
 	#output = { 'annotations':autoannotations, 'locations':locations }
 			
 	with open(args.outJSON,'w') as outF:
-		json.dump(autoannotations,outF,indent=2,sort_keys=True)  
+		json.dump(autoannotations,outF,indent=2,sort_keys=True)
+

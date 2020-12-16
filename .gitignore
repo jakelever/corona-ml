@@ -10,6 +10,8 @@
 *.xlsx
 *.out
 *.flag
+*.pem
+*.log
 
 __pycache__/
 .snakemake/
@@ -18,4 +20,6 @@ __pycache__/
 pubmed_listing.txt
 pubmed_corona/
 cord19/
+
+optimal_model/
 
