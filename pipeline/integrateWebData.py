@@ -3,6 +3,68 @@ import json
 from collections import Counter,defaultdict
 import re
 
+def infer_article_type_from_webdata(documents):
+	articletype_fields = ['DC.Subject', 'DC.Type.articleType', 'DC.subject', 'WT.cg_s', 'WT.z_cg_type', 'WT.z_primary_atype', 'article:section', 'articleType', 'category', 'citation_article_type', 'citation_categories', 'citation_keywords', 'citation_section', 'dc.Type', 'dc.type', 'prism.section', 'wkhealth_toc_section', 'wkhealth_toc_sub_section','article-header__journal','primary-heading']
+	
+	for d in documents:
+		document_webmetadata = defaultdict(list,d['webmetadata'])
+		
+		wm_articletypes = sum([ document_webmetadata[f] for f in articletype_fields ], [])
+		wm_articletypes = sorted(set( at.strip().lower() for at in wm_articletypes if len(at) < 50 ))
+		
+		d['web_articletypes'] = wm_articletypes
+		
+	web_article_groups = {}
+	web_article_groups['Research'] = "research-article,research,research letter,original research".split(',')
+	web_article_groups['Comment/Editorial'] = "editorial,editorialnotes,commentary,viewpoint,comments & opinion,comment,perspective,article commentary,reply,editorials,correspondence response,perspectives,opinion piece,n-perspective,letter to the editor,letters to the editor,editorial/personal viewpoint,guest editorial,ce - letter to the editor,world view,current opinion,rapid response opinion,commentaries,invited commentary,article-commentary".split(',')
+	web_article_groups['Review'] = "review article,reviewpaper,review,review-article,reviews,short review,summary review".split(',')
+	web_article_groups['Meta-analysis'] = "meta-analysis".split(',')
+	web_article_groups['News'] = "news".split(',')
+	web_article_groups['Erratum'] = "erratum,correction".split(',')
+	web_article_groups['Retraction'] = "retraction".split(',')
+	web_article_groups['Book chapter'] = "chapter".split(',')
+	web_article_groups['Case Reports'] = "case report,case-report,clinical case report".split(',')
+	
+	web_article_groups_by_journal = defaultdict(dict)
+	web_article_groups_by_journal['Science']['Comment/Editorial'] = [ 'letter' ]
+
+	retraction_keywords = ['retraction','retracted','withdrawn']
+	
+	assert any( 'medline_pubtype' in d for d in documents )
+	
+	for d in documents:
+		confident_article_type = None
+		
+		mesh_pubtypes = d['medline_pubtype'] if 'medline_pubtype' in d else []
+		
+		types_from_webdata = [ group for group,names in web_article_groups.items() if any ( at in names for at in d['web_articletypes'] ) ]
+		types_from_webdata += [ group for group,names in web_article_groups_by_journal[d['journal']].items() if any ( at in names for at in d['web_articletypes'] ) ]
+		
+				
+		if 'Retraction' in types_from_webdata or 'Retracted Publication' in mesh_pubtypes or 'Retraction of Publication' in mesh_pubtypes or any( d['title'].lower().startswith(rk) for rk in retraction_keywords ):
+			confident_article_type = 'Retracted'
+		elif 'Erratum' in types_from_webdata or 'Published Erratum' in mesh_pubtypes or d['title'].lower().startswith('erratum')  or d['title'].lower().startswith('correction'):
+			confident_article_type = 'Erratum'
+		elif 'News' in types_from_webdata or any (pt in mesh_pubtypes for pt in ['News','Newspaper Article'] ):
+			confident_article_type = 'News'
+		elif 'Comment/Editorial' in types_from_webdata or any (pt in mesh_pubtypes for pt in ['Editorial','Comment'] ):
+			confident_article_type = 'Comment/Editorial'
+		elif 'Book chapter' in types_from_webdata or d['title'].startswith('Chapter '):
+			confident_article_type = 'Book chapter'
+		elif 'Meta-analysis' in types_from_webdata or any (pt in mesh_pubtypes for pt in ['Systematic Review','Meta-Analysis'] ):
+			confident_article_type = 'Meta-analysis'
+		elif 'Review' in types_from_webdata:
+			confident_article_type = 'Review'
+		elif 'Case Reports' in types_from_webdata or 'Case Reports' in mesh_pubtypes:
+			confident_article_type = 'Research'
+		elif 'Research' in types_from_webdata or any('Clinical Trial' in pt for pt in mesh_pubtypes):
+			confident_article_type = 'Research'
+			
+		d['inferred_article_type'] = confident_article_type
+
+	print("Inferred article types:")
+	print(Counter( d['inferred_article_type'] for d in documents ))
+
 def remove_html_tags(text):
     clean = re.compile('<.*?>')
     return re.sub(clean, '', text).strip()
@@ -117,7 +179,12 @@ if __name__ == '__main__':
 				added_abstract_count += 1
 				
 	print("Added %d new abstracts using web data" % added_abstract_count)
-		
+	
+	print("Inferring article types using web data...")	
+	infer_article_type_from_webdata(documents)
+	article_type_count = len( [ d for d in documents if 'inferred_article_type' in d ] )
+	print("Inferred article types for %d documents" % article_type_count)
+	
 	print("Saving data...")
 	with open(args.outJSON,'w',encoding='utf8') as f:
 		json.dump(documents,f)

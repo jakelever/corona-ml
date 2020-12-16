@@ -22,6 +22,11 @@ if __name__ == '__main__':
 		
 	print("Loaded %d documents" % len(documents))
 
+	print("Removing erratum...")
+	erratum = [ d for d in documents if d['inferred_article_type'] == 'Erratum' ]
+	documents = [ d for d in documents if d['inferred_article_type'] != 'Erratum' ]
+	print("%d errata removed" % len(erratum))
+
 	print("Lowercasing DOIs as they are case insensitive...")		
 	for d in documents:
 		if d['doi']:
@@ -140,16 +145,16 @@ if __name__ == '__main__':
 	
 	print("Cleaning up URLs...")
 	for d in merged_documents:
-		if d['pubmed_id']:
-			d['url'] = "https://pubmed.ncbi.nlm.nih.gov/%s" % d['pubmed_id']
-		elif d['doi']:
+		if d['doi']:
 			d['url'] = "https://doi.org/%s" % d['doi']
-		elif d['pmcid']:
-			d['url'] = "https://www.ncbi.nlm.nih.gov/pmc/articles/%s" % d['pmcid']
 		elif d['url']:
 			urls = [ u.strip() for u in d['url'].split(';') ]
-			assert not any('pubmed' in url for url in urls), "Found a document with a Pubmed URL (%d) but no PubMed ID" % str(urls)
+			assert not any('pubmed' in url for url in urls), "Found a document with a Pubmed URL (%s) but no PubMed ID" % str(urls)
 			d['url'] = urls[0]
+		elif d['pmcid']:
+			d['url'] = "https://www.ncbi.nlm.nih.gov/pmc/articles/%s" % d['pmcid']
+		elif d['pubmed_id']:
+			d['url'] = "https://pubmed.ncbi.nlm.nih.gov/%s" % d['pubmed_id']
 		else:
 			d['url'] = None
 				
@@ -168,12 +173,16 @@ if __name__ == '__main__':
 	assert len(multipleDOIs) == 0, "Found duplicate DOIs: %s" % str(multipleDOIs)
 
 	pmidCounter = Counter( d['pubmed_id'] for d in merged_documents if d['pubmed_id'] )
-	multiplePubmedIDs = [ doi for pubmed_id,count in pmidCounter.items() if count > 1 ]
+	multiplePubmedIDs = [ pubmed_id for pubmed_id,count in pmidCounter.items() if count > 1 ]
 	assert len(multiplePubmedIDs) == 0, "Found duplicate Pubmed IDs: %s" % str(multiplePubmedIDs)
 
 	cordCounter = Counter( d['cord_uid'] for d in merged_documents if d['cord_uid'] )
-	multipleCordUIDs = [ doi for cord_uid,count in cordCounter.items() if count > 1 ]
+	multipleCordUIDs = [ cord_uid for cord_uid,count in cordCounter.items() if count > 1 ]
 	assert len(multipleCordUIDs) == 0, "Found duplicate CORD UIDs: %s" % str(multipleCordUIDs)
+
+	urlCounter = Counter( d['url'] for d in merged_documents if d['url'] )
+	multipleURLs = [ url for url,count in urlCounter.items() if count > 1 ]
+	assert len(multipleURLs) == 0, "Found duplicate URLs: %s" % str(multipleURLs)
 	
 	print("Checks PASSED")
 	

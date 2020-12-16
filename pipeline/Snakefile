@@ -94,13 +94,20 @@ rule:
 	shell: "python filterOutLanguages.py --inJSON {input} --prevNonEnglishDocs {output.nonenglish}.prev --prevEnglishDocs {output.documents}.prev --outNonEnglishDocs {output.nonenglish} --outEnglishDocs {output.documents} && cp {output.nonenglish} {output.nonenglish}.prev && cp {output.documents} {output.documents}.prev"
 	
 rule:
-	input: join(outDir,"alldocuments.english.json")
+	input: 
+		json=join(outDir,"alldocuments.english.json"),
+		annotations="annotations.json"
+	output: join(outDir,"alldocuments.withannotations.json")
+	shell: "python integrateAnnotations.py --inJSON {input.json} --annotations {input.annotations} --outJSON {output}"
+
+rule:
+	input: join(outDir,"alldocuments.withannotations.json")
 	output: join(outDir,"alldocuments.parsed.pickle")
 	shell: "python parseDocuments.py --inJSON {input} --prevPickle {output}.prev --outPickle {output} && cp {output} {output}.prev"
 	
 rule:
 	input: 
-		json=join(outDir,"alldocuments.english.json"),
+		json=join(outDir,"alldocuments.withannotations.json"),
 		parsed=join(outDir,"alldocuments.parsed.pickle"),
 		entities="entities.json",
 		entitiesflag=join(outDir,"terms_complete.txt"),
@@ -110,29 +117,17 @@ rule:
 	shell: "python doNER.py --inJSON {input.json} --entities {input.entities} --stopwords {input.stopwords} --removals {input.removals} --inParsed {input.parsed} --outJSON {output}"
 
 rule:
-	input: 
-		json=join(outDir,"alldocuments.ner.json"),
-		annotations="annotations.json"
-	output: join(outDir,"alldocuments.withannotations.json")
-	shell: "python integrateAnnotations.py --inJSON {input.json} --annotations {input.annotations} --outJSON {output}"
+	input: join(outDir,"alldocuments.ner.json"),
+	output: join(outDir,"alldocuments.categories.json")
+	shell: "python ../category_prediction/applyCategoryModel.py --inJSON {input} --modelDir ../category_prediction/optimal_model/ --outJSON {output}"
 
 rule:
-	input: join(outDir,"alldocuments.withannotations.json"),
-	output: join(outDir,"alldocuments.articletype.json")
-	shell: "python doArticleType.py --inJSON {input} --outJSON {output}"
+	input: join(outDir,"alldocuments.categories.json"),
+	output: join(outDir,"alldocuments.extracategories.json")
+	shell: "python doExtraCategories.py --inJSON {input} --outJSON {output}"
 
 rule:
-	input: join(outDir,"alldocuments.articletype.json"),
-	output: join(outDir,"alldocuments.topics.json")
-	shell: "python doTopics.py --inJSON {input} --outJSON {output}"
-	
-rule:
-	input: join(outDir,"alldocuments.topics.json"),
-	output: join(outDir,"alldocuments.clinicaltrials.json")
-	shell: "python doClinicalTrials.py --inJSON {input} --outJSON {output}"
-
-rule:
-	input: join(outDir,"alldocuments.clinicaltrials.json"),
+	input: join(outDir,"alldocuments.extracategories.json"),
 	output: join(outDir,"alldocuments.final.json")
 	shell: "python finalFilter.py --inJSON {input} --outJSON {output}"
 
