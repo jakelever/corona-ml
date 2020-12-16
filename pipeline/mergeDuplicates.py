@@ -21,7 +21,12 @@ if __name__ == '__main__':
 		documents = json.load(f)
 		
 	print("Loaded %d documents" % len(documents))
-		
+
+	print("Lowercasing DOIs as they are case insensitive...")		
+	for d in documents:
+		if d['doi']:
+			d['doi'] = d['doi'].lower()
+
 	print("Finding groupings of duplicate papers...")
 	for i,d in enumerate(documents):
 		d['group_id'] = i
