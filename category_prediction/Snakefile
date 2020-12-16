@@ -1,0 +1,30 @@
+localrules: all
+
+import json
+
+with open('parameterSpace.json') as f:
+	parameter_space = json.load(f)
+		
+expected_files = [ "logs/%d.txt" % i for i,_ in enumerate(parameter_space) ]
+
+def getparams(wildcards):
+	return json.dumps(parameter_space[int(wildcards.param_index)])
+	
+def getgpucount(wildcards):
+	needs_gpu = parameter_space[int(wildcards.param_index)]['clf'] == 'BERT'
+	gpu_count = 1 if needs_gpu else 0
+	return gpu_count
+	
+rule all:
+	params:
+		gpucount=0
+	input: expected_files
+
+rule evaluate:
+	params:
+		chosen=getparams,
+		gpucount=getgpucount
+	output: "logs/{param_index}.txt"
+	#shell: "python evalCategoryModel.py --categoriesFile category_list.txt --inJSON ../new_pipeline/data/alldocuments.ner.json --params '{params.chosen}' &> {output} || true"
+	shell: "python evalCategoryModel.py --categoriesFile category_list.txt --inJSON annotated_documents.json --params '{params.chosen}' &> {output} || true"
+
