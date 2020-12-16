@@ -159,6 +159,11 @@ if __name__ == '__main__':
 			del d['wm_journal']
 		elif d['journal'] and d['journal'].lower() in journal_mapping:
 			d['journal'] = journal_mapping[d['journal'].lower()]
+
+	print("Flagging preprints")
+	preprint_servers = ['arXiv','bioRxiv','ChemRxiv','medRxiv']
+	for d in documents:
+		d['is_preprint'] = d['journal'] in preprint_servers
 		
 	print("Finding abstracts for documents without abstracts...")
 	
