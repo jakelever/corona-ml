@@ -7,9 +7,10 @@ from html.parser import HTMLParser
 import re
 import calendar
 import unicodedata
-from datetime import date
+from datetime import date,datetime
 import string
 import calendar
+import sys
 
 pubTypeSkips = {"Research Support, N.I.H., Intramural","Research Support, Non-U.S. Gov't","Research Support, U.S. Gov't, P.H.S.","Research Support, N.I.H., Extramural","Research Support, U.S. Gov't, Non-P.H.S.","English Abstract"}
 
@@ -369,6 +370,22 @@ if __name__ == '__main__':
 	parser.add_argument('--pretty', action='store_true',help='Pretty JSON output')
 	parser.add_argument('--outFile',required=True,type=str,help='Mega JSON output file')
 	args = parser.parse_args()
+
+	assert os.path.isfile(args.kaggleMetadata)
+	assert os.path.isdir(args.pubmed)
+
+	print("Checking file modification dates...")
+	previous_output_time = os.path.getmtime(args.outFile) if os.path.isfile(args.outFile) else None
+	pubmed_times = [ os.path.getmtime(os.path.join(args.pubmed,filename)) for filename in sorted(os.listdir(args.pubmed)) ]
+	cord19_time = os.path.getmtime(args.kaggleMetadata)
+	newest_input = sorted(pubmed_times + [cord19_time])[-1]
+	if previous_output_time is not None and previous_output_time > newest_input:
+		print("Input is older than last output. So no processing is needed!")
+		print("Previous output file: %s" % datetime.fromtimestamp(previous_output_time).strftime('%Y-%m-%d %H:%M:%S'))
+		print("Newest input file:    %s" % datetime.fromtimestamp(newest_input).strftime('%Y-%m-%d %H:%M:%S'))
+		print()
+		print("Exiting...")
+		sys.exit(0)
 
 	pubmed = processPubMed(args.pubmed)
 	print("Loaded %d from PubMed" % len(pubmed))
