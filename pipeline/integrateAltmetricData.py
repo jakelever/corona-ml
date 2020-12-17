@@ -5,7 +5,6 @@ import urllib.parse
 from collections import Counter
 import time
 import datetime
-import ray
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import sys

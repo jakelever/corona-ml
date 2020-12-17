@@ -81,8 +81,6 @@ if __name__ == '__main__':
 	parser.add_argument('--outFlagFile',type=str,required=True,help='A useless file to mark that this is complete')
 	args = parser.parse_args()
 	
-	#ray.init()
-	
 	with open(args.documents) as f:
 		documents = json.load(f)
 
