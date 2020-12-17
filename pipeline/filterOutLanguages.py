@@ -132,7 +132,7 @@ if __name__ == '__main__':
 	
 	if len(new_results) > 0:
 		while True:
-			done,todo = ray.wait(new_results,len(needs_processing),timeout=1)
+			done,todo = ray.wait(new_results,num_returns=len(needs_processing),timeout=1)
 			print("  Processed %.1f%% (%d/%d)" % (100*len(done)/len(needs_processing),len(done),len(needs_processing)))
 			sys.stdout.flush()
 			if len(todo) == 0:

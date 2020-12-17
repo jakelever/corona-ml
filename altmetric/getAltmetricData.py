@@ -187,7 +187,7 @@ if __name__ == '__main__':
 	start = time.time()
 	if len(output) > 0:
 		while True:
-			done,todo = ray.wait(output,len(documents),timeout=1)
+			done,todo = ray.wait(output,num_returns=len(documents),timeout=1)
 			
 			now = time.time()
 			perc = 100*len(done)/len(documents)
