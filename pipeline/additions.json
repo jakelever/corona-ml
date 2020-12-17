@@ -17,5 +17,23 @@
     "pubmed_id": null,
     "title": "Impact of non-pharmaceutical interventions (NPIs) to reduce COVID-19 mortality and healthcare demand",
     "url": "https://www.imperial.ac.uk/media/imperial-college/medicine/sph/ide/gida-fellowships/Imperial-College-COVID19-NPI-modelling-16-03-2020.pdf"
+  },
+  {
+    "abstract": "The goal of this research is to capture and share a bigger picture of the experiences of patients suffering from COVID-19 with prolonged symptoms using a data driven approach. The survey content and research analysis are \u201cpatient-centric,\u201d conducted through participatory type research. Survey questions and symptoms were aggregated and curated by patients themselves with expertise in research and survey design. Analysis was also conducted by patients themselves with expertise in both quantitative and qualitative data analysis. This approach is especially important for COVID-19 because patients experiencing symptoms are in need of timely research and content relevant to them that is not currently available due to the novelty of this virus.",
+    "annotations": [
+      "SARS-CoV-2",
+      "Long Haul"
+    ],
+    "authors": "Gina Assaf, Hannah Davis, Lisa McCorkell, Hannah Wei., O\u2019Neil Brooke, Athena Akrami, Ryan Low, Jared Mercier, and Adetutu A.",
+    "cord_uid": null,
+    "doi": null,
+    "journal": "Patient Led Research",
+    "pmcid": null,
+    "publish_day": 11,
+    "publish_month": 5,
+    "publish_year": 2020,
+    "pubmed_id": null,
+    "title": "Report: What Does COVID-19 Recovery Actually Look Like?",
+    "url": "https://patientresearchcovid19.com/research/report-1/"
   }
 ]
