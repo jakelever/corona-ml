@@ -108,9 +108,9 @@ if __name__ == '__main__':
 			all_ids = {'doi':dois,'pubmed_id':pubmed_ids,'pmcid':pmcids,'url':urls, 'cord_uid':cord_uids}
 			
 			# Order documents with preprints before nonpreprints, and then by title/abstract length
-			preprints = [ d for d in docs if d['journal'] in ['arXiv','bioRxiv','ChemRxiv','medRxiv'] ]
+			preprints = [ d for d in docs if d['is_preprint'] ]
 			preprints = sorted(preprints, key=lambda x:x['journal'])
-			nonpreprints = [ d for d in docs if not d['journal'] in ['arXiv','bioRxiv','ChemRxiv','medRxiv'] ]
+			nonpreprints = [ d for d in docs if not d['is_preprint'] ]
 			nonpreprints = sorted(nonpreprints, key=lambda x:(len(x['title']),len(x['abstract'])))
 			docs = preprints + nonpreprints
 						
@@ -121,8 +121,20 @@ if __name__ == '__main__':
 			# Populate them by stepping through the documents
 			for d in docs:
 				for k,v in d.items():
-					if v:
+					if v != '' and not v is None:
 						merged_doc[k] = v
+
+			# Identify documents from different sources
+			from_cord19 = [ d for d in docs if d['cord_uid'] ]
+			from_pubmed = [ d for d in docs if not d['cord_uid'] and d['pubmed_id'] ]
+
+			# Use PubMed publish dates over CORD19 if possible
+			any_pubmed_has_dates = any ( d['publish_year'] or d['publish_month'] or d['publish_day'] for d in from_pubmed )
+			if any_pubmed_has_dates:
+				for d in from_cord19:
+					d['publish_year'] = None
+					d['publish_month'] = None
+					d['publish_day'] = None
 						
 			# Merge the publish_date elements together (and pick the most complete one)
 			best_publish_date = (None,None,None)
