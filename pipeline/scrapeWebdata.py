@@ -2,10 +2,8 @@ import argparse
 import json
 import requests
 import urllib.parse
-from collections import Counter,defaultdict
+from collections import Counter
 import time
-import datetime
-import urllib.parse
 import random
 from collections import OrderedDict
 import sys

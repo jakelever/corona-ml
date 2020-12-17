@@ -1,7 +1,5 @@
 import argparse
 import json
-import re
-from collections import Counter
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Create annotation data to load into the CoronaCentral database for use on the website')

@@ -4,13 +4,9 @@ sys.path.insert(0,'/home/users/jlever/.local/lib/python3.6/site-packages')
 
 sys.path.append('/home/groups/rbaltman/jlever/corona-ml/pipeline')
 
-import pickle
 import argparse
 import json
-import re
-import os
 import sys
-from collections import Counter,defaultdict
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer
 

@@ -2,13 +2,11 @@
 import sys
 sys.path.insert(0,'/home/users/jlever/.local/lib/python3.6/site-packages')
 
-import pickle
 import argparse
 import json
-import re
 import os
 import sys
-from collections import Counter,defaultdict
+from collections import Counter
 from coronacode import DocumentClassifier
 
 def main():
@@ -32,8 +30,6 @@ def main():
 	categories_file = os.path.join(args.modelDir,'categories.json')
 	with open(categories_file) as f:
 		categories = json.load(f)
-
-	annotated_label_count, predicted_label_count = 0,0
 
 	annotated_counts = Counter()
 	for d in annotated_docs:

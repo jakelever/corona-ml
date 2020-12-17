@@ -3,7 +3,6 @@ import argparse
 import pickle
 import json
 from collections import defaultdict,Counter
-from scipy.spatial import distance_matrix
 import sys
 
 def doesLocationCapitalizationMatch(allEntities,e):

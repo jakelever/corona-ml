@@ -1,7 +1,5 @@
 import argparse
 import json
-from collections import Counter,defaultdict
-import re
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Apply some minor spotfixes to go in at the beginning of the pipeline')

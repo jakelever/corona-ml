@@ -2,7 +2,6 @@ import argparse
 import json
 import requests
 import urllib.parse
-from collections import Counter
 import time
 import datetime
 import ray

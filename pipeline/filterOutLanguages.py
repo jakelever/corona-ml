@@ -6,7 +6,6 @@ import time
 import ray
 import sys
 
-import nltk
 from nltk.corpus import stopwords
 import re
 

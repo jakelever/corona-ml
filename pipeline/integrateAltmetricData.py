@@ -1,13 +1,5 @@
 import argparse
 import json
-import requests
-import urllib.parse
-from collections import Counter
-import time
-import datetime
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
-import sys
 	
 def associate_altmetric_data_with_documents(documents, altmetric_filename, filter_empty):
 	with open(altmetric_filename) as f:

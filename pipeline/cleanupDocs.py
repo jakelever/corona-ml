@@ -13,7 +13,6 @@ def cleanup_documents(documents):
 	dashCharacters = ["-", "\u00ad", "\u2010", "\u2011", "\u2012", "\u2013", "\u2014", "\u2043", "\u2053"]
 
 	empty_abstracts = {'','this article has no abstract','no abstract is available for this article','letter without abstract','unknown','not available','no abstract available','na','no abstract provided','no abstract','none','abstract','letter without abstract','not availble','null','graphical abstract'}
-	max_empty_abstract_length = max(map(len,empty_abstracts))
 
 	title_prefixes_to_trim = ['full-length title', 'infographic title', 'complete title', 'original title', 'title']
 	abstract_prefixes_to_trim = ['accepted 7 july 2020abstract', 'physicians abstracts', 'unlabelled abstract', 'structured abstract', 'original abstracts', 'summary/abstract', 'original abstract', 'abstracts', ']abstract', 'abstract']

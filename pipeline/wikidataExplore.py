@@ -1,8 +1,5 @@
 import SPARQLWrapper
 import argparse
-from collections import defaultdict,OrderedDict
-import json
-import re
 
 def runQuery(query):
 	endpoint = 'https://query.wikidata.org/sparql'
