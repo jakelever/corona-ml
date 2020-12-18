@@ -90,6 +90,7 @@ if __name__ == '__main__':
 
 	print("Merging documents...")
 	merged_documents = []
+	preprint_servers = ['arXiv','bioRxiv','ChemRxiv','medRxiv']
 
 	for merge_id, docs in mergeMap.items():
 		if len(docs) > 1:
@@ -108,9 +109,9 @@ if __name__ == '__main__':
 			all_ids = {'doi':dois,'pubmed_id':pubmed_ids,'pmcid':pmcids,'url':urls, 'cord_uid':cord_uids}
 			
 			# Order documents with preprints before nonpreprints, and then by title/abstract length
-			preprints = [ d for d in docs if d['is_preprint'] ]
+			preprints = [ d for d in docs if d['journal'] in preprint_servers ]
 			preprints = sorted(preprints, key=lambda x:x['journal'])
-			nonpreprints = [ d for d in docs if not d['is_preprint'] ]
+			nonpreprints = [ d for d in docs if not d['journal'] in preprint_servers ]
 			nonpreprints = sorted(nonpreprints, key=lambda x:(len(x['title']),len(x['abstract'])))
 			docs = preprints + nonpreprints
 						
@@ -145,10 +146,12 @@ if __name__ == '__main__':
 				if num_filled >= best_publish_date_filled:
 					best_publish_date = publish_date
 					best_publish_date_filled = num_filled
+
 					
 			merged_doc['publish_year'],merged_doc['publish_month'],merged_doc['publish_day'] = best_publish_date
 						
 			merged_doc['ids_from_merged_documents'] = all_ids
+
 			merged_documents.append(merged_doc)
 		else:
 			merged_documents.append(docs[0])
@@ -169,6 +172,10 @@ if __name__ == '__main__':
 			d['url'] = urls[0]
 		else:
 			d['url'] = None
+
+	print("Flagging preprints...")
+	for d in merged_documents:
+		d['is_preprint'] = d['journal'] in preprint_servers
 				
 	print("Running checks to check no duplicate IDs...")
 	
