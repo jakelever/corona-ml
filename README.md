@@ -9,7 +9,7 @@ This README will cover the three main steps
  
 ## Download the coronavirus literature
 
-Scripts in the [data/](https://github.com/jakelever/corona-ml/tree/master/data) manage the download of the literature from PubMed and CORD-19. These two sources are then combined into one file and fed through the pipeline where they are cleaned up.
+Scripts in the [data/](https://github.com/jakelever/corona-ml/tree/master/data) manage the download of the literature from [PubMed](https://www.nlm.nih.gov/databases/download/pubmed_medline.html) and [CORD-19](https://www.semanticscholar.org/cord19/download). These two sources are then combined into one file and fed through the pipeline where they are cleaned up.
 
 ## Full Pipeline
 
@@ -20,7 +20,7 @@ The full pipeline in the [pipeline/](https://github.com/jakelever/corona-ml/tree
 - Web data is pulled to get metadata tags
 - Web data is integrated with the documents and used to infer some article types
 - Documents are further cleaned by a number of rules, including steps to normalize journal names
-- Documents are parsed and named entity recognition is applied to find mentions of different entities, including viruses
+- Documents are parsed and named entity recognition is applied to find mentions of different entities, including viruses, drugs, locations, etc
 - Categories are predicted using BERT (using scripts in [category_prediction/](https://github.com/jakelever/corona-ml/tree/master/category_prediction))
 - Additional categories are identified with rules
 - A final filter does some final tidying up and checking
