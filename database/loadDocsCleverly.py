@@ -63,14 +63,10 @@ if __name__ == '__main__':
 	columns['publish_month'] = 'INT'
 	columns['publish_day'] = 'INT'
 	columns['title'] = 'TEXT'
-	#if (args.db == 'local'):
 	columns['abstract'] = 'TEXT'
 	columns['journal'] = 'TEXT'
 	columns['url'] = 'VARCHAR(255)'
-	columns['mesh'] = 'TEXT NULL'
-	columns['has_mesh'] = 'BOOLEAN'
-	columns['chemicals'] = 'TEXT NULL'
-	columns['pub_type'] = 'TEXT NULL'
+	columns['is_preprint'] = 'BOOL'
 
 	dbfields = ",".join(columns.keys())
 	dbvalues = ",".join('%s' for _ in columns.keys())
@@ -94,33 +90,6 @@ if __name__ == '__main__':
 			doc['cord_uid'] = None
 		if not doc['pmcid']:
 			doc['pmcid'] = None
-	
-		#if doc['abstract'].lower().startswith('abstract'):
-		#	doc['abstract'] = doc['abstract'][len('abstract'):].strip()
-				
-		if 'mesh' in doc:
-			mesh_txts = []
-			for heading in doc['mesh']:
-				mesh_txt = "/".join( mesh_name + ('*' if is_major=='Y' else '') for mesh_id,mesh_name,is_major in heading )
-				mesh_txts.append(mesh_txt)
-			doc['mesh'] = " | ".join(sorted(mesh_txts))
-			doc['has_mesh'] = True
-		else:
-			doc['mesh'] = None
-			doc['has_mesh'] = False
-			
-		if 'chemicals' in doc:
-			chemical_txts = [ mesh_name for mesh_id,mesh_name in doc['chemicals'] ]
-			doc['chemicals'] = " | ".join(sorted(chemical_txts))
-		else:
-			doc['chemicals'] = None
-			
-		if 'pub_type' in doc:
-			doc['pub_type'] = " | ".join(sorted(doc['pub_type']))
-		else:
-			doc['pub_type'] = None
-			
-		#assert False
 		
 		record = [ doc[c] for c in columns.keys() ]
 		
