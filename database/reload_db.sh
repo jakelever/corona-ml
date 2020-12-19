@@ -7,7 +7,7 @@ db=aws.json
 
 python createDB.py --db $db
 
-python loadDocsCleverly.py --db $db --json ../pipeline/data/alldocuments.final.json
+python loadDocsCleverly.py --db $db --json ../pipeline/data/coronacentral.json
 
 python loadAnnotations.py --db $db --type auto --json ../pipeline/data/autoannotations.json
 

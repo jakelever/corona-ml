@@ -128,15 +128,16 @@ rule:
 
 rule:
 	input: join(outDir,"alldocuments.extracategories.json"),
-	output: join(outDir,"alldocuments.final.json")
+	output: join(outDir,"coronacentral.json")
 	shell: "python finalFilter.py --inJSON {input} --outJSON {output}"
 
 rule:
-	input: join(outDir,"alldocuments.final.json"),
+	input: join(outDir,"coronacentral.json"),
 	output: join(outDir,"autoannotations.json")
 	shell: "python createAutoAnnotations.py --inJSON {input} --outJSON {output}"
 	
 rule:
-	input: join(outDir,"alldocuments.final.json")
+	input: join(outDir,"coronacentral.json")
 	output: join(outDir,"altmetric.json")
 	shell: "python ../altmetric/getAltmetricData.py --apiKeyFile ../altmetricApiKey.json --documents {input} --outData {output}"
+

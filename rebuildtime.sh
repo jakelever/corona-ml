@@ -13,7 +13,7 @@ date
 #base="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 base=/home/groups/rbaltman/jlever/corona-ml
 
-aws_login=`cat aws_login.txt`
+aws_login=`cat $base/aws_login.txt`
 
 mkdir .coronalock
 

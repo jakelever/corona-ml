@@ -11,5 +11,5 @@ echo $today > last_tweet.log
 
 latestAltmetric=`ls -tr ../altmetric/recent_altmetric.json ../pipeline/data/altmetric.json | tail -n 1`
 
-python tweet.py --documents ../pipeline/data/alldocuments.final.json --altmetric $latestAltmetric --twitterApiKey twitterApiKey.json
+python tweet.py --documents ../pipeline/data/coronacentral.json --altmetric $latestAltmetric --twitterApiKey twitterApiKey.json
 

@@ -20,10 +20,10 @@ if [ -d .coronalock ]; then
 	exit 0
 fi
 
-aws_login=`cat aws_login.txt`
+aws_login=`cat $base/aws_login.txt`
 
 cd $base/altmetric
-python getAltmetricData.py --apiKeyFile ../altmetricApiKey.json --documents ../pipeline/data/alldocuments.final.json --popularOrRecent --prevData ../pipeline/data/altmetric.json --outData recent_altmetric.json
+python getAltmetricData.py --apiKeyFile ../altmetricApiKey.json --documents ../pipeline/data/coronacentral.json --popularOrRecent --prevData ../pipeline/data/altmetric.json --outData recent_altmetric.json
 
 db=$base/database/aws.json
 
