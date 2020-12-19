@@ -41,7 +41,7 @@ else
 	echo "New data so running full pipeline..."
 
 	cd $base/pipeline
-	snakemake --cores 1 data/autoannotations.json data/altmetric.json
+	snakemake --cores 1 data/autoannotations.json data/altmetric.json data/coronacentral.json.gz
 
 	cd $base/database
 	sh reload_db.sh
