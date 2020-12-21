@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=cronCoronaCentral
-#SBATCH --begin=now+4hours
+#SBATCH --begin=now+8hours
 #SBATCH --dependency=singleton
 #SBATCH --time=12:00:00
 #SBATCH --mail-type=FAIL
