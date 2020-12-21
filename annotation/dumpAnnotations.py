@@ -19,7 +19,7 @@ if __name__ == '__main__':
 		database=database['database']
 	)
 	
-	sql = "SELECT d.cord_uid as cord_uid, d.pubmed_id as pubmed_id, d.phase as phase, ao.name as name FROM documents d, annotations a, annotationoptions ao WHERE d.document_id = a.document_id AND a.annotationoption_id = ao.annotationoption_id"
+	sql = "SELECT d.cord_uid as cord_uid, d.pubmed_id as pubmed_id, ao.name as name FROM documents d, annotations a, annotationoptions ao WHERE d.document_id = a.document_id AND a.annotationoption_id = ao.annotationoption_id"
 	
 	mycursor = mydb.cursor()
 	mycursor.execute(sql)
@@ -27,13 +27,11 @@ if __name__ == '__main__':
 
 	annotations_by_cord = defaultdict(set)
 	annotations_by_pubmed_id = defaultdict(set)
-	for cord_uid,pubmed_id,phase,annotation in myresult:
+	for cord_uid,pubmed_id,annotation in myresult:
 		if cord_uid:
 			annotations_by_cord[cord_uid].add(annotation)
-			annotations_by_cord[cord_uid].add(phase)
 		if pubmed_id:
 			annotations_by_pubmed_id[str(pubmed_id)].add(annotation)
-			annotations_by_pubmed_id[str(pubmed_id)].add(phase)
 			
 	annotations_by_cord = { cord_uid:sorted(annos) for cord_uid,annos in annotations_by_cord.items() }
 	annotations_by_pubmed_id = { pubmed_id:sorted(annos) for pubmed_id,annos in annotations_by_pubmed_id.items() }

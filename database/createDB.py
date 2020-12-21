@@ -45,6 +45,7 @@ if __name__ == '__main__':
 	columns['publish_year'] = 'INT'
 	columns['publish_month'] = 'INT'
 	columns['publish_day'] = 'INT'
+	columns['publish_timestamp'] = 'INT'
 	columns['title'] = 'TEXT'
 	columns['abstract'] = 'TEXT'
 	columns['journal'] = 'TEXT'

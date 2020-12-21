@@ -40,13 +40,12 @@ def main():
 	#viruses = {'SARS-CoV-2','SARS-CoV','MERS-CoV'}
 	#documents = [ d for d in documents if any(entity['type'] == 'Virus' for entity in d['entities']) or any( v in d['annotations'] for v in viruses) ]
 
-	train_docs = [ d for d in documents if len(d['annotations']) > 0 and not 'phase4' in d['annotations'] ]
-	test_docs = [ d for d in documents if 'phase4' in d['annotations'] ]
+	train_docs = [ d for d in documents if len(d['annotations']) > 0 and d['phase'] != 'testset' ]
+	test_docs = [ d for d in documents if d['phase'] == 'testset' ]
 	#other_docs = [ d for d in documents if len(d['annotations']) == 0 ]
 
-	toRemoveFromTraining = {'RemoveFromCorpus?','NotAllEnglish','NotRelevant','Skip','Maybe','FixAbstract'}
+	toRemoveFromTraining = {'RemoveFromCorpus?','NotAllEnglish','NotRelevant','FixAbstract'}
 	train_docs = [ d for d in train_docs if not any (f in d['annotations'] for f in toRemoveFromTraining) ]
-	test_docs = [ d for d in test_docs if not any (f in d['annotations'] for f in toRemoveFromTraining) ]
 
 	if not args.useTestSet:
 		train_docs, test_docs = train_test_split(train_docs, test_size=0.25, random_state=42)
