@@ -12,6 +12,7 @@
 *.flag
 *.pem
 *.log
+*.gz
 
 __pycache__/
 .snakemake/
