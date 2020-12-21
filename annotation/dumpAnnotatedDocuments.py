@@ -28,7 +28,7 @@ if __name__ == '__main__':
 	mycursor.execute(sql)
 	myresult = mycursor.fetchall()
 	for document_id, title, abstract, journal, cord_uid, pubmed_id, phase in myresult:
-		document = { 'title': title, 'abstract':abstract, 'journal':journal, 'cord_uid':cord_uid, 'pubmed_id':pubmed_id, 'annotations':[phase] }
+		document = { 'title': title, 'abstract':abstract, 'journal':journal, 'cord_uid':cord_uid, 'pubmed_id':pubmed_id, 'phase':phase, 'annotations':[] }
 		documents[document_id] = document
 	
 	
