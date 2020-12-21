@@ -3,6 +3,8 @@ from collections import OrderedDict
 import csv
 import json
 import argparse
+from datetime import datetime, date
+import calendar
 
 def chunks(lst, n):
 	"""Yield successive n-sized chunks from lst."""
@@ -62,6 +64,7 @@ if __name__ == '__main__':
 	columns['publish_year'] = 'INT'
 	columns['publish_month'] = 'INT'
 	columns['publish_day'] = 'INT'
+	columns['publish_timestamp'] = 'INT'
 	columns['title'] = 'TEXT'
 	columns['abstract'] = 'TEXT'
 	columns['journal'] = 'TEXT'
@@ -90,6 +93,13 @@ if __name__ == '__main__':
 			doc['cord_uid'] = None
 		if not doc['pmcid']:
 			doc['pmcid'] = None
+		
+		publish_year = doc['publish_year'] if doc['publish_year'] else 2020
+		publish_month = doc['publish_month'] if doc['publish_month'] else 1
+		publish_day = doc['publish_day'] if doc['publish_day'] else 1
+		
+		publish_date = datetime(publish_year, publish_month, publish_day, 12, 0, 0)
+		doc['publish_timestamp'] = calendar.timegm(publish_date.timetuple())
 		
 		record = [ doc[c] for c in columns.keys() ]
 		
