@@ -26,3 +26,8 @@ optimal_model/
 
 /pipeline/data
 
+.Rproj.user
+.RData
+.Rhistory
+_book/
+

@@ -1,0 +1,613 @@
+---
+title: "Analyzing the vast coronavirus literature with CoronaCentral"
+#output: 
+#  bookdown::pdf_document2
+#  html_document: 
+#    fig_caption: yes
+#params:
+#   region: east
+#editor_options: 
+#  chunk_output_type: console
+site: bookdown::bookdown_site
+documentclass: book
+#output:
+#  bookdown::html_document2
+#  bookdown::word_document2
+#  bookdown::pdf_document2
+output:
+   pdf_document:
+      latex_engine: xelatex
+bibliography: bibliography.bib
+csl: plos-computational-biology.csl
+---
+
+
+
+```{r dependencies, include=FALSE}
+source('dependencies.R')
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r date_info, echo=F}
+update_date <- file.info('alldocuments.withaltmetric.json')$mtime
+update_date_nice <- format(update_date, format="%d %B %Y")
+```
+
+
+```{python pythonTime, echo=F}
+import json
+import pandas as pd
+from collections import Counter,defaultdict
+
+preprint_journals = ['arXiv','bioRxiv','ChemRxiv','medRxiv']
+
+with open('alldocuments.withaltmetric.json') as f:
+  documents = json.load(f)
+
+
+document_count = len(documents)
+longhaul_count = len( [ d for d in documents if 'Long Haul' in d['categories'] ])
+
+retractions_count = len( [ d for d in documents if 'Retracted' in d['categories'] ])
+
+comment_count = len( [ d for d in documents if 'Comment/Editorial' in d['categories'] ])
+comment_perc = round(100*comment_count/len(documents),1)
+
+preprint_count = len( [ d for d in documents if d['journal'] in preprint_journals ])
+preprint_perc = round(100*preprint_count/len(documents),1)
+
+nonResearchArticleTypes = ['Review','Book chapter','Comment/Editorial','Retracted','CDC Weekly Report','News']
+allArticleTypes = nonResearchArticleTypes + ['Research','Meta-analysis']
+
+allCategories = sorted(set(c for d in documents for c in d['categories']))
+allTopicTypes = [ c for c in allCategories if not c in allArticleTypes ]
+
+category_counts = Counter( c for d in documents for c in d['categories'] if c != 'Research' )
+topic_counts = Counter( c for d in documents for c in d['categories'] if not c in allArticleTypes )
+
+comment_topic_counts = Counter( c for d in documents if 'Comment/Editorial' in d['categories'] for c in d['categories'] if not c in allArticleTypes )
+
+category_types = [ 'Article Type' if c in allArticleTypes else 'Topic' for c in category_counts.keys() ]
+
+category_df = pd.DataFrame(data={'category':list(category_counts.keys()),'count':list(category_counts.values()),'type':category_types})
+
+comment_topic_df = pd.DataFrame(data={'category':list(comment_topic_counts.keys()),'count':list(comment_topic_counts.values())})
+
+topic_and_articletype_counts = defaultdict(Counter)
+for d in documents:
+  articletype = None
+  if 'Meta-analysis' in d['categories']:
+    articletype = 'Meta-analysis'
+  elif 'Research' in d['categories']:
+    articletype = 'Original Research'
+  elif 'News' in d['categories']:
+    articletype = 'News'
+  elif 'Book chapter' in d['categories']:
+    articletype = 'Book chapter'
+  elif 'Comment/Editorial' in d['categories']:
+    articletype = 'Comment/Editorial'
+  elif 'Review' in d['categories']:
+    articletype = 'Review'
+    
+  if articletype:
+    for c in d['categories']:
+      if not c in allArticleTypes:
+        topic_and_articletype_counts[c][articletype] += 1
+      
+topic_and_articletype_df = pd.DataFrame( [ [articletype,c,topic_and_articletype_counts[c][articletype],sum(topic_and_articletype_counts[c].values())] for c in topic_and_articletype_counts for articletype in topic_and_articletype_counts[c] ], columns=['articletype','topic','count','total_for_topic'] )
+
+
+
+papers_by_month = Counter()
+categories_by_month = defaultdict(Counter)
+for d in documents:
+  viruses = set([ e['normalized'] for e in d['entities'] if e['type'] == 'Virus' ])
+  d['viruses'] = viruses
+  if not 'SARS-CoV-2' in viruses:
+    continue
+    
+  if d['publish_year'] != 2020 or not d['publish_month']:
+    continue
+    
+  month = d['publish_month']
+  papers_by_month[month] += 1
+  
+  for c in d['categories']:
+    categories_by_month[month][c] += 1
+    
+#print(len(categories_by_month))
+
+top_topics = [ c for c,count in topic_counts.most_common(10) ]
+    
+topics_by_month_data = []
+for month in sorted(categories_by_month.keys()):
+  total_in_month = papers_by_month[month]
+  for c in sorted(top_topics):
+    count = categories_by_month[month][c]
+    perc_in_month = round(100*count/total_in_month,2)
+    topics_by_month_data.append( [month,c,count,perc_in_month,total_in_month] )
+    
+
+    
+topics_by_month_df = pd.DataFrame(topics_by_month_data, columns=['month','category','count','perc_in_month','total_in_month'])
+
+
+publications_by_date = Counter()
+for d in documents:
+  if not d['publish_year'] or not d['publish_month']:
+    continue
+    
+  date = "%04d/%02d/01" % (int(d['publish_year']),int(d['publish_month']))
+  
+  for v in d['viruses']:
+    publications_by_date[(v,date)] += 1
+    
+publications_by_date_df = pd.DataFrame( [ [v,date,count] for (v,date),count in publications_by_date.items()], columns=['virus','date','count'])
+
+sarscov2_may_count = publications_by_date[('SARS-CoV-2','2020/05/01')]
+
+
+papers_by_month = Counter()
+comment_topics_counts = Counter()
+research_topics_counts = Counter()
+comment_topics_by_month = defaultdict(Counter)
+research_topics_by_month = defaultdict(Counter)
+for d in documents:
+  if not 'SARS-CoV-2' in d['viruses']:
+    continue
+    
+  if d['publish_year'] != 2020 or not d['publish_month'] or d['publish_month'] == 12:
+    continue
+    
+  date = "%04d/%02d/01" % (int(d['publish_year']),int(d['publish_month']))
+  #month = d['publish_month']
+  papers_by_month[date] += 1
+  
+  if 'Comment/Editorial' in d['categories']:
+    for c in d['categories']:
+      if not c in allArticleTypes:
+        comment_topics_counts[c] += 1
+        comment_topics_by_month[date][c] += 1
+  elif 'Research' in d['categories']:
+    for c in d['categories']:
+      if not c in allArticleTypes:
+        research_topics_counts[c] += 1
+        research_topics_by_month[date][c] += 1
+        
+topic_trends_data = []
+for date in comment_topics_by_month:
+  top_topics = [ c for c,_ in comment_topics_counts.most_common(5) ]
+  for c in top_topics:
+    topic_trends_data.append( ['Comment/Editorial',date,c,comment_topics_by_month[date][c],papers_by_month[date]] )
+for date in research_topics_by_month:
+  top_topics = [ c for c,_ in research_topics_counts.most_common(5) ]
+  for c in top_topics:
+    topic_trends_data.append( ['Original Research',date,c,research_topics_by_month[date][c],papers_by_month[date]] )
+    
+topic_trends_df = pd.DataFrame(topic_trends_data,columns=['articletype','date','topic','count','total_per_month'])
+
+longhaul_df = pd.DataFrame( [ [ date, research_topics_by_month[date]['Long Haul'] ] for date in research_topics_by_month if '2020' in date ], columns=['date','count'])
+
+entity_counts = defaultdict(Counter)
+entity_counts_by_virus = defaultdict(lambda : defaultdict(Counter))
+for d in documents:
+  viruses = set([ e['normalized'] for e in d['entities'] if e['type'] == 'Virus' ])
+  other_entities = set([ (e['type'],e['normalized']) for e in d['entities'] if e['type'] != 'Virus' ])
+  for v in viruses:
+    for e_type,e_normalized in other_entities:
+      entity_counts_by_virus[v][e_type][e_normalized] += 1
+  
+  for e_type,e_normalized in other_entities:
+    entity_counts[e_type][e_normalized] += 1
+    
+entity_counts_data = []
+for v in entity_counts_by_virus:
+  for e_type in entity_counts:
+    entity_counts_data += [ [v,e_type,e,entity_counts_by_virus[v][e_type][e],total_across_viruses] for e,total_across_viruses in entity_counts[e_type].most_common(15) ]
+  
+entity_counts_df = pd.DataFrame(entity_counts_data,columns=['virus','type','name','count','count_for_all_viruses'])
+
+
+preprint_counts = defaultdict(Counter)
+journal_counts = Counter()
+for d in documents:
+  j = d['journal'] if d['journal'] in preprint_journals else 'Non-preprint'
+  if d['journal']:
+    journal_counts[d['journal']] += 1
+    
+  for c in d['categories']:
+    if not c in allArticleTypes:
+      preprint_counts[j][c] += 1
+    
+preprints_data = []
+for j in preprint_counts:
+  total = sum(preprint_counts[j].values())
+  assigned = 0
+  for c in preprint_counts[j]:
+    perc = 100 * preprint_counts[j][c] / total
+    #if perc > 5:
+    preprints_data.append( [j,c,preprint_counts[j][c],perc] )
+    assigned += preprint_counts[j][c]
+      
+  count = total - assigned
+  perc = 100 * count / total
+  #preprints_data.append( [j,'Other',count,perc] )
+
+preprints_df = pd.DataFrame( preprints_data, columns=['journal','category','count','perc'] )
+
+journals_df = pd.DataFrame( journal_counts.most_common(20), columns=['journal','count'] )
+
+retraction_category_counts = Counter( c for d in documents if 'Retracted' in d['categories'] for c in d['categories'] )
+
+retraction_category_df = pd.DataFrame(retraction_category_counts.most_common(len(retraction_category_counts)), columns=['category','count'])
+
+docs_with_score = [ (d['altmetric']['score'],d) for d in documents if 'SARS-CoV-2' in d['viruses'] and 'altmetric' in d and 'score' in d['altmetric'] ]
+docs_with_score = sorted(docs_with_score,reverse=True,key=lambda x:x[0])
+
+category_counts_at_rank = Counter( c for _,d in docs_with_score[:100] for c in d['categories'] if not c in allArticleTypes )
+
+altmetric_df = pd.DataFrame(category_counts_at_rank.most_common(len(category_counts_at_rank)),columns=['category','count'])
+
+
+```
+
+
+## Abstract {-}
+
+The global SARS-CoV-2 pandemic has caused a surge in research exploring all aspects of the virus and its effects on human health. The overwhelming rate of publications means that human researchers are unable to keep abreast of the research.
+ 
+To ameliorate this, we present the CoronaCentral resource which uses machine learning to process the research literature on SARS-CoV-2 along with articles on SARS-CoV and MERS-CoV. We break the literature down into useful categories and enable analysis of the contents, pace, and emphasis of research during the crisis. These categories cover therapeutics, forecasting as well as growing areas such as "Long Covid" and studies of inequality and misinformation. Using this data, we compare topics that appear in original research articles compared to commentaries and other article types. Finally, using Altmetric data, we identify the topics that have gained the most media attention.
+
+This resource, available at https://coronacentral.ai, is updated multiple times per day and provides an easy-to-navigate system to find papers in different categories, focussing on different aspects of the virus along with currently trending articles.
+
+## Background {-}
+
+The pandemic has led to the greatest surge in biomedical research on a single topic in documented history (Fig \@ref(fig:surgingtopics)). This research is valuable both to current researchers working to understand the virus and also to future researchers as they examine the long term effects of the virus on different aspects of society. Unfortunately, the vast scale of the literature makes it challenging to evaluate. Machine learning systems should be employed to make it navigable by human researchers and to analyze patterns in it.
+
+```{r surgingtopics, echo=F, eval=T, fig.width=11, fig.asp=0.4,  fig.cap='(ref:surgingtopics)'}
+
+surgingtopics <- read.table('surging_topics.tsv',sep='\t',header=T)
+
+surgingtopics$label <- paste(surgingtopics$name,' (', surgingtopics$prevyear,'-', surgingtopics$prevyear+1, ')',sep='')
+surgingtopics$label <- factor(surgingtopics$label,surgingtopics$label[order(surgingtopics$diff,decreasing=T)])
+
+ggplot(data=surgingtopics, aes(x=label, y=diff)) +
+  geom_bar(stat="identity", fill="steelblue") +
+  xlab("Concept") + ylab("# extra papers mentioning concept") +
+  theme_minimal() + 
+  #theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  theme(panel.grid.major.x = element_blank(),
+        panel.background = element_blank()) #, axis.line = element_line(colour = "black")
+
+```
+(ref:surgingtopics) The change in focus of research on different biomedical concepts is measured using mentions of biomedical entities in PubTator. The greatest increase is seen by COVID research and unfortunately followed by death, infection, stress, and anxiety in the same time period.
+
+Several methods have been built to make it easier to search and explore the coronavirus literature. LitCovid broadly categories the literature into 8 large categories, integrates with PubTator, and offers search functionality [@chen2020keep]. Collabovid uses the category data from LitCovid along with custom search functionality to provide another means of navigating the literature (accessible at https://www.collabovid.org). Other methods have developed different search interfaces to the literature such as Covidex [@zhang2020covidex]. Topic modeling approaches have also been employed to provide an unsupervised overview of major clusters of published articles [@doanvo2020] but are unable to provide the same quality as a supervised approach. COVID-SEE integrates several natural language processing analyses including search, unsupervised topic modeling, and word clouds [@verspoor2020covid]. The TREC-COVID shared task provided a number of information retrieval challenges on specific COVID-19 topics [@roberts2020trec]. Apart from LitCovid's limited set of categories, most approaches have avoided categorization and focussed on a search mechanism.
+
+We present a detailed categorization system for coronavirus literature, integrated with search and esteem metrics to provide smooth navigation of the literature. We describe our efforts to maintain the CoronaCentral resource which currently categorizes `r  prettyNum(py$document_count,big.mark=",",scientific=FALSE)` articles using machine learning systems based on manual curation of over 3000 articles and a custom category set. This work is designed to assist the research community in understanding the coronavirus literature and the continually-updated CoronaCentral dataset should help in analyzing a high-quality corpus of documents with cleaned metadata.
+
+
+```{r categories, echo=F, eval=T}
+categories <- read.table('categories.tsv',header=T,sep='\t')
+
+category_count <- nrow(categories)
+
+knitr::kable(
+    categories, 'pandoc',
+    booktabs = TRUE, escape=FALSE,
+    caption = 'Each article is labelled with multiple categories for their main topics and article type.'
+    )
+```
+
+## Results {-}
+
+To provide more detailed and higher quality topics, we pursue a supervised learning approach and have annotated over 3,200 articles with categories from a set of `r category_count` (Table \@ref(tab:categories)). These categories cover the main topics of the papers (e.g. Therapeutics, Forecasting, etc) as well as specific article types (e.g. Review, Comment/Editorial, etc). Using a BERT-based document multi-label classification method, we achieved a micro-F1 score of 0.68
+with micro-precision of 0.75 and micro-recall of 0.62. Table \@ref(tab:mlresults) provides a breakdown of the performance by category which shows varying quality of performance with some categories performing very well (e.g. contact tracing and forecasting) and others performing poorly (e.g. long haul) likely due to extremely low representation in the test set. Several other categories are identified using simple rule-based methods including the Book chapters, CDC Weekly Reports, Clinical Trials, and Retractions. 
+
+```{r categoryoverview, echo=F, eval=T, fig.width=8, fig.asp=1.2,  fig.cap='(ref:categoryoverview)'}
+
+py$category_df$category <- factor(py$category_df$category, levels=py$category_df$category[order(py$category_df$count,decreasing=F)])
+
+ggplot(data=py$category_df, aes(x=category, y=count, fill=type)) +
+  geom_bar(stat="identity", aes(fill=type)) +
+  xlab("Category") + ylab("# of papers") +
+  theme_minimal() +
+  theme(panel.grid.major.y = element_blank(),
+        panel.background = element_blank()) +
+  scale_fill_brewer(palette = "Set2", name='') +
+  theme(
+    axis.text.y = element_text(hjust = 1, margin=margin(0,-20,0,0)),
+    axis.ticks.y = element_blank(),
+    legend.position = c(.95, .05),
+    legend.justification = c("right", "bottom"),
+    legend.box.just = "right",
+    legend.margin = margin(6, 6, 6, 6),
+    legend.background = element_rect(fill="white", size=0.5, linetype=0)
+    ) +
+  coord_flip()
+
+```
+
+(ref:categoryoverview) Frequency of each category across the entire coronavirus literature.
+
+```{r mlresults, echo=F, eval=T}
+ml_results <- read.table('ml_results.tsv',header=T,sep='\t')
+
+knitr::kable(
+    ml_results, 'pandoc',
+    booktabs = TRUE, escape=FALSE,
+    caption = 'Machine learning results on different categories for held-out test set of 500 documents.'
+    )
+```
+
+As of `r update_date_nice`, CoronaCentral covers `r  prettyNum(py$document_count,big.mark=",",scientific=FALSE)` papers with Clinical Reports and the Effect on Medical Specialties being the most frequent categories (Fig \@ref(fig:categoryoverview)). We made a specific effort to identify papers that discuss the effects on healthcare workers, the psychological aspects of the pandemic, the inequality that has been highlighted by the pandemic, and the long-term health effects of COVID. This final topic is covered by the Long Haul category which currently includes `r py$longhaul_count` papers. We find the first papers discussing the possible long-term consequences of COVID appeared in April 2020, for example, Kiekens et al [@kiekens2020rehabilitation]. Since then, there has been a slow steady increase in publications on the challenge of "Long COVID" with ~20 papers per month recently. While all the annotated Long Haul documents used to train our system focus on SARS-CoV-2, our system finds 12 papers for the long-term consequences of SARS-CoV and one for MERS-CoV.
+
+Identifying the type of publication is particularly important, given our estimate that `r py$comment_perc`% of coronavirus publications are comments or editorials and not original research. As well as the deep learning-based system for categorization, we use a web-crawling system to augment additional metadata including article type from PubMed and publishers' websites. This automated categorization predicts papers as one of six types of article type, including Original Research, Meta-analysis, Review, Comment/Editorial, Book chapter, and News.
+
+Figure \@ref(fig:topicsbyarticletypes) shows that different topics have drastically different distributions of article types. While almost all papers that look at forecasting or modeling the pandemic are original research, about half of the health policy articles are commentary or editorials. Notable topics with larger proportions of reviews are the more science-focused topics including Molecular Biology, Drug Targets, Therapeutics, and Vaccines. Clinical Trials and papers examining risk factors for coronavirus have a larger proportion of meta-analysis papers than other topics.
+
+```{r topicsbyarticletypes, echo=F, eval=T, fig.width=8, fig.asp=1.2,  fig.cap='(ref:topicsbyarticletypes)'}
+
+py$topic_and_articletype_df$perc <- 100 * py$topic_and_articletype_df$count / py$topic_and_articletype_df$total_for_topic
+
+comment_only <- py$topic_and_articletype_df[py$topic_and_articletype_df$articletype=='Comment/Editorial',]
+
+py$topic_and_articletype_df$topic <- factor(py$topic_and_articletype_df$topic, levels=comment_only$topic[order(comment_only$perc,decreasing=T)])
+
+ggplot(data=py$topic_and_articletype_df, aes(x=topic, y=perc, fill=articletype)) +
+  geom_bar(stat="identity") +
+  xlab("Category") + ylab("# of papers") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank()) +
+  theme(axis.text.y = element_text(hjust = 1, margin=margin(0,-10,0,0)),
+        axis.ticks.y = element_blank()) +
+  scale_fill_brewer(palette = "RdYlBu", name="Article Type")+
+  theme(plot.margin=unit(c(.1,.1,.1,1.),"cm")) +
+  coord_flip()
+
+```
+(ref:topicsbyarticletypes) Different proportions of article types for each topic category
+
+The predicted categories reveal the trend of publishing during the SARS-CoV-2 pandemic (Fig \@ref(fig:categorytrendwitharticletype)). Early original research focused on disease forecasting and modeling and has steadily decreased as a proportion compared to other areas of research, such as the risk factors of coronavirus, which have increased. Clinical reports that document patient symptoms have been steady, as a proportion, throughout the pandemic. In commentaries and editorials, the main topic has been the effect on different medical specialties (e.g. neonatology) and discussion on how the disciplines should adapt to the pandemic. Other common commentary topics include implementation of health policy and the psychological impact of the pandemic.
+
+```{r categorytrendwitharticletype, echo=F, eval=T, fig.width=11, fig.asp=0.8,  fig.cap='(ref:categorytrendwitharticletype)'}
+
+#py$category_df$category <- factor(py$category_df$category, levels=py$category_df$category[order(py$category_df$count,decreasing=T)])
+
+palette <- brewer.pal(10, "Spectral")[1:8]
+
+dataframeCopy <- as.data.frame(py$topic_trends_df)
+dataframeCopy$date <- as.Date(dataframeCopy$date)
+dataframeCopy$perc_in_month <- 100 * dataframeCopy$count / dataframeCopy$total_per_month
+
+dataframeCopy$articletype <- factor(dataframeCopy$articletype,levels=c('Original Research','Comment/Editorial'))
+
+ggplot(data=dataframeCopy, aes(x=date, y=perc_in_month, group=topic)) +
+  geom_line(aes(color=topic),size=2) +
+  facet_grid(articletype ~ ., scales = "free") + 
+  xlab("Month of 2020") + ylab("% of SARS-CoV-2 papers") +
+  theme_minimal() + 
+  #theme(panel.grid.minor = element_blank()) +
+  scale_colour_brewer(palette = "Set2", name="Topic") +
+  #scale_y_continuous(limits = c(0,NA)) + 
+  scale_x_date(minor_breaks = as.Date(paste0('2020-',1:12,'-01'))) + 
+  theme(panel.spacing = unit(2, "lines"))
+  #scale_fill_manual(values=palette)
+
+```
+(ref:categorytrendwitharticletype) The trajectories of the top five topics for original research and comment/editorial articles for SARS-CoV-2.
+
+Along with the article types and topics, we extract 13 relevant types of biomedical entities from the text to make the literature easier to navigate and identify important subtopics. Figure \@ref(fig:categorytrendwitharticletype) provides a summary of the most common for each entity type broken down by the three coronaviruses. This includes geographic locations which enable quick identification of clinical reports in specific areas.
+
+```{r entityoverview, echo=F, eval=T, fig.width=13, fig.asp=0.8,  fig.cap='(ref:entityoverview)'}
+
+entity_names <- py$entity_counts_df[!duplicated(py$entity_counts_df$name),c('name','count_for_all_viruses')]
+
+entity_name_counts <- aggregate(py$entity_counts_df$count, by=list(name=py$entity_counts_df$name), FUN=sum)
+
+py$entity_counts_df$name <- factor(py$entity_counts_df$name, levels=entity_name_counts$name[order(entity_name_counts$x,decreasing=T)])
+
+py$entity_counts_df$virus <- factor(py$entity_counts_df$virus,levels=c('SARS-CoV-2','MERS-CoV','SARS-CoV'))
+
+ggplot(data=py$entity_counts_df, aes(x=name, y=count, fill=virus)) +
+  geom_bar(stat="identity", aes(fill=virus)) +
+  facet_wrap(~ type, scales = "free") + 
+  xlab("") + ylab("# of papers") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  scale_fill_manual(values=c("#66c2a5", "#8da0cb", "#fc8d62"), name="Virus")+
+  
+  theme(plot.margin=unit(c(.5,.5,.5,.5),"cm"))
+
+```
+
+(ref:entityoverview) Top 15 entities for each entity type extracted from published literature for each virus.
+
+Preprint servers have proven incredibly important as Figure \@ref(fig:journals) shows with preprint servers leading the list of article sources. However, they only account for `r py$preprint_perc`% of all articles. We find that the four indexed preprint servers have been used for dramatically different topics (Fig \@ref(fig:preprints)). As might be expected the more mathematically focussed papers, such as Forecasting/Modelling have been submitted to arXiv. Molecular biology research tends to go to bioRxiv and therapeutics research to ChemRxiv. MedRxiv has a more diverse clinical focused set of topics with the majority of the Risk Factors papers being sent there.
+
+```{r journals, echo=F, eval=T, fig.width=7, fig.asp=0.9,  fig.cap='(ref:journals)'}
+
+py$journals_df$journal <- factor(py$journals_df$journal,levels=py$journals_df$journal[order(py$journals_df$count,decreasing=T)])
+
+py$journals_df$is_preprint <- factor(py$journals_df$journal %in% c('arXiv','bioRxiv','ChemRxiv','medRxiv'),
+                                     labels=c("Not Preprint","Preprint"))
+
+ggplot(data=py$journals_df, aes(x=journal, y=count, fill=is_preprint)) +
+  geom_bar(stat="identity", aes(fill=is_preprint)) +
+  xlab("Source") + ylab("# of papers") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust=1),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_brewer(palette = "Set1",name='') + 
+  theme(legend.position = c(.95, .95),
+    legend.justification = c("right", "top"),
+    legend.box.just = "right",
+    legend.margin = margin(6, 6, 6, 6),
+    legend.background = element_rect(fill="white", size=0.5, linetype=0))
+
+```
+
+(ref:journals) Top journals and preprint servers
+
+```{r preprints, echo=F, eval=T, fig.width=11, fig.asp=1.5,  fig.cap='(ref:preprints)'}
+
+palette <- c(brewer.pal(9, "Set1"),brewer.pal(6, "Set3"))
+
+#palette[10] <- '#333333'
+palette[10] <- '#eeeeee'
+
+#ggplot(data=py$preprints_df, aes(x=journal, y=perc, fill=category)) +
+#  geom_bar(position="stack", stat="identity", aes(fill=category)) +
+#  xlab("Source") + ylab("% of predicted topics") +
+#  theme_minimal()  +
+  #scale_fill_brewer(palette = "RdYlBu") + 
+#  scale_fill_manual(values=palette, name="Topic")
+
+
+#is_alluvia_form(py$preprint_category_alluvial_pd, axes = 1:2, silent = TRUE)
+
+preprint_data <- py$preprints_df %>% filter(journal != 'Non-preprint')
+
+preprint_data <- preprint_data %>%
+    group_by(category)                   %>% # Group by category
+    mutate(category_count = sum(count)) %>% # Sum by category
+    ungroup
+
+preprint_data[preprint_data$category_count < 100, 'category'] <- 'Other'
+
+#preprint_data$journal <- as.factor(preprint_data$journal)
+#$category <- as.factor(preprint_data$category)
+
+preprint_data <- preprint_data %>%
+    group_by(journal,category)                   %>% # Group by category
+    mutate(count = sum(count)) %>% # Sum by category
+    filter(row_number() == 1) %>%
+    ungroup
+
+palette <- c(brewer.pal(5, "Set1"),brewer.pal(5, "Set2"),brewer.pal(6, "Set3"))
+palette <- grep("#FFFFB3",palette,invert=T,value=T)
+
+ggplot(preprint_data,
+       aes(y = count, axis2 = category, axis1 = journal)) +
+  geom_alluvium(aes(fill = category), width = 1/3) +
+  geom_stratum(width = 1/3) +
+  geom_label(stat = "stratum", aes(label = after_stat(stratum))) +
+  #geom_text(stat = "stratum", aes(label = after_stat(stratum)),
+  #          reverse = FALSE) +
+  theme_minimal() +
+  theme(legend.position = "none") + 
+  #scale_fill_manual(values=palette) + 
+  scale_fill_brewer(palette='Set2') + 
+  xlab('') + ylab('') + 
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank()) +
+  scale_x_continuous(expand=c(0,0)) + 
+        scale_y_continuous(expand=c(0,0))
+  
+
+```
+
+(ref:preprints) Topic breakdown for each preprint server and non-preprint peer-reviewed journals. Infrequent topics in preprints are grouped in Other.
+
+The previous research on the SARS and MERS outbreaks are valuable sources of knowledge for viral biology, health policy implications, and many other aspects. We integrate research literature of these previous viruses along with SARS-CoV-2 and Figure \@ref(fig:pubsbytime) shows the different time ranges as well as the dramatic scale of the SARS-CoV-2 literature compared to the other two viruses. Notably, we are over the peak of SARS-CoV-2 literature, with `r prettyNum(py$sarscov2_may_count,big.mark=",",scientific=FALSE)` publications in May 2020. As an example of the strength of integrating previous coronavirus research, we identify drug candidates explored for SARS-CoV and MERS-CoV that have not yet appeared in SARS-CoV-2 publications (Table \@ref(tab:drugcandidates)). Loperamide (Imodium) was found to inhibit MERS-CoV in low-micromolar concentrations in-vitro [@de2014screening]. Two antibiotics (oritavancin and telavancin) were found to inhibit SARS and MERS viral entry and have not been further explored for SARS-CoV-2 [@zhou2016glycopeptide].
+
+```{r pubsbytime, echo=F, eval=T, fig.width=11, fig.asp=0.5,  fig.cap='(ref:pubsbytime)'}
+
+pubsbytime_data <- as.data.frame(py$publications_by_date_df)
+pubsbytime_data$dateObj <- as.Date(as.character(pubsbytime_data$date))
+pubsbytime_data$virus <- factor(pubsbytime_data$virus,levels=c('SARS-CoV-2','MERS-CoV','SARS-CoV'))
+
+ggplot(data=pubsbytime_data, aes(x=dateObj, y=count)) +
+  geom_bar(stat="identity", aes(fill=virus)) +
+  facet_grid(virus ~ ., scales = "free", switch='y') + 
+  xlab("Date") + ylab("# of papers per month") +
+  theme_minimal() + 
+  scale_fill_manual(values=c("#66c2a5", "#8da0cb", "#fc8d62")) +
+  theme(legend.position = "none") + 
+  theme(panel.spacing = unit(1, "lines")) + 
+  scale_y_continuous(position = "right") + 
+  scale_x_date(minor_breaks = as.Date(paste0(2000:2020,'-01-01')))
+
+```
+(ref:pubsbytime) Publication rate for each virus
+
+```{r drugcandidates, echo=F, eval=T}
+drugcandidates <- read.table('drugcandidates.tsv',header=F,sep='\t')
+colnames(drugcandidates) <- c('Drug','# of SARS/MERS Papers','Effective in SARS/MERS screening','Description')
+
+knitr::kable(
+    drugcandidates, 'pandoc',
+    booktabs = TRUE, escape=FALSE,
+    caption = 'Drugs discussed in SARS/MERS Therapeutics papers that have not appeared in SARS-CoV-2 papers'
+    )
+```
+
+We integrate Altmetric data into CoronaCentral to identify papers that have received wide coverage in mass and social media. This enables users to quickly identify high-profile papers in each category as well as see currently trending articles. Figure \@ref(fig:altmetric) shows the breakdown of topics in the papers with the 100 papers with highest Altmetric scores. The distribution looks very different from the overall distribution of coronavirus literature with topics like Therapeutics, Transmission, and Prevention being more highly represented, reflecting the interest in understanding treatments and prevention methods.
+
+```{r altmetric, echo=F, eval=T, fig.width=11, fig.asp=0.5,  fig.cap='(ref:altmetric)'}
+
+altmetric_data <- py$altmetric_df
+
+altmetric_data$category <- factor(altmetric_data$category,
+                                  levels=altmetric_data$category[order(altmetric_data$count)])
+
+ggplot(altmetric_data, aes(x=category, y=count)) +
+  geom_bar(stat="identity", fill="steelblue") +
+  xlab("") + ylab("# of papers in Top 100") +
+  theme_minimal() +
+  scale_fill_manual(values=palette,name="Topic") +
+  coord_flip() +
+  theme(axis.text.y = element_text(hjust = 1, margin=margin(0,-20,0,0)),
+        panel.grid.major.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  scale_y_continuous(breaks = seq(0, 100, 5), minor_breaks=seq(0, 100, 1))
+        
+
+```
+(ref:altmetric) The number of papers categorized with each topic in the 100 papers with highest Altmetric scores
+
+## Methods {-}
+
+**Data Collection:** The CORD-19 dataset [@wang2020cord] and PubMed articles containing relevant coronavirus keywords are downloaded daily. Articles are cleaned to fix Unicode issues, remove erroneous text from abstracts, and identify publication dates. Non-English language articles are filtered out using a rule-based system based on sets of stopwords in multiple languages. To remove duplicates, documents were merged using identifiers, combinations of title and journal, and other metadata. Metadata from the publishers’ websites is also integrated which enables normalization of consistent journal names and further abstract text fixes. Additional manual fixes to title, abstracts, and metadata are applied to the corpus. Altmetric data is updated regularly and integrated with the data.
+
+**Categories:** Manual evaluation of an initial 1000 randomly selected articles was undertaken to produce a draft list of categories. These categories cover both the topic (e.g. Therapeutics) and the article type (e.g. Comment/Editorial). An iterative process was undertaken to adjust the category list to provide better coverage for the curated documents. A further 500 documents were sampled later in the pandemic and another iterative process was undertaken as new topics were appearing in larger quantities (e.g. contact tracing). Finally, several smaller topics that had not been captured by random sampling were identified and added to the category list (e.g. Long Haul). As the coronavirus literature grows, we may need to add new categories as new topics become more prominent.
+
+**Category Annotation:** Articles were manually annotated for categories using a custom web interface. The first 1500 randomly sampled articles were annotated during the iterative process that defined the set of categories. A further ~1200 articles have been identified for annotation through manual identification, their high Altmetric scores or uncertainty in the machine learning system. Some of the articles were flagged using the CoronaCentral “Flag Mistake” system while others were identified through manual searching to improve representation of different topics. A final 500 articles were randomly selected and annotated for use as a held-out test set.
+
+**Category Prediction:** Cross-validation using a 75%/25% training/validation split was used to evaluate BERT-based document classifier as well as traditional methods as a baseline. Multi-label classifiers were implemented using ktrain [@maiya2020ktrain] and HuggingFace models for BERT models and scikit-learn for others [@scikitlearn]. Hyperparameter optimization involved a grid search over parameters shown in Table \@ref(tab:hyperparameteroptimization) and selecting for the highest macro F1 score. The best model used the microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract BERT model [@gu2020domain] with 32 epochs, a learning rate of 5e-05, and a batch size of 8. This model was then evaluated on the held-out test set for final performance and a full model was retrained using these parameters with all annotated documents and applied to the full coronavirus literature
+
+```{r hyperparameteroptimization, echo=F, eval=T}
+hyperparameteroptimization <- read.table('hyperparameter_optimization.tsv',header=T,sep='\t')
+
+knitr::kable(
+    hyperparameteroptimization, 'pandoc',
+    booktabs = TRUE, escape=FALSE,
+    caption = 'Parameter values searched for different classifier types'
+    )
+```
+
+**Additional Category Identification:** The BERT system predicts five article types but not Original Research. Documents are tagged as Original Research if not predicted as another article type. Clinical trials are identified through regular expression search for trial identifiers and book chapters for chapter headings in the title. The metadata provided by the publisher’s website is combined with PubMed metadata to identify some article types, e.g. documents tagged as Commentary or Viewpoints on publisher’s websites were categorized as Comment/Editorial. Retractions are identified through PubMed flags and titles beginning with "Retraction", "Retracted" or "Withdrawn". 
+
+**Entity Extraction:** A set of entity types that would improve search across the literature was developed, e.g. drug names, locations, and more. This set was refined based on entities that would be particularly relevant for different categories (e.g. Drug for Therapeutics, Symptom for Clinical Reports, etc). A final 13 entity types were chosen and lists of entities were sourced from WikiData or built manually. Entities of types Drug, Location, Symptom, Medical Specialty, and Gene/Protein are gathered from Wikidata using a series of SPARQL queries. A custom list of Prevention Methods, Risk Factors, Test Types, Transmission Types, and Vaccine Types is also constructed based on Wikidata entities. Additional customizations are made to remove incorrect synonyms. A custom list of coronavirus proteins was added to the Gene/Protein list. Exact string matching is used to identify mentions of entities in text using the Wikidata set of synonyms and a custom set of stopwords. A simple disambiguation method was used to link virus proteins with the relevant virus based on mentions of the virus elsewhere in the document. This meant that a mention of a "Spike protein" in a MERS paper would correctly link it to the MERS-CoV spike protein and not to the SARS-CoV-2 spike protein. If multiple viruses were mentioned, no disambiguation was made.
+
+**Interface:** The data is presented through a website built using NextJS with a MySQL database backend. Visualizations are generated using ChartJS and mapping using Leaflet.
+
+**PubTator Concept Analysis:** To find the concepts that have had the largest difference in frequency, PubTator Central [@wei2019pubtator] was used as it covers a broad range of biomedical entity types such as disease, drug, and gene. It was aligned with PubMed and PubMed Central articles to link publication dates to entity annotations. This used the BioText project (https://github.com/jakelever/biotext). Concept counts were calculated per publication year and the differences between these ordered. Entity mentions of the type "Species" were removed due to lack of value as "human" dominated the data.
+
+**Drug Analysis:** To identifying drugs of interest from SARS and MERS research, SARS/MERS papers that were predicted to have the topic Therapeutics were filtered and drug mentions were extracted. These drug mentions were cross-referenced against all drug references in SARS-CoV-2 papers and those with a match were kept. The remaining drugs were manually reviewed using their source SARS/MERS papers to identify those that had shown efficacy in a SARS/MERS model.
+
+**Other Analyses:** All other analyses were implemented in Python and visualized using R and ggplot2.
+
+**Code Availability:** The code for the machine learning system and paper analysis are available at https://github.com/jakelever/corona-ml. The code for the web interface is available at https://github.com/jakelever/corona-web.
+
+**Data Availability:** The data is hosted on Zenodo and available at: .
+
+## Acknowledgements {-}
+
+This project has been supported by the Chan Zuckerberg Biohub and through the National Library of Medicine LM05652 grant (RBA).
+
+## References {-}
