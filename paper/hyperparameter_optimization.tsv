@@ -1,0 +1,7 @@
+Classifier	Parameter	Options
+BERT	Epochs	"4, 8, 12, 16, 24, 32, 48, 64, 80, 96"
+BERT	Learning Rate	"1e-3, 5e-4, 1e-4, 5e-5, 1e-5, 5e-6"
+BERT	Model	"BlueBert, dmis-lab/biobert-v1.1, microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext, microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract, allenai/scibert_scivocab_uncased, allenai/scibert_scivocab_cased'"
+Logistic Regression / Linear SVC / Random Forests	SVD Dimensionality Reduction	"None, 8, 16, 32, 64, 128"
+Logistic Regression / Linear SVC	C	"0.1, 1, 10, 20"
+Random Forests	No of Estimators	"50, 100, 200"

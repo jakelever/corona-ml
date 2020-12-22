@@ -303,7 +303,7 @@ knitr::kable(
 ## Results {-}
 
 To provide more detailed and higher quality topics, we pursue a supervised learning approach and have annotated over 3,200 articles with categories from a set of `r category_count` (Table \@ref(tab:categories)). These categories cover the main topics of the papers (e.g. Therapeutics, Forecasting, etc) as well as specific article types (e.g. Review, Comment/Editorial, etc). Using a BERT-based document multi-label classification method, we achieved a micro-F1 score of 0.68
-with micro-precision of 0.75 and micro-recall of 0.62. Table \@ref(tab:mlresults) provides a breakdown of the performance by category which shows varying quality of performance with some categories performing very well (e.g. contact tracing and forecasting) and others performing poorly (e.g. long haul) likely due to extremely low representation in the test set. Several other categories are identified using simple rule-based methods including the Book chapters, CDC Weekly Reports, Clinical Trials, and Retractions. 
+with micro-precision of 0.76 and micro-recall of 0.62. Table \@ref(tab:mlresults) provides a breakdown of the performance by category which shows varying quality of performance with some categories performing very well (e.g. contact tracing and forecasting) and others performing poorly (e.g. long haul) likely due to extremely low representation in the test set. Several other categories are identified using simple rule-based methods including the Book chapters, CDC Weekly Reports, Clinical Trials, and Retractions. 
 
 ```{r categoryoverview, echo=F, eval=T, fig.width=8, fig.asp=1.2,  fig.cap='(ref:categoryoverview)'}
 
@@ -496,8 +496,8 @@ ggplot(preprint_data,
   #          reverse = FALSE) +
   theme_minimal() +
   theme(legend.position = "none") + 
-  #scale_fill_manual(values=palette) + 
-  scale_fill_brewer(palette='Set2') + 
+  scale_fill_manual(values=palette) + 
+  #scale_fill_brewer(palette='Set2') + 
   xlab('') + ylab('') + 
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
@@ -604,7 +604,7 @@ knitr::kable(
 
 **Code Availability:** The code for the machine learning system and paper analysis are available at https://github.com/jakelever/corona-ml. The code for the web interface is available at https://github.com/jakelever/corona-web.
 
-**Data Availability:** The data is hosted on Zenodo and available at: .
+**Data Availability:** The data is hosted on Zenodo and available at https://doi.org/10.5281/zenodo.4383289.
 
 ## Acknowledgements {-}
 

@@ -1,0 +1,38 @@
+Category	Precision	Recall	F1
+Clinical Reports	0.84	0.63	0.72
+Comment/Editorial	0.73	0.69	0.71
+Communication	0.50	0.25	0.33
+Contact Tracing	1.00	1.00	1.00
+Diagnostics	0.93	0.83	0.88
+Drug Targets	0.67	0.50	0.57
+Education	0.63	0.71	0.67
+Effect on Medical Specialties	0.79	0.49	0.61
+Forecasting & Modelling	1.00	0.88	0.93
+Health Policy	0.50	0.32	0.39
+Healthcare Workers	0.80	0.89	0.84
+Imaging	0.93	0.72	0.81
+Immunology	0.44	0.44	0.44
+Inequality	0.83	0.71	0.77
+Infection Reports	0.75	0.30	0.43
+Long Haul	0.00	0.00	0.00
+Medical Devices	0.71	0.63	0.67
+Meta-analysis	0.75	0.86	0.80
+Misinformation	1.00	0.67	0.80
+Model Systems & Tools	1.00	0.20	0.33
+Molecular Biology	0.72	0.68	0.70
+News	0.50	0.40	0.44
+Non-human	0.83	0.50	0.63
+Non-medical	1.00	0.43	0.61
+Pediatrics	0.79	0.79	0.79
+Prevalence	1.00	0.56	0.71
+Prevention	0.72	0.56	0.63
+Psychology	1.00	0.64	0.78
+Recommendations	0.70	0.54	0.61
+Review	0.57	0.75	0.65
+Risk Factors	0.65	0.51	0.57
+Surveillance	1.00	0.50	0.67
+Therapeutics	0.70	0.68	0.69
+Transmission	0.75	0.75	0.75
+Vaccines	1.00	0.33	0.50
+MICRO	0.76	0.62	0.68
+MACRO	0.76	0.58	0.64
