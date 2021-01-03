@@ -1,5 +1,17 @@
 # CoronaCentral Machine Learning
 
+<p>
+<a href="https://coronacentral.ai/">
+   <img src="https://img.shields.io/badge/corona-central-9e42f4.svg" />
+</a>
+<a href="https://doi.org/10.5281/zenodo.4383289">
+   <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4383289.svg" />
+</a>
+<a href="https://doi.org/10.1101/2020.12.21.423860">
+   <img src="https://img.shields.io/badge/bioRxiv-preprint-67baea.svg" />
+</a>
+</p>
+
 This repository contains the code for text mining the coronavirus literature for [CoronaCentral](https://coronacentral.ai). It manages the download, clean up, categorization (using deep learning) and many more steps to process the coronavirus literature. The output of this is then upload to the CoronaCentral website. The web interface of the website is kept in a [separate Github repo](https://github.com/jakelever/corona-web).
 
 This README will cover the three main steps

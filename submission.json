@@ -1,0 +1,10 @@
+{
+	"file_list": [
+		"pipeline/data/coronacentral.json.gz"
+	],
+	"title": "CoronaCentral",
+	"author": "Jake Lever",
+	"author_affiliation": "Stanford University",
+	"description_file": "output_description.md",
+	"existing_zenodo_id": "4383289"
+}
