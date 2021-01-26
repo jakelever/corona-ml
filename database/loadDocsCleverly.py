@@ -119,16 +119,16 @@ if __name__ == '__main__':
 		#mycursor.execute(sql,record)
 		
 		
-	for chunk in chunks(insertrecords, 500):
+	for chunk in chunks(insertrecords, 100):
 		mycursor.executemany(insertsql, chunk)
 		#break
 	
-	for chunk in chunks(updaterecords, 500):
+	for chunk in chunks(updaterecords, 100):
 		mycursor.executemany(updatesql, chunk)
 	
 	never_seen_document_ids = [ [document_id] for document_id in all_db_document_ids if not document_id in seen_document_ids ]
 	
-	for chunk in chunks(never_seen_document_ids, 500):
+	for chunk in chunks(never_seen_document_ids, 100):
 		mycursor.executemany(deletesql, chunk)
 		
 	mydb.commit()
