@@ -63,7 +63,10 @@ if __name__ == '__main__':
 	#response = requests_retry_session(session=s).get(url)
 	response = geturl(url)
 	
-	pages_to_poke = re.findall('"/[a-z]+"',response.text)
+	#pages_to_poke = re.findall(r'"/[^"]+"',response.text)
+	pages_to_poke = re.findall(r'"/\w+"',response.text)
+	pages_to_poke += re.findall('"/entity/[^"/]+/all"',response.text)
+	pages_to_poke += re.findall(r'"/doc/[^"]+"',response.text)
 	pages_to_poke = sorted(set( page.strip('"') for page in pages_to_poke))
 	
 	assert len(pages_to_poke) > 10, "Found too few pages to poke. Something went wrong (%s)" % pages_to_poke
@@ -77,7 +80,7 @@ if __name__ == '__main__':
 		#response = requests_retry_session(session=s).get(url)
 		response = geturl(url)
 		assert response.status_code == 200
-		time.sleep(5)
+		time.sleep(15)
 	
 	print("Complete.")
 	

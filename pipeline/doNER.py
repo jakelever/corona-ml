@@ -143,7 +143,7 @@ if __name__ == '__main__':
 	#	if len(entities) > 1:
 	#		print("%s\t%d" % (alias,len(entities)))
 	
-	testMode = False #"10.1101/2020.04.26.061705"
+	testMode = "fuh0qws1"
 	
 	
 	if not testMode:
@@ -154,7 +154,7 @@ if __name__ == '__main__':
 	else:
 		print("RUNNING IN TEST MODE for doc: %s" % testMode)
 		
-		documents = [ d for d in documents if d['doi'] == testMode ]
+		documents = [ d for d in documents if d['cord_uid'] == testMode ]
 		assert len(documents) == 1
 		text = documents[0]['title'] + "\n" + documents[0]['abstract']
 		
@@ -169,7 +169,7 @@ if __name__ == '__main__':
 	print("Annotating corpus...")
 	sys.stdout.flush()
 	corpus.removeEntities()
-	ner = kindred.EntityRecognizer(termLookup, mergeTerms=True)
+	ner = kindred.EntityRecognizer(termLookup)
 	ner.annotate(corpus)
 	
 	if testMode:
