@@ -1,7 +1,7 @@
 import json
 import argparse
 
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser(description='Make the JSON nice and readable')
 	parser.add_argument('--inJSON',required=True,type=str,help='Input JSON file')
 	parser.add_argument('--outJSON',required=True,type=str,help='Output nicer JSON file')
@@ -14,3 +14,7 @@ if __name__ == '__main__':
 		json.dump(data,f,indent=2,sort_keys=True)
 
 	print("Done")
+
+if __name__ == '__main__':
+	main()
+

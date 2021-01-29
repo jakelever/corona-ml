@@ -56,25 +56,14 @@ rule:
 	shell: "python applySpotfixesAndAddCustomDocs.py --inJSON {input.documents} --additions {input.additions} --spotfixes {input.spotfixes} --outJSON {output}"
 
 rule:
-	input:
-		documents=join(outDir,"alldocuments.spotfixed.json"),
-		webDir="webdata"
-	output: join(outDir,"scraped.flag")
-	shell: "python scrapeWebdata.py --documents {input.documents} --webDir {input.webDir} --outFlagFile {output}"
+	input: join(outDir,"alldocuments.spotfixed.json")
+	output: join(outDir,"alldocuments.scraped.json")
+	shell: "python scrapeWebdata.py --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
 	
 rule:
-	input:
-		webDir="webdata",
-		flag=join(outDir,"scraped.flag")
-	output: join(outDir,"webmetadata.json")
-	shell: "python collectMetadataFromWebData.py --inDir {input.webDir} --prevData {output}.prev --outData {output} && cp {output} {output}.prev"
-	
-rule:
-	input: 
-		documents=join(outDir,"alldocuments.spotfixed.json"),
-		webmetadata=join(outDir,"webmetadata.json")
+	input: join(outDir,"alldocuments.scraped.json")
 	output: join(outDir,"alldocuments.webdata.json")
-	shell: "python integrateWebData.py --inJSON {input.documents} --webmetadata {input.webmetadata} --outJSON {output}"
+	shell: "python integrateWebData.py --inJSON {input} --outJSON {output}"
 	
 rule:
 	input: join(outDir,"alldocuments.webdata.json")
@@ -101,25 +90,29 @@ rule:
 	shell: "python integrateAnnotations.py --inJSON {input.json} --annotations {input.annotations} --outJSON {output}"
 
 rule:
-	input: join(outDir,"alldocuments.withannotations.json")
-	output: join(outDir,"alldocuments.parsed.pickle")
-	shell: "python parseDocuments.py --inJSON {input} --prevPickle {output}.prev --outPickle {output} && cp {output} {output}.prev"
-	
-rule:
 	input: 
 		json=join(outDir,"alldocuments.withannotations.json"),
-		parsed=join(outDir,"alldocuments.parsed.pickle"),
 		entities="entities.json",
 		entitiesflag=join(outDir,"terms_complete.txt"),
 		stopwords=join("predefined","stopwords.txt"),
 		removals=join("predefined","removals.tsv")
 	output: join(outDir,"alldocuments.ner.json")
-	shell: "python doNER.py --inJSON {input.json} --entities {input.entities} --stopwords {input.stopwords} --removals {input.removals} --inParsed {input.parsed} --outJSON {output}"
+	shell: "python doNER.py --inJSON {input.json} --prevJSON {output}.prev --entities {input.entities} --stopwords {input.stopwords} --removals {input.removals} --outJSON {output} && cp {output} {output}.prev"
 
 rule:
 	input: join(outDir,"alldocuments.ner.json"),
+	output: join(outDir,"alldocuments.onlyviruses.json")
+	shell: "python filterForVirusDocs.py --inJSON {input} --outJSON {output}"
+
+rule:
+	input: join(outDir,"alldocuments.onlyviruses.json"),
+	output: join(outDir,"alldocuments.geneticvariation.json")
+	shell: "python extractGeneticVariation.py --stopwords predefined/geneticvariation_stopwords.txt --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
+
+rule:
+	input: join(outDir,"alldocuments.geneticvariation.json"),
 	output: join(outDir,"alldocuments.categories.json")
-	shell: "python ../category_prediction/applyCategoryModel.py --inJSON {input} --modelDir ../category_prediction/optimal_model/ --outJSON {output}"
+	shell: "python ../category_prediction/applyCategoryModel.py --inJSON {input} --prevJSON {output}.prev --modelDir ../category_prediction/optimal_model/ --outJSON {output} && cp {output} {output}.prev"
 
 rule:
 	input: join(outDir,"alldocuments.categories.json"),

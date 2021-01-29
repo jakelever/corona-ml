@@ -4,6 +4,13 @@ import pickle
 import json
 from collections import defaultdict,Counter
 import sys
+import os
+import time
+
+def chunks(lst, n):
+	"""Yield successive n-sized chunks from lst."""
+	for i in range(0, len(lst), n):
+		yield lst[i:i + n]
 
 def doesLocationCapitalizationMatch(allEntities,e):
 	if e['type'] != 'Location':
@@ -44,15 +51,80 @@ def undoMergingOfEntitiesInSamePosition(kindred_doc):
 			
 	kindred_doc.entities = entitiesWithoutMergedExternalIDs
 		
-if __name__ == '__main__':
+def nice_time(seconds):
+	days = int(seconds) // (24*60*60)
+	seconds -= days * (24*60*60)
+	hours = int(seconds) // (60*60)
+	seconds -= hours * (60*60)
+	minutes = int(seconds) // (60)
+	seconds -= minutes * (60)
+	
+	bits = []
+	if days:
+		bits.append( "1 day" if days == 1  else "%d days" % days)
+	if hours:
+		bits.append( "1 hour" if hours == 1 else "%d hours" % hours)
+	if minutes:
+		bits.append( "1 minute" if minutes == 1 else "%d minutes" % minutes)
+	bits.append( "1 second" if seconds == 1 else "%.1f seconds" % seconds)
+	
+	return ", ".join(bits)
+
+def estimateTime(start_time,num_completed,num_total):
+	now = time.time()
+	perc = 100*num_completed/num_total
+	
+	time_so_far = (now-start_time)
+	time_per_item = time_so_far / (num_completed+1)
+	remaining_items = num_total - num_completed
+	remaining_time = time_per_item * remaining_items
+	total_time = time_so_far + remaining_time
+	
+	print("Completed %.1f%% (%d/%d)" % (perc,num_completed,num_total))
+	print("time_per_item = %.4fs" % time_per_item)
+	print("remaining_items = %d" % remaining_items)
+	print("time_so_far = %.1fs (%s)" % (time_so_far,nice_time(time_so_far)))
+	print("remaining_time = %.1fs (%s)" % (remaining_time,nice_time(remaining_time)))
+	print("total_time = %.1fs (%s)" % (total_time,nice_time(total_time)))
+	print('-'*30)
+	print()
+	sys.stdout.flush()
+
+def main():
 	parser = argparse.ArgumentParser('Run named entity recognition on parsed documents and integrate it into the JSON data')
 	parser.add_argument('--inJSON',required=True,type=str,help='Filename of JSON documents')
+	parser.add_argument('--prevJSON',type=str,required=False,help='Optional previously processed output (to save time)')
 	parser.add_argument('--entities',required=True,type=str,help='JSON file with listing of different JSON files with entities to load')
-	parser.add_argument('--inParsed',required=True,type=str,help='Filename of Kindred corpus')
 	parser.add_argument('--stopwords',required=True,type=str,help='File with stopwords to remove')
 	parser.add_argument('--removals',required=True,type=str,help='File with entities to remove')
 	parser.add_argument('--outJSON',required=True,type=str,help='Output JSON with entities')
 	args = parser.parse_args()
+
+	ner_map = {}
+	if args.prevJSON and os.path.isfile(args.prevJSON):
+		with open(args.prevJSON) as f:
+			prev_documents = json.load(f)
+
+		for d in prev_documents:
+			ner_key = (d['title'],d['abstract'])
+			ner_map[ner_key] = d['entities']
+
+	with open(args.inJSON) as f:
+		documents = json.load(f)
+
+	needs_doing = []
+	already_done = []
+	for d in documents:
+		ner_key = (d['title'],d['abstract'])
+		if ner_key in ner_map:
+			d['entities'] = ner_map[ner_key]
+			already_done.append(d)
+		else:
+			needs_doing.append(d)
+
+	print("%d documents previously processed" % len(already_done))
+	print("%d documents to be processed" % len(needs_doing))
+	print()
 	
 	print("Loading wordlists...")
 	
@@ -134,157 +206,126 @@ if __name__ == '__main__':
 	print("N.B. NO AMBIGUITY ALLOWED (in current implementation)")
 	#termLookup = defaultdict(set,{ k:v for k,v in termLookup.items() if len(v) == 1 })
 	
-	print("Loading and integrating with JSON file...")
-	with open(args.inJSON) as f:
-		documents = json.load(f)
-	
-	
-	#for alias,entities in termLookup.items():
-	#	if len(entities) > 1:
-	#		print("%s\t%d" % (alias,len(entities)))
-	
-	testMode = "fuh0qws1"
-	
-	
-	if not testMode:
-		print("Loading corpus...")
-		sys.stdout.flush()
-		with open(args.inParsed,'rb') as f:
-			corpus = pickle.load(f)
-	else:
-		print("RUNNING IN TEST MODE for doc: %s" % testMode)
-		
-		documents = [ d for d in documents if d['cord_uid'] == testMode ]
-		assert len(documents) == 1
-		text = documents[0]['title'] + "\n" + documents[0]['abstract']
-		
-		print("Title: %s" % documents[0]['title'])
-		print("Abstract: %s" % documents[0]['abstract'])
-		
-		corpus = kindred.Corpus(text = text)
-		corpus.documents[0].metadata = {"title":documents[0]['title']}
-		parser = kindred.Parser(model='en_core_sci_sm')
-		parser.parse(corpus)
-	
 	print("Annotating corpus...")
 	sys.stdout.flush()
-	corpus.removeEntities()
-	ner = kindred.EntityRecognizer(termLookup)
-	ner.annotate(corpus)
-	
-	if testMode:
-		doc = corpus.documents[0]
-		for e in doc.entities:
-			print("  %s" % str(e))
-		#print(doc.entities) 	
-	
-	#assert False
-	
-	corpusMap = {}
-	for kindred_doc in corpus.documents:
-		corpusMap[kindred_doc.text] = kindred_doc
 
-	for d in documents:				
-		key = d['title'] + "\n" + d['abstract']
-		kindred_doc = corpusMap[key]
-		
-		# Strip out some terms
-		kindred_doc.entities = [ e for e in kindred_doc.entities if not e.entityType == 'conflicting' ]
-		
-		# This is "undoing" the merge of externalIDs for merged terms in Kindred
-		undoMergingOfEntitiesInSamePosition(kindred_doc)
-		
-		# Clean up viruses so that they make sense given the publication year (and also if SARS-CoV-2 appears, it's a SARS-CoV-2 paper, and not another one - for now)
-		filterVirusesBasedOnPublishYear(d,kindred_doc)
-		
-		virusesInDoc = sorted(set( allEntities[e.externalID]['name'] for e in kindred_doc.entities if e.entityType == 'Virus'))
-		
-		entitiesByPosition = defaultdict(list)
-		for e in kindred_doc.entities:
-			entitiesByPosition[e.position[0]].append(e)
+	chunk_size = 1000
+
+	start_time = time.time()
+	for chunk_no,document_chunk in enumerate(chunks(needs_doing,chunk_size)):
+		estimateTime(start_time,chunk_no*chunk_size,len(needs_doing))
+
+		corpus = kindred.Corpus()
+
+		for d in document_chunk:	
+			title_plus_abstract = d['title'] + "\n" + d['abstract']
+			kindred_doc = kindred.Document(title_plus_abstract)
+			corpus.addDocument(kindred_doc)
+
+		parser = kindred.Parser(model='en_core_sci_sm')
+		parser.parse(corpus)
+
+		ner = kindred.EntityRecognizer(termLookup, mergeTerms=True)
+		ner.annotate(corpus)
+
+		assert len(document_chunk) == len(corpus.documents)
+
+		for d,kindred_doc in zip(document_chunk,corpus.documents):
 			
-		#unambigLocationCoords = []
-		#for position,entitiesAtPosition in entitiesByPosition.items():
-		#	if len(entitiesAtPosition) == 1 and entitiesAtPosition[0].entityType == 'Location':
-		#		thisGeoData = geoData[entitiesAtPosition[0].externalID]
-		#		coord = [thisGeoData['longitude'],thisGeoData['latitude']]
-		#		unambigLocationCoords.append(coord)
-	
-		title = d['title']
-		entities = []
-		for position,entitiesAtPosition in entitiesByPosition.items():
-			#allAreLocations = all( e.entityType=='Location' for e in entitiesAtPosition )
+			# Strip out some terms
+			kindred_doc.entities = [ e for e in kindred_doc.entities if not e.entityType == 'conflicting' ]
 			
-			# Only do disambiguation for locations
-			#if len(entitiesAtPosition) > 1 and not allAreLocations and len(unambigLocationCoords) > 0:
-			#	continue
+			# This is "undoing" the merge of externalIDs for merged terms in Kindred
+			undoMergingOfEntitiesInSamePosition(kindred_doc)
+			
+			# Clean up viruses so that they make sense given the publication year (and also if SARS-CoV-2 appears, it's a SARS-CoV-2 paper, and not another one - for now)
+			filterVirusesBasedOnPublishYear(d,kindred_doc)
+			
+			virusesInDoc = sorted(set( allEntities[e.externalID]['name'] for e in kindred_doc.entities if e.entityType == 'Virus'))
+			
+			entitiesByPosition = defaultdict(list)
+			for e in kindred_doc.entities:
+				entitiesByPosition[e.position[0]].append(e)
 				
-			#if allAreLocations:
-			#	candidateCoords = []
-			#	for e in entitiesAtPosition:
-			#		thisGeoData = geoData[e.externalID]
+			#unambigLocationCoords = []
+			#for position,entitiesAtPosition in entitiesByPosition.items():
+			#	if len(entitiesAtPosition) == 1 and entitiesAtPosition[0].entityType == 'Location':
+			#		thisGeoData = geoData[entitiesAtPosition[0].externalID]
 			#		coord = [thisGeoData['longitude'],thisGeoData['latitude']]
-			#		candidateCoords.append(coord)
-			#	closestCandidateCoord = distance_matrix(unambigLocationCoords, candidateCoords).min(axis=0).argmin()
-			#	entitiesAtPosition = [entitiesAtPosition[closestCandidateCoord]]
-			
-			allEntitiesDependOnVirus = all( 'associated_virus' in allEntities[e.externalID] for e in entitiesAtPosition)
-			if allEntitiesDependOnVirus:
-				if len(virusesInDoc) != 1: # Ambiguous which virus in document, skip this one
+			#		unambigLocationCoords.append(coord)
+		
+			title = d['title']
+			entities = []
+			for position,entitiesAtPosition in entitiesByPosition.items():
+				#allAreLocations = all( e.entityType=='Location' for e in entitiesAtPosition )
+				
+				# Only do disambiguation for locations
+				#if len(entitiesAtPosition) > 1 and not allAreLocations and len(unambigLocationCoords) > 0:
+				#	continue
+					
+				#if allAreLocations:
+				#	candidateCoords = []
+				#	for e in entitiesAtPosition:
+				#		thisGeoData = geoData[e.externalID]
+				#		coord = [thisGeoData['longitude'],thisGeoData['latitude']]
+				#		candidateCoords.append(coord)
+				#	closestCandidateCoord = distance_matrix(unambigLocationCoords, candidateCoords).min(axis=0).argmin()
+				#	entitiesAtPosition = [entitiesAtPosition[closestCandidateCoord]]
+				
+				allEntitiesDependOnVirus = all( 'associated_virus' in allEntities[e.externalID] for e in entitiesAtPosition)
+				if allEntitiesDependOnVirus:
+					if len(virusesInDoc) != 1: # Ambiguous which virus in document, skip this one
+						continue
+						
+					entitiesFilteredToVirus = []
+					for e in entitiesAtPosition:
+						virusForEntity = allEntities[e.externalID]['associated_virus']
+						if virusForEntity == virusesInDoc[0]:
+							entitiesFilteredToVirus.append(e)
+							
+					entitiesAtPosition = entitiesFilteredToVirus
+						
+				# Ambiguity remains so we skip it
+				if len(entitiesAtPosition) != 1:
 					continue
 					
-				entitiesFilteredToVirus = []
-				for e in entitiesAtPosition:
-					virusForEntity = allEntities[e.externalID]['associated_virus']
-					if virusForEntity == virusesInDoc[0]:
-						entitiesFilteredToVirus.append(e)
-						
-				entitiesAtPosition = entitiesFilteredToVirus
+				e = entitiesAtPosition[0]
+				
+				startPos = position[0]
+				endPos = position[1]
+				if endPos <= len(title):
+					section = 'title'
+				else:
+					section = 'abstract'
+					startPos -= len(title)+1
+					endPos -= len(title)+1
 					
-			# Ambiguity remains so we skip it
-			if len(entitiesAtPosition) != 1:
-				continue
+				normalized = allEntities[e.externalID]['name']
 				
-			e = entitiesAtPosition[0]
-			
-			startPos = position[0]
-			endPos = position[1]
-			if endPos <= len(title):
-				section = 'title'
-			else:
-				section = 'abstract'
-				startPos -= len(title)+1
-				endPos -= len(title)+1
+				entity = {''}
+				entity = {'start':startPos,'end':endPos,'section':section,'id':e.externalID,'type':e.entityType,'text':e.text,'normalized':normalized}
+				entities.append(entity)
 				
-			normalized = allEntities[e.externalID]['name']
-			
-			entity = {''}
-			entity = {'start':startPos,'end':endPos,'section':section,'id':e.externalID,'type':e.entityType,'text':e.text,'normalized':normalized}
-			entities.append(entity)
-			
-		#print(entities)
-			
-		#if kindred_doc.metadata['cord_uid'] == 'zpv5f8pr':
-		#	print(json.dumps(entities,indent=2,sort_keys=True))
-		d['entities'] = entities
+			# Filter locations to be capitalization matches
+			entities = [ e for e in entities if doesLocationCapitalizationMatch(allEntities,e) ]
+				
+			#if kindred_doc.metadata['cord_uid'] == 'zpv5f8pr':
+			#	print(json.dumps(entities,indent=2,sort_keys=True))
+			d['entities'] = entities
 		
-		
-	# Filter locations to be capitalization matches
-	for d in documents:
-		d['entities'] = [ e for e in d['entities'] if doesLocationCapitalizationMatch(allEntities,e) ]
 
-	entity_counter = Counter( [ e['type'] for d in documents for e in d['entities'] ] )
+	output_documents = already_done + needs_doing
+
+	entity_counter = Counter( [ e['type'] for d in output_documents for e in d['entities'] ] )
 	print("Found:", entity_counter)
 
-	assert all('entities' in d for d in documents), "Expected documents to all have entities extracted"
+	assert len(documents) == len(output_documents)
+	assert all('entities' in d for d in output_documents), "Expected documents to all have entities extracted"
 	
-	print("Filtering for virus documents")
-	viruses = {'SARS-CoV-2','SARS-CoV','MERS-CoV'}
-	documents = [ d for d in documents if any(entity['type'] == 'Virus' for entity in d['entities']) or any( v in d['annotations'] for v in viruses) ]
-		
-	print("Saving JSON file...")
-	sys.stdout.flush()
+	print("Saving...")
 	with open(args.outJSON,'w') as f:
-		json.dump(documents,f,indent=2,sort_keys=True)
-	
+		json.dump(output_documents,f,indent=2,sort_keys=True)
 		
+if __name__ == '__main__':
+	main()
+

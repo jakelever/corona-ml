@@ -100,10 +100,9 @@ def cleanup_dashes(list_of_text):
 		new_list.append(item)
 	return new_list
 
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser('Integrate in metadata from web scraping')
 	parser.add_argument('--inJSON',required=True,type=str,help='Input JSON documents')
-	parser.add_argument('--webmetadata',required=True,type=str,help='Scraped web data')
 	parser.add_argument('--outJSON',required=True,type=str,help='Output JSON with added metadata')
 	args = parser.parse_args()
 	
@@ -111,24 +110,13 @@ if __name__ == '__main__':
 	with open(args.inJSON) as f:
 		documents = json.load(f)
 	
-	print("Loading webdata...")
-	with open(args.webmetadata) as f:
-		webmetadata = json.load(f)
-		
-		
 	journalFields = ['citation_journal_title', 'journal', 'journalName', 'journal_title', 'wkhealth_journal_title']
 		
 	for d in documents:
-		urls = []
-		if d['doi']:
-			urls.append('https://doi.org/%s' % d['doi'])
-		if d['url']:
-			urls.append(d['url'])
-			
-		m = {}
-		for url in urls:
-			if url in webmetadata:
-				m.update(webmetadata[url])
+		if 'webmetadata' in d and d['webmetadata'] and d['webmetadata']['status_code'] == 200:
+			m = d['webmetadata']['parsed']
+		else:
+			m = {}
 				
 		m = { k:cleanup_dashes(vals) if isinstance(vals,list) else vals for k,vals in m.items() }
 				
@@ -188,3 +176,7 @@ if __name__ == '__main__':
 	print("Saving data...")
 	with open(args.outJSON,'w',encoding='utf8') as f:
 		json.dump(documents,f)
+
+if __name__ == '__main__':
+	main()
+

@@ -5,10 +5,11 @@ import urllib.parse
 from collections import Counter
 import time
 import random
-from collections import OrderedDict
+from collections import OrderedDict,defaultdict
 import sys
 import os
 import re
+import ray
 
 from bs4 import BeautifulSoup
 
@@ -30,6 +31,59 @@ def nice_time(seconds):
 	bits.append( "1 second" if seconds == 1 else "%.1f seconds" % seconds)
 	
 	return ", ".join(bits)
+
+def estimateTime(start_time,num_completed,num_total):
+	now = time.time()
+	perc = 100*num_completed/num_total
+	
+	time_so_far = (now-start_time)
+	time_per_item = time_so_far / (num_completed+1)
+	remaining_items = num_total - num_completed
+	remaining_time = time_per_item * remaining_items
+	total_time = time_so_far + remaining_time
+	
+	print("Completed %.1f%% (%d/%d)" % (perc,num_completed,num_total))
+	print("time_per_item = %.4fs" % time_per_item)
+	print("remaining_items = %d" % remaining_items)
+	print("time_so_far = %.1fs (%s)" % (time_so_far,nice_time(time_so_far)))
+	print("remaining_time = %.1fs (%s)" % (remaining_time,nice_time(remaining_time)))
+	print("total_time = %.1fs (%s)" % (total_time,nice_time(total_time)))
+	print('-'*30)
+	print()
+	sys.stdout.flush()
+
+toStrip = {'status_code','url_history','resolved_url',"robots","viewport","referrer","google-site-verification","sessionEvt-audSegment","sessionEvt-freeCntry","sessionEvt-idGUID","sessionEvt-individual","sessionEvt-instId","sessionEvt-instProdCode","sessionEvt-nejmSource","sessionEvt-offers","sessionEvt-prodCode","evt-ageContent","evt-artView","format-detection"}
+
+spanClassesToCheck = set(['article-header__journal','primary-heading','highwire-article-collection-term'])
+
+def parseContent(content):
+	soup = BeautifulSoup(content, 'html.parser')
+	metas = soup.find_all('meta')
+	spans = soup.find_all('span')
+	
+	# Get the metadata tags (with name and content attributes)
+	metadata = [ (m.attrs['name'],m.attrs['content']) for m in metas if 'name' in m.attrs and 'content' in m.attrs ]
+	
+	# Some journals have span tags with data-attribute and data-value tags. Get those
+	data_spans = [ (s.attrs['data-attribute'],s.attrs['data-value']) for s in spans if 'data-attribute' in s.attrs and 'data-value' in s.attrs ]
+		
+	# Also get a custom set of span tags with a specific class and get the text contents
+	spans_with_class = [ s for s in spans if 'class' in s.attrs and s.attrs['class'] ]
+	selected_spans = [ (class_name,s.get_text()) for s in spans_with_class for class_name in spanClassesToCheck if class_name in s.attrs['class'] ]
+	
+	combined_data = metadata + data_spans + selected_spans
+	
+	# Filter for strings as name and value and remove any ones from the toStrip list
+	combined_data = [ (name,value) for name,value in combined_data if isinstance(name,str) and isinstance(value,str) ]
+	combined_data = [ (name,value) for name,value in combined_data if not name in toStrip ]
+	combined_data = sorted(set(combined_data))
+	
+	meta_dict = defaultdict(list)
+	for name,value in combined_data:
+		meta_dict[name].append(value)
+	meta_dict = dict(meta_dict)
+
+	return meta_dict
 	
 def scrapeURL(url,history=[]):
 	headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
@@ -67,148 +121,130 @@ def scrapeURL(url,history=[]):
 	tidied_metadata['resolved_url'] = response.url
 	tidied_metadata['url_history'] = response_history
 	tidied_metadata['status_code'] = 200
-	tidied_metadata['content'] = response.text
+
+	tidied_metadata['parsed'] = parseContent(response.text)
 
 	return tidied_metadata
 
-	
-if __name__ == '__main__':
+@ray.remote
+def scrapeDocument(d):
+	filtered_urls = [ u for u in d['urls'] if u and not ('ncbi.nlm.nih.gov' in u or u.endswith('.pdf')) ]
+
+	d['webmetadata'] = None
+
+	for u in filtered_urls:
+		webmetadata = scrapeURL(u)
+		d['webmetadata'] = webmetadata
+		if webmetadata['status_code'] == 200:
+			break
+
+	return d
+
+def tidyURLs(d):
+	urls = [ u.strip() for u in d['url'].split(';') ]
+	if d['doi']:
+		urls.append('https://doi.org/%s' % d['doi'])
+	urls = [ u for u in urls if u ]
+	urls = sorted(set(urls))
+
+	d['urls'] = urls
+
+def main():
 	parser = argparse.ArgumentParser(description='Tool to pull Altmetric data')
-	parser.add_argument('--documents',type=str,required=True,help='JSON file with documents')
-	parser.add_argument('--webDir',type=str,required=True,help='Directory with JSON files containing web data')
-	parser.add_argument('--outFlagFile',type=str,required=True,help='A useless file to mark that this is complete')
+	parser.add_argument('--inJSON',type=str,required=True,help='JSON file with documents')
+	parser.add_argument('--prevJSON',type=str,required=False,help='Optional previously processed output (to save time)')
+	parser.add_argument('--outJSON',type=str,required=True,help='JSON file with documents plus web data')
 	args = parser.parse_args()
-	
-	with open(args.documents) as f:
+
+	scraped = {}
+
+	url_map = {}
+	if args.prevJSON and os.path.isfile(args.prevJSON):
+		with open(args.prevJSON) as f:
+			prev_documents = json.load(f)
+
+		for d in prev_documents:
+			tidyURLs(d)
+
+		for d in prev_documents:
+			#url_key = (d['url'],d['doi'])
+			#url_map[url_key] = d['webmetadata']
+			for u in d['urls']:
+				url_map[u] = d['webmetadata']
+
+	with open(args.inJSON) as f:
 		documents = json.load(f)
 
-	assert os.path.isdir(args.webDir)
-	listing_file = os.path.join(args.webDir,'listings.txt')
-	predone_urls = []
-	if os.path.isfile(listing_file):
-		print("Found listing file...")
-		sys.stdout.flush()
-		with open(listing_file) as f:
-			predone_urls = [ line.strip() for line in f ]
-			predone_urls = set(predone_urls)
-	else:
-		prev_files = [ os.path.join(args.webDir,f) for f in os.listdir(args.webDir) if f.endswith('.json') ]
-		for prev_file in sorted(prev_files):
-			print("Loading previous file %s to check URLs" % prev_file)
-			sys.stdout.flush()
-			with open(prev_file) as f:
-				prev_data = json.load(f)
-				predone_urls += list(prev_data.keys())
-				
-			sublisting_file = re.sub(r'\.json$','.listing.txt',prev_file)
-			if not os.path.isfile(sublisting_file):
-				with open(sublisting_file,'w') as f:
-					for url in sorted(prev_data.keys()):
-						f.write("%s\n" % url)
-			
-		predone_urls = set(predone_urls)
+	for d in documents:
+		tidyURLs(d)
+
+	needs_doing = []
+	already_done = []
+	for d in documents:
+		existing_webmetadata = False
+		for u in d['urls']:
+			if u in url_map:
+				d['webmetadata'] = url_map[u]
+				existing_webmetadata = True
+				break
+
+		#url_key = (d['url'],d['doi'])
+		#if url_key in url_map:
+		#	d['webmetadata'] = url_map[url_key]
+
+		if len(d['urls']) == 0:
+			d['webmetadata'] = None
+			existing_webmetadata = True
+
+		if existing_webmetadata:
+			already_done.append(d)
+		else:
+			needs_doing.append(d)
 		
-		print("Saving listing file with predone")
-		sys.stdout.flush()
-		with open(listing_file,'w') as f:
-			for url in sorted(predone_urls):
-				f.write("%s\n" % url)
-			
-	print("Found %d predone URLS" % len(predone_urls))
-	
-	#scraped = [ scrapeURL(d['doi'] for d in documents[:100] ]
-		
-	#url = 'https://doi.org/10.1056/NEJMoa2022483'
-	
-	#scraped = scrapeURL(url)
-	
-	scraped = {}
-	
-	urls = ['https://doi.org/%s' % d['doi'] for d in documents if d['doi'] ]
-	urls += [ d['url'] for d in documents if d['url'] and not 'pubmed' in d['url'] ]
-	urls += [ url for url in urls if not url.endswith('.pdf') ]
-	urls = sorted(set(urls))
-	
-	print("Documents contain %d URLs" % len(urls))
-	
-	needs_doing = [ url for url in urls if not url in predone_urls ]
-	
-	print("Need to process %d URLs" % len(needs_doing))
-	sys.stdout.flush()
+
+	print("%d documents previously processed" % len(already_done))
+	print("%d documents to be processed" % len(needs_doing))
+	print()
+
+	#assert False
 	
 	random.seed(0)
 	random.shuffle(needs_doing)
 	
-	#with open('url_list.json','w') as f:
-	#	json.dump(needs_doing,f,indent=2,sort_keys=True)
-	#assert False
-	
-	#urls = urls[:250]
-	
-	start = time.time()
-	for i,url in enumerate(needs_doing):
 
-		if (i%1000) == 0:
-			#waypointFile = "%s.%08d.json" % (args.outData.replace('.json',''),i)
-			waypointFile = "waypoint.json"
-			print("Saving waypoint (%s)..." % waypointFile)
-			with open(waypointFile,'w',encoding='utf8') as f:
-				json.dump(scraped,f)
-		
-		if (i%10) == 0:
-			now = time.time()
-			perc = 100*i/len(needs_doing)
-			
-			time_so_far = (now-start)
-			time_per_doc = time_so_far / (i+1)
-			remaining_docs = len(needs_doing) - i
-			remaining_time = time_per_doc * remaining_docs
-			total_time = time_so_far + remaining_time
-			
-			print("Completed %.1f%% (%d/%d)" % (perc,i,len(needs_doing)))
-			print("time_per_doc = %.4fs" % time_per_doc)
-			print("remaining_docs = %d" % remaining_docs)
-			print("time_so_far = %.1fs (%s)" % (time_so_far,nice_time(time_so_far)))
-			print("remaining_time = %.1fs (%s)" % (remaining_time,nice_time(remaining_time)))
-			print("total_time = %.1fs (%s)" % (total_time,nice_time(total_time)))
-			print('-'*30)
-			print(Counter( d['status_code'] for d in scraped.values() ))
-			print()
-			sys.stdout.flush()
-		
-		scraped[url] = scrapeURL(url)
-		#print(d['doi'], scraped[url]['status_code'], len(scraped[url]))
+	#for i,doc in enumerate(needs_doing):
+	#	scrapeDocument(doc)
+
+	#needs_doing = needs_doing[:10]
+
+	ray.init()
+
+	start_time = time.time()
+
+	new_results = [ scrapeDocument.remote(doc) for doc in needs_doing ]
+
+	print("Starting....")
 	
-	#print(json.dumps(scraped,indent=2,sort_keys=True))
-	
-			#break
-	#print(metas)
-	
-	if len(scraped) > 0:
-		outFilename = None
-		i = 0
+	if len(new_results) > 0:
 		while True:
-			outFilename = os.path.join(args.webDir,"update_%08d.json" % i)
-			i += 1
-			if not os.path.isfile(outFilename):
+			done,todo = ray.wait(new_results,num_returns=len(needs_doing),timeout=1)
+			estimateTime(start_time, len(done), len(needs_doing))
+			if len(todo) == 0:
 				break
-		
-		print("Saving data to %s..." % outFilename)
-		with open(outFilename,'w',encoding='utf8') as f:
-			json.dump(scraped,f)
-			
-		sublisting_file = re.sub(r'\.json$','.listing.txt',outFilename)
-		with open(sublisting_file,'w') as f:
-			for url in sorted(scraped.keys()):
-				f.write("%s\n" % url)
-		
-	print("Updating listing file...")
-	all_urls = sorted(set(list(scraped.keys()) + list(predone_urls)))
-	with open(listing_file,'w') as f:
-		for url in all_urls:
-			f.write("%s\n" % url)
-			
-	print("Saving flag file")
-	with open(args.outFlagFile,'w') as f:
-		f.write("Done\n")
-		#json.dump(scraped,f,indent=2,sort_keys=True)
+			time.sleep(5)
+
+	needs_doing = ray.get(new_results)
+
+	output_documents = already_done + needs_doing
+
+	assert len(output_documents) == len(documents)
+	assert all( 'webmetadata' in d for d in output_documents ), "Some documents do not contain webmetadata output"
+	
+	print("Saving...")
+	with open(args.outJSON,'w') as f:
+		json.dump(output_documents,f,indent=2,sort_keys=True)
+
+	print("Done.")
+
+if __name__ == '__main__':
+	main()
