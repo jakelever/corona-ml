@@ -1,7 +1,7 @@
 import argparse
 import json
-	
-if __name__ == '__main__':
+
+def main():
 	parser = argparse.ArgumentParser(description='Tool to put coronavirus proteins into entity format')
 	parser.add_argument('--viruses',type=str,required=True,help='JSON file with virus aliases')
 	parser.add_argument('--outJSON',type=str,required=True,help='File to output entities')
@@ -78,4 +78,5 @@ if __name__ == '__main__':
 		#entities_as_list = [ entities[entityID] for entityID in sorted(entities.keys()) ]
 		json.dump(entities,f,indent=2,sort_keys=True)
 
-
+if __name__ == '__main__':
+	main()

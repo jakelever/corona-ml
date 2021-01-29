@@ -13,7 +13,7 @@ def runQuery(query):
 
 	return results['results']['bindings']
 	
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser(description='Tool to pull geographic data from WikiData using SPARQL')
 	parser.add_argument('--outJSON',type=str,required=True,help='File to output entities')
 	args = parser.parse_args()
@@ -132,4 +132,6 @@ if __name__ == '__main__':
 		#entities_as_list = [ entities[entityID] for entityID in sorted(entities.keys()) ]
 		json.dump(entities,f,indent=2,sort_keys=True)
 
+if __name__ == '__main__':
+	main()
 

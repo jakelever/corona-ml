@@ -12,7 +12,7 @@ def runQuery(query):
 
 	return results['results']['bindings']
 	
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser(description='Tool to pull custom data from WikiData using SPARQL')
 	parser.add_argument('--termsToExpand',type=str,required=True,help='TSV with terms to look up in Wikidata')
 	parser.add_argument('--predefined',type=str,required=True,help='JSON set of custom terms to simply add into result')
@@ -63,4 +63,6 @@ if __name__ == '__main__':
 		#entities_as_list = [ entities[entityID] for entityID in sorted(entities.keys()) ]
 		json.dump(entities,f,indent=2,sort_keys=True)
 
+if __name__ == '__main__':
+	main()
 
