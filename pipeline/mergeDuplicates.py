@@ -10,7 +10,7 @@ def remove_punctuation(text):
 	exclude = set(string.punctuation)
 	return ''.join(ch for ch in text if ch not in exclude)
 
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser('Remove duplicate documents')
 	parser.add_argument('--inJSON',required=True,type=str,help='JSON file with documents')
 	parser.add_argument('--outJSON',required=True,type=str,help='JSON file with fewer documents')
@@ -235,4 +235,6 @@ if __name__ == '__main__':
 	with open(args.outJSON,'w') as f:
 		json.dump(merged_documents,f,indent=2,sort_keys=True)
 
-	
+if __name__ == '__main__':
+	main()
+

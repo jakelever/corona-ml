@@ -1,7 +1,7 @@
 import argparse
 import json
 
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser('Extract just a few documents for a test case')
 	parser.add_argument('--inJSON',required=True,type=str,help='JSON file with documents')
 	parser.add_argument('--outJSON',required=True,type=str,help='JSON file with fewer documents')
@@ -17,3 +17,7 @@ if __name__ == '__main__':
 	print("Saving JSON file...")
 	with open(args.outJSON,'w') as f:
 		json.dump(documents,f,indent=2,sort_keys=True)
+
+if __name__ == '__main__':
+	main()
+

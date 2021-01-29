@@ -34,7 +34,7 @@ def associate_altmetric_data_with_documents(documents, altmetric_filename, filte
 		
 		d['altmetric'] = altmetric_for_doc
 	
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser(description='Integrate Altmetric data with CoronaCentral documents')
 	parser.add_argument('--documents',type=str,required=True,help='JSON file with documents')
 	parser.add_argument('--altmetricData',type=str,required=True,help='JSON file with Altmetric data for documents')
@@ -55,4 +55,7 @@ if __name__ == '__main__':
 	print("Saving data...")
 	with open(args.outData,'w',encoding='utf8') as f:
 		json.dump(documents,f,indent=2,sort_keys=True)
+
+if __name__ == '__main__':
+	main()
 

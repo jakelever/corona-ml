@@ -1,7 +1,7 @@
 import argparse
 import json
 
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser('Apply some minor spotfixes to go in at the beginning of the pipeline')
 	parser.add_argument('--inJSON',required=True,type=str,help='Input JSON documents')
 	parser.add_argument('--additions',required=True,type=str,help='Custom additional documents to add to corpus')
@@ -48,3 +48,7 @@ if __name__ == '__main__':
 	print("Saving data...")
 	with open(args.outJSON,'w',encoding='utf8') as f:
 		json.dump(documents,f)
+
+if __name__ == '__main__':
+	main()
+

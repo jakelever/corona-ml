@@ -1,7 +1,7 @@
 import argparse
 import json
 
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser('Create annotation data to load into the CoronaCentral database for use on the website')
 	parser.add_argument('--inJSON',required=True,type=str,help='Filename of JSON documents')
 	parser.add_argument('--outJSON',required=True,type=str,help='Output JSON with annotations')
@@ -38,4 +38,7 @@ if __name__ == '__main__':
 			
 	with open(args.outJSON,'w') as outF:
 		json.dump(autoannotations,outF,indent=2,sort_keys=True)
+
+if __name__ == '__main__':
+	main()
 

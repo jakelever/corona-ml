@@ -136,10 +136,10 @@ def cleanup_documents(documents):
 		if doc['pubmed_id'] and not re.match('^\d+$',doc['pubmed_id']):
 			doc['pubmed_id'] = ''
 
-if __name__ == '__main__':
-	parser = argparse.ArgumentParser('Integrate in metadata from web scraping')
+def main():
+	parser = argparse.ArgumentParser('Clean up various bits of document metadata and document text')
 	parser.add_argument('--inJSON',required=True,type=str,help='Input JSON documents')
-	parser.add_argument('--outJSON',required=True,type=str,help='Output JSON with added metadata')
+	parser.add_argument('--outJSON',required=True,type=str,help='Output JSON documents')
 	args = parser.parse_args()
 	
 	print("Loading documents...")
@@ -152,3 +152,7 @@ if __name__ == '__main__':
 	print("Saving data...")
 	with open(args.outJSON,'w',encoding='utf8') as f:
 		json.dump(documents,f)
+
+if __name__ == '__main__':
+	main()
+

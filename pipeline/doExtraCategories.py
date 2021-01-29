@@ -12,7 +12,7 @@ def predictTrial(abstractLower):
     decision = bool(clinicalTrialsGov or trialNumber or nihTrialNumber or openLabel)
     return decision
 
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser('Annotate documents using rules for extra categories such as clinical trials')
 	parser.add_argument('--inJSON',required=True,type=str,help='Filename of JSON documents')
 	parser.add_argument('--outJSON',required=True,type=str,help='Output JSON with entities')
@@ -71,4 +71,7 @@ if __name__ == '__main__':
 	print("Saving JSON file...")
 	with open(args.outJSON,'w') as f:
 		json.dump(documents,f,indent=2,sort_keys=True)
+
+if __name__ == '__main__':
+	main()
 

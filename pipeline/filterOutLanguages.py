@@ -77,7 +77,7 @@ def processDoc(doc):
 	else:
 		return nonenglish_languages
 
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser('Check the likely language of each document and filter non-English documents')
 	parser.add_argument('--inJSON',required=True,type=str,help='JSON file with documents')
 	parser.add_argument('--prevEnglishDocs',required=False,type=str,help='JSON file with previously processed likely English-only documents')
@@ -165,3 +165,7 @@ if __name__ == '__main__':
 	languageCounter = Counter(lang for doc in nonenglishDocuments for lang in doc['languages'])
 	print(languageCounter)
 	print("Filtered %d documents with non-english language" % len(nonenglishDocuments))
+
+if __name__ == '__main__':
+	main()
+

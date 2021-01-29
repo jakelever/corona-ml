@@ -2,7 +2,7 @@ import argparse
 import json
 from collections import defaultdict
 
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser('Annotate documents with publication type (e.g. research article, review, news, etc)')
 	parser.add_argument('--inJSON',required=True,type=str,help='Filename of JSON documents')
 	parser.add_argument('--annotations',required=True,type=str,help='JSON file with annotations data from annotation platform')
@@ -48,3 +48,7 @@ if __name__ == '__main__':
 	print("Saving JSON file...")
 	with open(args.outJSON,'w') as f:
 		json.dump(documents,f,indent=2,sort_keys=True)
+
+if __name__ == '__main__':
+	main()
+

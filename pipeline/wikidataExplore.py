@@ -10,7 +10,7 @@ def runQuery(query):
 
 	return results['results']['bindings']
 	
-if __name__ == '__main__':
+def main():
 	parser = argparse.ArgumentParser(description='Tool to explore terms inherited from a Wikidata term')
 	parser.add_argument('--parentID',type=str,required=True,help='WikiData ID to find all children of')
 	#parser.add_argument('--inheritType',type=str,required=True,help='Whether through subclass or instanceof')
@@ -29,5 +29,6 @@ if __name__ == '__main__':
 			entityName = row['entityLabel']['value']
 			print("%s\t%s" % (entityID,entityName))
 			
-			
-			
+if __name__ == '__main__':
+	main()
+
