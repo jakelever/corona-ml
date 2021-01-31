@@ -367,14 +367,16 @@ def main():
 	parser.add_argument('--outJSON',required=True,type=str,help='Output JSON with variants')
 	args = parser.parse_args()
 	
-	ner_map = {}
+	variants_map = {}
+	viral_lineages_map = {}
 	if args.prevJSON and os.path.isfile(args.prevJSON):
 		with open(args.prevJSON) as f:
 			prev_documents = json.load(f)
 
 		for d in prev_documents:
-			ner_key = (d['title'],d['abstract'])
-			ner_map[ner_key] = d['variants']
+			key = (d['title'],d['abstract'])
+			variants_map[key] = d['variants']
+			viral_lineages_map[key] = d['viral_lineages']
 
 	with open(args.inJSON) as f:
 		documents = json.load(f)
@@ -382,9 +384,10 @@ def main():
 	needs_doing = []
 	already_done = []
 	for d in documents:
-		ner_key = (d['title'],d['abstract'])
-		if ner_key in ner_map:
-			d['variants'] = ner_map[ner_key]
+		key = (d['title'],d['abstract'])
+		if key in variants_map and key in viral_lineages_map:
+			d['variants'] = variants_map[key]
+			d['viral_lineages'] = viral_lineages_map[key]
 			already_done.append(d)
 		else:
 			needs_doing.append(d)
