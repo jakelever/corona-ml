@@ -324,11 +324,20 @@ def findGeneticVariation(text,stopwords):
 	return list(variants.values())
 
 rs_regex = re.compile('rs\d\d+')
-strain_regexes = [ re.compile(r'\b[ABC]\.\d\d?(\.\d+)*\.?\b'),
+strain_regexes = [ re.compile(r'\b[ABCP]\.\d\d?(\.\d+)*\.?\b'),
                    re.compile(r'\b(\w+\/)?\d+Y\.V\d+\b'),
                    re.compile(r'\b((variant of concern|VOC|\(voc\))[-\s]*)+(?P<name>\d+/\d+)\b', flags=re.IGNORECASE) ]	
 
-normalized_strains = {'501Y.V1':'B.1.1.7','20I/501Y.V1':'B.1.1.7','202012/01':'B.1.1.7','501Y.V2':'B.1.351','20H/501Y.V2':'B.1.351'}
+normalized_strains = {}
+normalized_strains['B.1.1.7'] = 'B.1.1.7 (UK)'
+normalized_strains['501Y.V1'] = 'B.1.1.7 (UK)'
+normalized_strains['20I/501Y.V1'] = 'B.1.1.7 (UK)'
+normalized_strains['20B/501Y.V1'] = 'B.1.1.7 (UK)'
+normalized_strains['202012/01'] = 'B.1.1.7 (UK)'
+normalized_strains['B.1.351'] = 'B.1.351 (South Africa)'
+normalized_strains['501Y.V2'] = 'B.1.351 (South Africa)'
+normalized_strains['20H/501Y.V2'] = 'B.1.351 (South Africa)'
+normalized_strains['P.1'] = 'P.1 (Brazil)'
 
 def processDoc(d,stopwords):
 	d['variants'] = []
