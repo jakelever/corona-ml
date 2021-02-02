@@ -1,5 +1,5 @@
 import mysql.connector
-from collections import OrderedDict
+from collections import OrderedDict,defaultdict
 import csv
 import json
 import argparse
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 	with open(args.json) as f:
 		documents = json.load(f)
 			
-	doc_columns = ['document_id', 'pubmed_id', 'cord_uid', 'doi', 'pmcid', 'publish_year', 'publish_month', 'publish_day', 'publish_timestamp', 'title', 'abstract', 'journal', 'url', 'is_preprint']
+	doc_columns = ['document_id', 'pubmed_id', 'cord_uid', 'doi', 'pmcid', 'publish_year', 'publish_month', 'publish_day', 'publish_timestamp', 'title', 'abstract', 'journal', 'url', 'is_preprint', 'annotations_json']
 	
 	dbfields = ",".join(doc_columns)
 	dbvalues = ",".join('%s' for _ in doc_columns)
@@ -58,6 +58,28 @@ if __name__ == '__main__':
 		publish_date = datetime(publish_year, publish_month, publish_day, 12, 0, 0)
 		doc['publish_timestamp'] = calendar.timegm(publish_date.timetuple())
 		
+		# Gather annotations up and encode as JSON field
+		doc_annotations = set()
+		doc_positions = defaultdict(list)
+		for category in doc['categories']:
+			if category != 'Research': # Skip the actual research tag
+				type_name = ('category',category)
+				doc_annotations.add(type_name)
+			
+		for entity in doc['entities']:
+			type_name = (entity['type'],entity['normalized'])
+			position = { 'in_title': entity['section']=='title', 'start_pos': entity['start'], 'end_pos': entity['end'] }
+			
+			doc_annotations.add(type_name)
+			doc_positions[type_name].append(position)
+			
+		annotations_and_positions = []
+		for entity_type,entity_name in sorted(doc_annotations):
+			anno = {'name': entity_name, 'type': entity_type, 'positions':doc_positions[(entity_type,entity_name)]}
+			annotations_and_positions.append(anno)
+		doc['annotations_json'] = json.dumps(annotations_and_positions)
+		
+		# Pull out fields for DB insert query
 		record = [ doc[c] for c in doc_columns ]
 		
 		insertrecords.append(record)
@@ -86,7 +108,7 @@ if __name__ == '__main__':
 		assert cord_uid or pubmed_id or doi or url
 		
 		for category in d['categories']:
-			aa = { 'document_id':d['document_id'], 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'url':url, 'entity_type':'category', 'entity_name':category, 'external_id':'category_%s' % category, 'is_positive':True }
+			aa = { 'document_id':d['document_id'], 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'url':url, 'entity_type':'category', 'entity_name':category, 'external_id':'category_%s' % category }
 			annotations.append(aa)
 			
 		for entity in d['entities']:

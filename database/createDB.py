@@ -58,6 +58,7 @@ if __name__ == '__main__':
 	columns['altmetric_openaccess'] = 'BOOLEAN DEFAULT FALSE'
 	columns['altmetric_badgetype'] = 'VARCHAR(64) NULL'
 	columns['altmetric_lastupdated'] = 'DATETIME'
+	columns['annotations_json'] = 'TEXT'
 
 	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
