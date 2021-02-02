@@ -7,9 +7,7 @@ db=local.json
 
 python createDB.py --db $db
 
-python loadDocs.py --db $db --json ../pipeline/data/coronacentral.json
-
-python loadAnnotations.py --db $db --type auto --json ../pipeline/data/autoannotations.json
+python loadDocsAndAnnotations.py --db $db --json ../pipeline/data/coronacentral.json
 
 # Load older Altmetric data
 python loadAltmetricData.py --db $db --json ../pipeline/data/altmetric.json

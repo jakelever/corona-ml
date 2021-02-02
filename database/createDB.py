@@ -70,9 +70,7 @@ if __name__ == '__main__':
 	columns['annotation_id'] = 'INT NOT NULL AUTO_INCREMENT'
 	columns['document_id'] = 'INT'
 	columns['entity_id'] = 'INT'
-	columns['is_automatic'] = 'BOOLEAN'
-	columns['is_positive'] = 'BOOLEAN'
-
+	
 	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
 	fields += ", INDEX(document_id)"
