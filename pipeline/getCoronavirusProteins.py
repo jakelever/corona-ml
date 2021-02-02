@@ -27,7 +27,7 @@ def main():
 			for alias in virus_aliases[virus]:
 				aliases += [ '%s %s protein' % (alias,protein), '%s %s protein' % (alias,singleletter), '%s %s glycoprotein' % (alias,singleletter), '%s %s (%s) protein' % (alias,protein,singleletter), '%s %s glycoprotein' % (alias,protein), '%s %s (%s) glycoprotein' % (alias,protein,singleletter), '(%s) %s protein' % (alias,protein), '(%s) %s (%s) protein' % (alias,protein,singleletter), '(%s) %s glycoprotein' % (alias,protein) , '(%s) %s (%s) glycoprotein' % (alias,protein,singleletter) ]
 			
-			ambig_aliases = [ '%s protein' % protein, 'coronavirus %s protein' % protein ]
+			ambig_aliases = [ '%s protein' % protein, '%s %s protein' % (protein,singleletter), '%s (%s) protein' % (protein,singleletter), 'coronavirus %s protein' % protein ]
 			
 			short_name = '%s_%s' % (virus.replace('-','').lower(),protein.lower())
 			long_name = '%s %s protein' % (virus,protein)
