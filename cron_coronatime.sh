@@ -4,9 +4,8 @@
 #SBATCH --dependency=singleton
 #SBATCH --time=12:00:00
 #SBATCH --mail-type=FAIL
-#SBATCH --mem=64G
+#SBATCH --mem=16G
 #SBATCH -p rbaltman
-#SBATCH --gpus 1
 set -ex
 
 ## Resubmit the job for the next execution

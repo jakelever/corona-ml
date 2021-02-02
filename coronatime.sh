@@ -3,9 +3,8 @@
 #SBATCH --job-name=coronaBigUpdate
 #
 #SBATCH --time=12:00:00
-#SBATCH --mem=64G
+#SBATCH --mem=16G
 #SBATCH -p rbaltman
-#SBATCH --gpus 1
 
 set -ex
 
@@ -59,6 +58,15 @@ python pokeWebsite.py
 
 cd $base/twitter
 sh dotweet.sh
+
+cd $base
+last_upload=`cat last_upload.log`
+this_week=`date +"week %U of %Y"`
+if [[ "$last_upload" != "$this_week" ]]; then
+	echo "Publishing to Zenodo..."
+	bigzenodo --submission submission.json --accessTokenFile ~/zenodo_token.txt --publish
+	echo "$this_week" > last_upload.log
+fi
 
 date
 
