@@ -29,28 +29,6 @@ if __name__ == '__main__':
 
 	mycursor = mydb.cursor()
 
-		
-	sql = "SELECT document_id,pubmed_id,cord_uid FROM documents"
-	print(sql)
-	mycursor.execute(sql)
-	myresult = mycursor.fetchall()
-
-	pubmed_to_document_id = {}
-	cord_to_document_id = {}
-
-	all_db_document_ids = [ document_id for document_id,pubmed_id,cord_ui in myresult ]
-	pubmed_to_document_id = {str(pubmed_id):document_id for document_id,pubmed_id,cord_ui in myresult if pubmed_id }
-	cord_to_document_id = {cord_ui:document_id for document_id,pubmed_id,cord_ui in myresult if cord_ui }
-
-	print("Found %d Pubmed mappings" % len(pubmed_to_document_id))
-	print("Found %d CORD mappings" % len(cord_to_document_id))
-
-	#for record in myresult:
-	#	document_id,pubmed_id,cord_ui = record
-	#	assert pubmed_id or cord_ui
-		#break
-
-	#assert False
 
 	with open(args.json) as f:
 		documents = json.load(f)
@@ -76,16 +54,7 @@ if __name__ == '__main__':
 	insertsql = "INSERT INTO documents (%s) VALUES (%s)" % (dbfields,dbvalues)
 	print(insertsql)
 
-	dbfieldsandvalues = ",".join('%s=%%s' % k for k in columns.keys())
-	updatesql = "UPDATE documents SET %s WHERE document_id='%%s'" % (dbfieldsandvalues)
-	print(updatesql)
-
-	deletesql = "DELETE FROM documents WHERE document_id = '%s'"
-	#assert False
-		
-	seen_document_ids = []
 	insertrecords = []
-	updaterecords = []
 	for doc in documents:
 		if not doc['pubmed_id']:
 			doc['pubmed_id'] = None
@@ -103,35 +72,10 @@ if __name__ == '__main__':
 		
 		record = [ doc[c] for c in columns.keys() ]
 		
-		if doc['cord_uid'] in cord_to_document_id:
-			document_id = cord_to_document_id[doc['cord_uid']]
-			seen_document_ids.append(document_id)
-			record.append(document_id)
-			updaterecords.append(record)
-		elif doc['pubmed_id'] in pubmed_to_document_id:
-			document_id = pubmed_to_document_id[doc['pubmed_id']]
-			seen_document_ids.append(document_id)
-			record.append(document_id)
-			updaterecords.append(record)
-		else:
-			#print(doc['cord_uid'],doc['pubmed_id'])
-			insertrecords.append(record)
-		#mycursor.execute(sql,record)
-		
+		insertrecords.append(record)
 		
 	for chunk in chunks(insertrecords, 100):
 		mycursor.executemany(insertsql, chunk)
-		#break
-	
-	for chunk in chunks(updaterecords, 100):
-		mycursor.executemany(updatesql, chunk)
-	
-	never_seen_document_ids = [ [document_id] for document_id in all_db_document_ids if not document_id in seen_document_ids ]
-	
-	for chunk in chunks(never_seen_document_ids, 100):
-		mycursor.executemany(deletesql, chunk)
 		
 	mydb.commit()
 	print("Added %d documents" % len(insertrecords))
-	print("Updated %d documents" % len(updaterecords))
-	print("Deleting %d documents not found in input file" % len(never_seen_document_ids))
