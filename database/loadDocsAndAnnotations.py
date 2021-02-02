@@ -152,6 +152,7 @@ if __name__ == '__main__':
 	
 	for chunk in chunks(entity_records, 500):
 		mycursor.executemany(insert_entity_sql, chunk)
+	print("Added %d entities" % len(entity_records))
 		
 	
 	insert_annotation_sql = "INSERT INTO annotations(annotation_id,document_id,entity_id) VALUES(%s,%s,%s)"
@@ -174,6 +175,7 @@ if __name__ == '__main__':
 	
 	for chunk in chunks(anno_records, 500):
 		mycursor.executemany(insert_annotation_sql, chunk)
+	print("Added %d annotations" % len(anno_records))
 	
 	
 	position_records = []
@@ -201,3 +203,4 @@ if __name__ == '__main__':
 		
 	for chunk in chunks(position_records, 500):
 		mycursor.executemany(insert_annotationspan_sql, chunk)
+	print("Added %d annotation positions" % len(position_records))
