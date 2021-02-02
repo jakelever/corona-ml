@@ -107,7 +107,7 @@ rule:
 rule:
 	input: join(outDir,"alldocuments.onlyviruses.json"),
 	output: join(outDir,"alldocuments.geneticvariation.json")
-	shell: "python extractGeneticVariation.py --stopwords predefined/geneticvariation_stopwords.txt --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
+	shell: "python extractGeneticVariationAndLineages.py --stopwords predefined/geneticvariation_stopwords.txt --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
 
 rule:
 	input: join(outDir,"alldocuments.geneticvariation.json"),
