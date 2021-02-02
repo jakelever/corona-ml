@@ -9,5 +9,5 @@
 set -ex
 
 #snakemake --cores 1 -p data/alldocuments.ner.json
-snakemake --cores 1 -p data/autoannotations.json
+snakemake --cores 1 -p data/coronacentral.json
 

@@ -128,11 +128,6 @@ rule:
 	input: join(outDir,"coronacentral.json")
 	output: join(outDir,"coronacentral.json.gz")
 	shell: "gzip -9 -c {input} > {output}"
-
-rule:
-	input: join(outDir,"coronacentral.json"),
-	output: join(outDir,"autoannotations.json")
-	shell: "python createAutoAnnotations.py --inJSON {input} --outJSON {output}"
 	
 rule:
 	input: join(outDir,"coronacentral.json")
