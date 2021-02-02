@@ -83,8 +83,9 @@ if __name__ == '__main__':
 	columns = OrderedDict()
 	columns['entity_id'] = 'INT NOT NULL AUTO_INCREMENT'
 	columns['name'] = 'VARCHAR(255)'
-	columns['external_id'] = 'VARCHAR(255)'
 	columns['entitytype_id'] = 'INT DEFAULT 1'
+	columns['external_id'] = 'VARCHAR(255)'
+	columns['doc_count'] = 'INT'
 
 	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
 	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]

@@ -1,5 +1,5 @@
 import mysql.connector
-from collections import OrderedDict,defaultdict
+from collections import OrderedDict,defaultdict,Counter
 import csv
 import json
 import argparse
@@ -39,6 +39,8 @@ if __name__ == '__main__':
 	dbvalues = ",".join('%s' for _ in doc_columns)
 	insertsql = "INSERT INTO documents (%s) VALUES (%s)" % (dbfields,dbvalues)
 	print(insertsql)
+	
+	annotation_counts = Counter()
 
 	insertrecords = []
 	for i,doc in enumerate(documents):
@@ -77,6 +79,9 @@ if __name__ == '__main__':
 		for entity_type,entity_name in sorted(doc_annotations):
 			anno = {'name': entity_name, 'type': entity_type, 'positions':doc_positions[(entity_type,entity_name)]}
 			annotations_and_positions.append(anno)
+			
+			annotation_counts[(entity_type,entity_name)] += 1
+			
 		doc['annotations_json'] = json.dumps(annotations_and_positions)
 		
 		# Pull out fields for DB insert query
@@ -130,7 +135,7 @@ if __name__ == '__main__':
 	mycursor.executemany(insert_entity_type_sql, entitytype_records)
 	print("Added %d entity types" % len(entitytype_records))
 				
-	insert_entity_sql = "INSERT INTO entities(entity_id,name,entitytype_id,external_id) VALUES(%s,%s,%s,%s)"
+	insert_entity_sql = "INSERT INTO entities(entity_id,name,entitytype_id,external_id,doc_count) VALUES(%s,%s,%s,%s,%s)"
 	entity_to_id, entity_records = {}, []
 	for anno in annotations:
 		entity_name = anno['entity_name']
@@ -141,7 +146,9 @@ if __name__ == '__main__':
 			entity_id = len(entity_to_id) + 1
 			entity_to_id[(entity_name,entitytype_id,external_id)] = entity_id
 			
-			entity_records.append((entity_id,entity_name,entitytype_id,external_id))
+			doc_count = annotation_counts[(entity_type,entity_name)]
+			
+			entity_records.append((entity_id,entity_name,entitytype_id,external_id,doc_count))
 	
 	for chunk in chunks(entity_records, 500):
 		mycursor.executemany(insert_entity_sql, chunk)
