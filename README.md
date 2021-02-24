@@ -1,19 +1,26 @@
-# CoronaCentral Machine Learning
 
-<p>
-<a href="https://coronacentral.ai/">
-   <img src="https://img.shields.io/badge/corona-central-b01515.svg" />
-</a>
-<a href="https://doi.org/10.5281/zenodo.4383289">
-   <img src="https://img.shields.io/badge/data-download-blue.svg" />
-</a>
-<a href="https://doi.org/10.1101/2020.12.21.423860">
-   <img src="https://img.shields.io/badge/bioRxiv-preprint-67baea.svg" />
-</a>
-<a href="https://github.com/jakelever/corona-web">
-   <img src="https://img.shields.io/badge/web-code-darkgreen.svg" />
-</a>
-</p>
+<div style="display:flex; flex-direction: row;">
+   <div style="flex: 0 0 110px">
+      <img src="logo-circle.png" width="110px" />
+   </div>
+   <div style="flex: 1 1; padding-left: 10px">
+      <h1>CoronaCentral Machine Learning</h1>
+      <p>
+         <a href="https://coronacentral.ai/">
+            <img src="https://img.shields.io/badge/corona-central-b01515.svg" />
+         </a>
+         <a href="https://doi.org/10.5281/zenodo.4383289">
+            <img src="https://img.shields.io/badge/data-download-blue.svg" />
+         </a>
+         <a href="https://doi.org/10.1101/2020.12.21.423860">
+            <img src="https://img.shields.io/badge/bioRxiv-preprint-67baea.svg" />
+         </a>
+         <a href="https://github.com/jakelever/corona-web">
+            <img src="https://img.shields.io/badge/web-code-darkgreen.svg" />
+         </a>
+      </p>
+   </div>
+<div>
 
 This repository contains the code for text mining the coronavirus literature for [CoronaCentral](https://coronacentral.ai). It manages the download, clean up, categorization (using deep learning) and many more steps to process the coronavirus literature. The output of this is then upload to the CoronaCentral website. The web interface of the website is kept in a [separate Github repo](https://github.com/jakelever/corona-web).
 
