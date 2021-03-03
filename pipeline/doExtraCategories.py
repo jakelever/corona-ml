@@ -4,11 +4,10 @@ import re
 from collections import Counter
 
 def predictTrial(abstractLower):
-    clinicalTrialsGov = 'clinicaltrials.gov' in abstractLower
     trialNumber = re.search(r'ctr[0-9]+',abstractLower)
     nihTrialNumber = re.search(r'nct\s*[0-9]+',abstractLower)
     
-    decision = bool(clinicalTrialsGov or trialNumber or nihTrialNumber)
+    decision = bool(trialNumber or nihTrialNumber)
     return decision
 
 def main():
