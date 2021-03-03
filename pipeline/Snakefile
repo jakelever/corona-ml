@@ -4,7 +4,7 @@ from os.path import join
 outDir = "data"
 
 rule:
-	input: join(outDir,"autoannotations.json"), join(outDir,"terms_complete.txt")
+	input: join(outDir,"coronacentral.json.gz"), join(outDir,"terms_complete.txt")
 
 rule:
 	input: join(outDir,"terms_drugs.json"), join(outDir,"terms_symptoms.json"), join(outDir,"terms_locations.json"), join(outDir,"terms_medicaldisciplines.json"), join(outDir,"terms_genes_and_proteins.json"), join(outDir,"terms_coronavirus_proteins.json"), join(outDir,"terms_custom.json")
