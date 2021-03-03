@@ -1,4 +1,4 @@
-name: Pylint
+name: RunTest
 
 on: [push]
 
@@ -18,6 +18,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install pylint
         pip install -r requirements.txt
-    - name: Analysing the code with pylint
+    - name: Setup and run full pipeline with a tiny dataset
       run: |
         sh run_test.sh
+
