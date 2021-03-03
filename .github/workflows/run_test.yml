@@ -18,6 +18,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install pylint
         pip install -r requirements.txt
+        python -m nltk.downloader stopwords
     - name: Setup and run full pipeline with a tiny dataset
       run: |
         sh run_test.sh
