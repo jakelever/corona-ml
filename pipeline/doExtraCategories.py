@@ -7,9 +7,8 @@ def predictTrial(abstractLower):
     clinicalTrialsGov = 'clinicaltrials.gov' in abstractLower
     trialNumber = re.search(r'ctr[0-9]+',abstractLower)
     nihTrialNumber = re.search(r'nct\s*[0-9]+',abstractLower)
-    openLabel = 'open-label' in abstractLower or 'open label' in abstractLower
     
-    decision = bool(clinicalTrialsGov or trialNumber or nihTrialNumber or openLabel)
+    decision = bool(clinicalTrialsGov or trialNumber or nihTrialNumber)
     return decision
 
 def main():
