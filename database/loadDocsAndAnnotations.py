@@ -63,10 +63,14 @@ if __name__ == '__main__':
 		# Gather annotations up and encode as JSON field
 		doc_annotations = set()
 		doc_positions = defaultdict(list)
-		for category in doc['categories']:
-			if category != 'Research': # Skip the actual research tag
-				type_name = ('category',category)
-				doc_annotations.add(type_name)
+		for topic in doc['topics']:
+			type_name = ('topic',topic)
+			doc_annotations.add(type_name)
+			
+		for articletype in doc['articletypes']:
+			#if articletype != 'Research': # Skip the actual research tag
+			type_name = ('articletype',articletype)
+			doc_annotations.add(type_name)
 			
 		for entity in doc['entities']:
 			type_name = (entity['type'],entity['normalized'])
@@ -112,8 +116,12 @@ if __name__ == '__main__':
 		
 		assert cord_uid or pubmed_id or doi or url
 		
-		for category in d['categories']:
-			aa = { 'document_id':d['document_id'], 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'url':url, 'entity_type':'category', 'entity_name':category, 'external_id':'category_%s' % category }
+		for topic in d['topics']:
+			aa = { 'document_id':d['document_id'], 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'url':url, 'entity_type':'topic', 'entity_name':topic, 'external_id':'topic_%s' % topic }
+			annotations.append(aa)
+			
+		for articletype in d['articletypes']:
+			aa = { 'document_id':d['document_id'], 'cord_uid': cord_uid, 'pubmed_id':pubmed_id, 'doi':doi, 'url':url, 'entity_type':'articletype', 'entity_name':articletype, 'external_id':'articletype_%s' % articletype }
 			annotations.append(aa)
 			
 		for entity in d['entities']:
