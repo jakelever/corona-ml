@@ -121,6 +121,11 @@ rule:
 
 rule:
 	input: join(outDir,"alldocuments.extracategories.json"),
+	output: join(outDir,"alldocuments.articletypes_and_topics.json")
+	shell: "python separateArticleTypesAndTopics.py --inJSON {input} --outJSON {output}"
+
+rule:
+	input: join(outDir,"alldocuments.articletypes_and_topics.json"),
 	output: join(outDir,"coronacentral.json")
 	shell: "python finalFilter.py --inJSON {input} --outJSON {output}"
 
