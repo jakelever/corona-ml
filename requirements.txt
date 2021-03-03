@@ -11,3 +11,4 @@ seaborn
 nltk
 tabulate
 ray
+beautifulsoup4
