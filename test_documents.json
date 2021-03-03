@@ -1,0 +1,53 @@
+[
+  {
+    "abstract": "COVID-19, caused by SARS-CoV-2, can involve sequelae and other medical complications that last weeks to months after initial recovery, which has come to be called Long-COVID or COVID long-haulers. This systematic review and meta-analysis aims to identify studies assessing long-term effects of COVID-19 and estimates the prevalence of each symptom, sign, or laboratory parameter of patients at a post-COVID-19 stage. LitCOVID (PubMed and Medline) and Embase were searched by two independent researchers. All articles with original data for detecting long-term COVID-19 published before 1st of January 2021 and with a minimum of 100 patients were included. For effects reported in two or more studies, meta-analyses using a random-effects model were performed using the MetaXL software to estimate the pooled prevalence with 95% CI. Heterogeneity was assessed using I2 statistics. The Preferred Reporting Items for Systematic Reviewers and Meta-analysis (PRISMA) reporting guideline was followed. A total of 18,251 publications were identified, of which 15 met the inclusion criteria. The prevalence of 55 long-term effects was estimated, 21 meta-analyses were performed, and 47,910 patients were included. The follow-up time ranged from 15 to 110 days post-viral infection. The age of the study participants ranged between 17 and 87 years. It was estimated that 80% (95% CI 65-92) of the patients that were infected with SARS-CoV-2 developed one or more long-term symptoms. The five most common symptoms were fatigue (58%), headache (44%), attention disorder (27%), hair loss (25%), and dyspnea (24%). All meta-analyses showed medium (n=2) to high heterogeneity (n=13). In order to have a better understanding, future studies need to stratify by sex, age, previous comorbidities, severity of COVID-19 (ranging from asymptomatic to severe), and duration of each symptom. From the clinical perspective, multi-disciplinary teams are crucial to developing preventive measures, rehabilitation techniques, and clinical management strategies with whole-patient perspectives designed to address long COVID-19 care.",
+    "authors": [
+      "Sandra Lopez-Leon",
+      "Talia Wegman-Ostrosky",
+      "Carol Perelman",
+      "Rosalinda Sepulveda",
+      "Paulina A Rebolledo",
+      "Angelica Cuapio",
+      "Sonia Villapol"
+    ],
+    "chemicals": [],
+    "cord_uid": null,
+    "doi": "10.1101/2021.01.27.21250617",
+    "journal": "medRxiv : the preprint server for health sciences",
+    "journaliso": "medRxiv",
+    "medline_pubtype": [
+      "Preprint"
+    ],
+    "mesh": [],
+    "pmcid": "PMC7852236",
+    "publish_day": 30,
+    "publish_month": 1,
+    "publish_year": 2021,
+    "pubmed_id": "33532785",
+    "reference_count": 49,
+    "supplementary_concepts": [],
+    "title": "More than 50 Long-term effects of COVID-19: a systematic review and meta-analysis.",
+    "url": "https://www.ncbi.nlm.nih.gov/pubmed/33532785"
+  },
+  {
+    "abstract": "COVID-19, caused by SARS-CoV-2, can involve sequelae and other medical complications that last weeks to months after initial recovery, which has come to be called Long-COVID or COVID long-haulers. This systematic review and meta-analysis aims to identify studies assessing long-term effects of COVID-19 and estimates the prevalence of each symptom, sign, or laboratory parameter of patients at a post-COVID-19 stage. LitCOVID (PubMed and Medline) and Embase were searched by two independent researchers. All articles with original data for detecting long-term COVID-19 published before 1(st) of January 2021 and with a minimum of 100 patients were included. For effects reported in two or more studies, meta-analyses using a random-effects model were performed using the MetaXL software to estimate the pooled prevalence with 95% CI. Heterogeneity was assessed using I(2) statistics. This systematic review followed Preferred Reporting Items for Systematic Reviewers and Meta-analysis (PRISMA) guidelines, although the study protocol was not registered. A total of 18,251 publications were identified, of which 15 met the inclusion criteria. The prevalence of 55 long-term effects was estimated, 21 meta-analyses were performed, and 47,910 patients were included. The follow-up time ranged from 14 to 110 days post-viral infection. The age of the study participants ranged between 17 and 87 years. It was estimated that 80% (95% CI 65\u201392) of the patients that were infected with SARS-CoV-2 developed one or more long-term symptoms. The five most common symptoms were fatigue (58%), headache (44%), attention disorder (27%), hair loss (25%), and dyspnea (24%). All meta-analyses showed medium (n=2) to high heterogeneity (n=13). In order to have a better understanding, future studies need to stratify by sex, age, previous comorbidities, severity of COVID-19 (ranging from asymptomatic to severe), and duration of each symptom. From the clinical perspective, multi-disciplinary teams are crucial to developing preventive measures, rehabilitation techniques, and clinical management strategies with whole-patient perspectives designed to address long COVID-19 care.",
+    "arxiv_id": "",
+    "authors": "Lopez-Leon, Sandra; Wegman-Ostrosky, Talia; Perelman, Carol; Sepulveda, Rosalinda; Rebolledo, Paulina A; Cuapio, Angelica; Villapol, Sonia",
+    "cord_uid": "bsle66aj",
+    "doi": "10.1101/2021.01.27.21250617",
+    "journal": "medRxiv",
+    "license": "cc-by-nd",
+    "mag_id": "",
+    "pdf_json_files": "document_parses/pdf_json/9213c985f48e3388c2c60fea5ec3dd6d51804360.json; document_parses/pdf_json/489b49e1dc45e7d9309021434b718f8c051a20a2.json; document_parses/pdf_json/3c0cf36e3248a8c7890aa950e05e43697cf425cd.json",
+    "pmc_json_files": "document_parses/pmc_json/PMC7852236.xml.json",
+    "pmcid": "PMC7852236",
+    "publish_time": "2021-01-30",
+    "pubmed_id": "33532785",
+    "s2_id": "231722772",
+    "sha": "9213c985f48e3388c2c60fea5ec3dd6d51804360; 489b49e1dc45e7d9309021434b718f8c051a20a2; 3c0cf36e3248a8c7890aa950e05e43697cf425cd",
+    "source_x": "MedRxiv; Medline; PMC; WHO",
+    "title": "More than 50 Long-term effects of COVID-19: a systematic review and meta-analysis",
+    "url": "http://medrxiv.org/cgi/content/short/2021.01.27.21250617v1?rss=1; https://doi.org/10.1101/2021.01.27.21250617; https://www.ncbi.nlm.nih.gov/pubmed/33532785/",
+    "who_covidence_id": ""
+  }
+]
