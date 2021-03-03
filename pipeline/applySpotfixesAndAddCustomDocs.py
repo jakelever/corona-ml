@@ -41,7 +41,10 @@ def main():
 		
 		field,fix_to = spotfix['field'],spotfix['to']
 		search = [ d for d in documents if d[identifier_field] == identifier_value ]
-		assert len(search) > 0, "Couldn't find documents for spotfix: %s" % str(spotfix)
+
+		if len(search) == 0:
+			print("WARNING: Couldn't find documents for spotfix: %s" % str(spotfix))
+
 		for d in search:
 			d[field] = fix_to
 		
