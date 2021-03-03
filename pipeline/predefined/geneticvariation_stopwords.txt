@@ -1,0 +1,422 @@
+20a/c
+2a-c
+3 a/c
+3 g/g
+4a-c
+4g>a
+a 1 a
+a 1 g
+a 1 k
+a 1 l
+a 1d
+a 1e
+a 1m
+a 1y
+a 2 l
+a 2 m
+a 2-g
+a 2a
+a 2d
+a 2h
+a 3 aa
+a 3 h
+a 3 m
+a 3a
+a 3b
+a 3c
+a 3d
+a 3m
+a 3v
+a 4t
+a 5 h
+a 5 x
+a 5g
+a 6d
+a 7 h
+a 9 aa
+a1 at
+a1 c
+a1a
+a1at
+a1b
+a1c
+a1m
+a1u
+a1w
+a2a
+a2b
+a2d
+a2m
+a3a
+a3b
+a3g
+a3i
+a4v
+a549m
+a6l
+asn-1-asn
+at 4c
+at 5c
+at 9 g
+at1a
+b1r
+b2b
+b2m
+b2r
+b3a
+b55a
+b56a
+b56b
+b56d
+b56g
+b6p
+b7x
+b9l
+c 2 d
+c 2 t
+c 5 h
+c 6 g
+c 6 h
+c1d
+c1p
+c1q
+c1r
+c1s
+c2c
+c2ca
+c2f
+c3a
+c3b
+c3c
+c3d
+c3f
+c3g
+c3h
+c49a
+c4a
+c4b
+c4c
+c4d
+c4f
+c4s
+c5a
+c5b
+c8a
+c8b
+c8g
+ct1a
+ct2a
+d2b
+d2c
+d2d
+d2h
+d2r
+d3g
+d4t
+d5d
+d6d
+e1a
+e1b
+e1s
+e25a
+e25b
+e2a
+e2b
+e2c
+e2e
+e2f
+e2p
+e3l
+e3s
+e46l
+e4f
+f11r
+f13a
+f13b
+f2f
+f2r
+f8a
+f8c
+f8n
+f8r
+g10d
+g1l
+g25k
+g2a
+g2b
+g2d
+g2m
+g3a
+g4s
+g6d
+g93a
+g9a
+h 1 n
+h 1 t
+h 2  s
+h 2 s
+h1l
+h1p
+h1x
+h2a
+h2b
+h2o
+h2p
+h2s
+h2t
+h3p
+h4p
+h4r
+i 1 i
+i3c
+i4l
+j04a
+k27m
+k2p
+k5b
+k6c
+k6d
+k6l
+k9s
+l 1 h
+l 1 l
+l 2 h
+l 3 h
+l10a
+l10e
+l13a
+l18a
+l23a
+l27a
+l2c
+l2m
+l35a
+l36a
+l37a
+l5178y
+l5f
+l6d
+l7a
+m 6 a
+m059j
+m059k
+m07e
+m1a
+m2 p
+m2a
+m2e
+m3d
+m3r
+m6a
+m6b
+m7 g
+m7g
+n063d
+n1b
+n1e
+n2a
+n2b
+n2c
+n2n
+n2o
+n3c
+n8l
+n8r
+n95s
+p 2s
+p14l
+p190a
+p1a
+p1b
+p1e
+p2 s
+p24a
+p2b
+p2p
+p2s
+p2u
+p2x
+p2y
+p3 n
+p35b
+p3b
+p3k
+p4a
+p4b
+p504s
+p5c
+p6 n
+p704p
+p70r
+p7a
+p85b
+p8s
+p9b
+p9r
+q10h
+q11h
+q12h
+q13h
+q14h
+q15h
+q16h
+q17h
+q18h
+q19h
+q1h
+q20h
+q21h
+q22h
+q23h
+q24h
+q2h
+q3h
+q3w
+q4h
+q5h
+q6h
+q7h
+q8h
+q8w
+q9h
+r0106s
+r05r
+r05t
+r06e
+r0n
+r1s
+r2006a
+r2006b
+r2007a
+r2007b
+r2008a
+r2008b
+r2009a
+r2009b
+r2010a
+r2010b
+r2011a
+r2011b
+r2012a
+r2012b
+r2013a
+r2013b
+r2014a
+r2014b
+r2015a
+r2015b
+r2016a
+r2016b
+r2017a
+r2017b
+r2018a
+r2018b
+r2019a
+r2019b
+r2020a
+r2020b
+r2021a
+r2021b
+r2022a
+r2022b
+r2023a
+r2023b
+r2024a
+r2024b
+r2025a
+r2025b
+r2026a
+r2026b
+r2027a
+r2027b
+r2028a
+r2028b
+r2029a
+r2029b
+r2n
+r2s
+r3t
+r4e
+s1 a
+s1 b
+s1 d
+s1 n
+s100a
+s100b
+s100c
+s100d
+s100e
+s100f
+s100g
+s100l
+s100p
+s100z
+s15a
+s1a
+s1b
+s1c
+s1d
+s1e
+s1p
+s1r
+s27a
+s2a
+s2b
+s2c
+s2d
+s2m
+s2p
+s2q
+s2r
+s2v
+s3a
+s3b
+s3c
+s3d
+s4a
+s4b
+s4c
+s4d
+s5a
+s5b
+s5c
+s5d
+s5p
+s6a
+s6b
+s6c
+s6d
+s6k
+t0n
+t1 a
+t1b
+t1d
+t1l
+t1w
+t2a
+t2a/b
+t2b
+t2d
+t2t
+t2w
+t3d
+t3n
+t4 at
+t47d
+t4a
+t98g
+u1a
+u2b
+u3a
+u3c
+v2r
+v6f
+v6i
+val2leu
+w2w
+w3c
+w8a
+x11l
+x5l
+y2h
+y2r
