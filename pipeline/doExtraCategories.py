@@ -4,10 +4,10 @@ import re
 from collections import Counter
 
 def predictTrial(abstractLower):
-    trialNumber = re.search(r'ctr[0-9]+',abstractLower)
-    nihTrialNumber = re.search(r'nct\s*[0-9]+',abstractLower)
+    ctrTrialNumber = re.search(r'\bctr[0-9][0-9][0-9][0-9]+\b',abstractLower)
+    nctTrialNumber = re.search(r'\bnct\s*[0-9][0-9][0-9][0-9]+\b',abstractLower)
     
-    decision = bool(trialNumber or nihTrialNumber)
+    decision = bool(ctrTrialNumber or nctTrialNumber)
     return decision
 
 def main():
