@@ -1,6 +1,6 @@
 # Step-by-step guide to CoronaCentral processing pipeline
 
-This documents describes on fine detail the steps involved to get the coronavirus papers, predict topics and article types, do cleaning and lots of other steps. The code for most of these steps are in the [pipeline/](https://github.com/jakelever/corona-ml/blob/master/pipeline/) directory. The master script [coronatime.sh](https://github.com/jakelever/corona-ml/blob/master/coronatime.sh) runs the data download, the Snakemake pipeline script and then additional steps for upload and tweeting.
+This documents describes on fine detail the steps involved to get the coronavirus papers, predict topics and article types, do cleaning and lots of other steps. The code for most of these steps are in the [pipeline/](https://github.com/jakelever/corona-ml/tree/master/pipeline/) directory. The master script [coronatime.sh](https://github.com/jakelever/corona-ml/blob/master/coronatime.sh) runs the data download, the Snakemake pipeline script and then additional steps for upload and tweeting.
 
 ## Requirements
 
@@ -41,15 +41,15 @@ The [collectAllPapers.py](https://github.com/jakelever/corona-ml/blob/master/dat
 
 To provide more intelligent search functionality, mentions in the title or abstract of important biomedical concepts are normalized back to WikiData terms (where possible). This means that a search for a drug provides papers that mention any of the synonyms known for it. To create the various wordlists of synonyms for all the biomedical concepts, a set of scripts (in the pipeline/ directory) are used  to pull information from WikiData.
 
-- getDrugsFromWikidata.py - Pulls drug names (concepts that are instances of [medication](https://www.wikidata.org/wiki/Q12140))
-- getGenesFromWikidata - Pulls human gene/protein names
-- getGeonamesFromWikidata - Pulls locations including countries, cities and some smaller regions.
-- getMedicalDisciplinesFromWikidata - Pulls medicial disciplines/specialties (concepts that are instances of [medical specialty](https://www.wikidata.org/wiki/Q930752))
-- getSymptomsFromWikidata - Pulls symptoms (concepts that are instances or subclasses of [symptom](https://www.wikidata.org/wiki/Q169872)
+- [getDrugsFromWikidata.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/getDrugsFromWikidata.py) - Pulls drug names (concepts that are instances of [medication](https://www.wikidata.org/wiki/Q12140))
+- [getGenesFromWikidata.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/getGenesFromWikidata.py) - Pulls human gene/protein names
+- [getGeonamesFromWikidata.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/getGeonamesFromWikidata.py) - Pulls locations including countries, cities and some smaller regions.
+- [getMedicalDisciplinesFromWikidata.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/getMedicalDisciplinesFromWikidata.py) - Pulls medicial disciplines/specialties (concepts that are instances of [medical specialty](https://www.wikidata.org/wiki/Q930752))
+- [getSymptomsFromWikidata.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/getSymptomsFromWikidata.py) - Pulls symptoms (concepts that are instances or subclasses of [symptom](https://www.wikidata.org/wiki/Q169872)
 
-To capture mentions of important coronavirus proteins, the getCoronavirusProteins.py generates a custom set of synonyms for the various coronavirus proteins in SARS-CoV-2, MERS-CoV and SARS-CoV. It creates a list of unambigious terms (e.g. MERS-CoV spike protein) and ambiguous terms (e.g. spike protein) that can be disambiguated later given mentions of specific viruses in the same document.
+To capture mentions of important coronavirus proteins, the [getCoronavirusProteins.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/getCoronavirusProteins.py) generates a custom set of synonyms for the various coronavirus proteins in SARS-CoV-2, MERS-CoV and SARS-CoV. It creates a list of unambigious terms (e.g. MERS-CoV spike protein) and ambiguous terms (e.g. spike protein) that can be disambiguated later given mentions of specific viruses in the same document.
 
-The predefined/ directory contains custom manually-curated lists of different entity types. The terms_viruses.json file contains synonyms for the three coronaviruses (and associated diseases). The more_custom.tsv contains a list of curated terms of the different entity types. The getCustomTerms.py script is used to expand this list by pulling synonyms from Wikidata using the provided WikiData IDs and combined with the terms_custom.json data already in the JSON format. The removals.tsv contains a list of synonyms to remove. This file is used later in the named entity recognition stage.
+The [predefined/](https://github.com/jakelever/corona-ml/tree/master/pipeline/predefined/) directory contains custom manually-curated lists of different entity types. The [terms_viruses.json](https://github.com/jakelever/corona-ml/blob/master/pipeline/predefined/terms_viruses.json) file contains synonyms for the three coronaviruses (and associated diseases). The [more_custom.tsv](https://github.com/jakelever/corona-ml/blob/master/pipeline/predefined/more_custom.tsv) contains a list of curated terms of the different entity types. The getCustomTerms.py script is used to expand this list by pulling synonyms from Wikidata using the provided WikiData IDs and combined with the terms_custom.json data already in the JSON format. The [removals.tsv](https://github.com/jakelever/corona-ml/blob/master/pipeline/predefined/removals.tsv) contains a list of synonyms to remove. This file is used later in the named entity recognition stage.
 
 ## Processing the data
 
@@ -57,21 +57,21 @@ The input to the pipeline is the merged documents from CORD-19 and PubMed. These
 
 This pipeline will take over 12 hours to run if run from scratch. The lengthy scripts will check for previous runs and try to skip unnecessary re-processing of scripts. The particularly time-consuming scripts are scrapeWebdata.py, filterOutLanguages.py, doNER.py, extractGeneticVariationAndLineages.py and applyCategoryModel.py. The runtime for an update is closer to one hour.
 
-### Applying spotfixes and adding hand-coded documents (applySpotfixesAndAddCustomDocs.py)
+### Applying spotfixes and adding hand-coded documents ([applySpotfixesAndAddCustomDocs.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/applySpotfixesAndAddCustomDocs.py))
 
 Some manual fixes to documents (stored in spotFixes.json) are applied to the corpus and any extra documents are added from additions.json. This allows the addition of documents not captured by CORD-19 or PubMed.
 
-### Scrape web data (scrapeWebdata.py)
+### Scrape web data ([scrapeWebdata.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/scrapeWebdata.py))
 
 Information from the publisher's website provides valuable information about the article type of each document. This script will retrieve the HTML page from the publishers website and identify relevant metadata using [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) for parsing. It will try all URLs associated with a document excluding PubMed and URLs ending with '.pdf'. It will then find <meta> tags or <span> tags with predefined classes that identify metadata for the article (e.g. 'article-header__journal'). This data is stored separately from the documents.
 
-### Integrate web data (integrateWebData.py)
+### Integrate web data ([integrateWebData.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/integrateWebData.py))
 
 The metadata from publishers' website needs to be integrated with each document. The crawled <meta> and <span> tags are search for those likely containing article type information and matched against a manually-curated list of frequent terms for article types to map it to the CoronaCentral defined article types. For instance a <meta> tag that gives "DC.Subject" as "review-article" is mapped to the Review article type. PubMed flags (e.g. Editorial) are also used to map to article types. Obvious keywords in the title (e.g. Retracted) are also used for some article types. This article type information is stored as the inferred_article_type field for those documents for which data is available and is integrated in a later step.
 
 The web data is also used to clean up journal names. A mapping is created from journal names found in CORD-19 and PubMed to journal names provided by publication  websites. For example, "N Engl J Med" in PubMed is mapped to "New England Journal of Medicine". This provides for more standardized journal naming.
 
-### Clean up documents (cleanupDocs.py)
+### Clean up documents ([cleanupDocs.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/cleanupDocs.py))
 
 The cleanup stage applies a number of small fixes described below to all documents:
 
@@ -85,7 +85,7 @@ The cleanup stage applies a number of small fixes described below to all documen
 - Some structured abstract section headings are cleaned to add necessary spaces (e.g. "RESULTS:We did" to "RESULTS: We did")
 - Publication date fields are standardized so that year, month and day is stored separately
 
-### Merge duplicate documents (mergeDuplicates.py)
+### Merge duplicate documents ([mergeDuplicates.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/mergeDuplicates.py))
 
 CORD-19 is a combination of multiple sources and contains duplicate documents. We combine PubMed as well which introduces more duplicates. This stage uses some fields to resolve duplicate documents and merge groups of documents into one document while maintaining appropriate metadata.
 
@@ -99,15 +99,15 @@ It will try to merge documents with the following field options:
 
 Groups of documents that should be merged are found using these field matches. Documents are then merged, with preference for information coming from non-preprint documents. The most complete publication date is also selected (so year, month and day if possible). This stage also removes any documents flagged as Erratum.
 
-### Filter out non-English language documents (filterOutLanguages.py)
+### Filter out non-English language documents ([filterOutLanguages.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/filterOutLanguages.py))
 
 Unfortunately this resource is limited to English language research articles. We remove non-English language articles using heuristics on frequency of stopwords from different languages. The stopwords are loaded from NLTK. The languages checked using stopwords are: Arabic, Azerbaijani, Danish, Dutch, Finnish, French, German, Greek, Hungarian, Indonesian, Italian, Kazakh, Nepali, Norwegian, Portuguese, Romanian, Russian, Slovene, Spanish, Swedish, Tajik and Turkish. If 5 or more stopwords were found from a non-English language then the article is flagged. This cutoff was found to provide a good accuracy for identifying non-English articles. Non-english stopwords were filtered for English stopwords and the words: 'se','sera','et'. Documents containing Chinese, Japanese or Korean characters are also flagged.
 
-### Integrate manual annotations (integrateAnnotations.py)
+### Integrate manual annotations ([integrateAnnotations.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/integrateAnnotations.py))
 
 At this stage, we integrate the annotations used for the training set for topics and article types. These are contained in the annotations.json.gz archive (which needs to be ungzipped). The annotations match documents by their DOI or PubMed identifiers and include manual curation of topic and article type. These annotations were achieved through the manual annotation system that is available in the annotation/ directory.
 
-### Extract mentions of drugs, locations, symptoms, etc (doNER.py)
+### Extract mentions of drugs, locations, symptoms, etc ([doNER.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/doNER.py))
 
 Using the wordlists outlined above, we now find mentions of important biomedical concepts in the title and abstracts and saved this information. This script loads up all the different entity listing files and uses [Kindred](https://github.com/jakelever/kindred)'s entity recognition system to flag mentions of them in articles. This approach uses exact string matching with knowledge of word boundaries to find the longest mapping entities in documents. This means that in the sentence: "We studied the EGF receptor", "EGF receptor" would be identified as a gene/protein, and "EGF" would not be identified as it is contained within a larger entity. The location of entities along with their normalized identifier (normally the WikiData identifier) are stored in the document.
 
@@ -117,11 +117,11 @@ This script also does some disambiguation for viral protein mentions. For papers
 
 This script also makes use of the the removals.tsv list to remove some uncommon and tricky synonyms. The conflicting entity type also provides a means to reduce poorly normalized terms (e.g. 'Edinburgh Postpartum Depression Scale' stops the word Edinburgh mapping to the location when that phrase is used). Finally, entities that cannot be unambigiously mapped are discarded.
 
-### Filter for only documents that mention relevant viruses (filterForVirusDocs.py)
+### Filter for only documents that mention relevant viruses ([filterForVirusDocs.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/filterForVirusDocs.py))
 
 After the named recognition stage, the documents contain the entities field which lists mentions of the important biomedical concepts. One of these is viruses. This stage filters for documents that contain a mention of a virus.
 
-### Extract mentions of genetic variation and viral lineages (extractGeneticVariationAndLineages.py)
+### Extract mentions of genetic variation and viral lineages ([extractGeneticVariationAndLineages.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/extractGeneticVariationAndLineages.py))
 
 This script uses a large set of regular expressions to find mentions of genomic variation and viral lineages. The genomic variation work reuses a system built for normalizing some PubTator mutations for the [PGxMine project](https://github.com/jakelever/pgxmine).
 
@@ -129,11 +129,11 @@ For genomic variations, there are a large set of example phrasings that are mapp
 
 Viral lineages are also identified with a set of regular expressions. The main one is '\b[ABCP]\.\d\d?(\.\d+)\*\.?\b' which captures lineages named that start with ABCP and have numeric sub-numberings, e.g. B.1.1.7. Other regular expressions are used for a few other formats and a small set of curated synonyms are used to map lineages, e.g. '501Y.V1' to 'B.1.1.7 (UK)'.
 
-### Predict topics and article types using a BERT model (applyCategoryModel.py)
+### Predict topics and article types using a BERT model ([applyCategoryModel.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/applyCategoryModel.py))
 
 The main intense machine learning is dealt with by the applyCategoryModel.py script. At this point, topics and article types are combined together as "categories". The scripts for training, evaluating and running the machine learning models are in the separate category_prediction/ directory. The applyCategoryModel.py loads a pretrained model for topic and article type prediction. This model uses [ktrain](https://github.com/amaiya/ktrain). It is a BERT-based multi-label document classifier. As input, it takes the title and abstract text. The main bit of code that does the work is the DocumentClassifier class in coronacode/documentclassifier.py.
 
-### Predict several additional topics/article types using hand-coded rules (doExtraCategories.py)
+### Predict several additional topics/article types using hand-coded rules ([doExtraCategories.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/doExtraCategories.py))
 
 Some heuristics, outlined below, are then employed to identify more topics and article types.
 
@@ -143,11 +143,11 @@ Some heuristics, outlined below, are then employed to identify more topics and a
 - If an article type was inferred from web data, it overwrites any article types currently assigned to the article.
 - Finally any article without an assigned article type is annotated as a Research article.
 
-### Separate categories in topics and article types (separateArticleTypesAndTopics.py)
+### Separate categories in topics and article types ([separateArticleTypesAndTopics.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/separateArticleTypesAndTopics.py))
 
 This splits the categories predicted by BERT and hand-coded rules into two separate fields. A list of article types is used to divide the categories appropriately.
 
-### Do some final filtering and cleaning (finalFilter.py)
+### Do some final filtering and cleaning ([finalFilter.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/finalFilter.py))
 
 Some final filtering steps are applied to the data as outlined below:
 
