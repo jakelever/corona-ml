@@ -159,14 +159,25 @@ Some final filtering steps are applied to the data as outlined below:
 
 The final step for the CoronaCentral corpus file is gzipping up the coronacentral.json file.
 
-### Get Altmetric data (getAltmetricData.py)
+### Get Altmetric data ([getAltmetricData.py](https://github.com/jakelever/corona-ml/blob/master/altmetric/getAltmetricData.py))
 
 The Altmetric API will be polled for the score data for the documents in the corpus. This is stored as a separate file and used for the web server to prioritize tables.
 
-## Steps after Processing
+## Database Upload
 
-After the pipeline has been run, the data is uploaded to the MySQL database on the CoronaCentral web server. This upload is managed by scripts in the database/ directory. The web server (code at https://github.com/jakelever/corona-web) is then rebuilt with the new data.
+Once the CoronaCentral corpus is prepared, it needs to be uploaded to the database of the web server so the website can be rebuilt with updated data. The scripts in the [database/](https://github.com/jakelever/corona-ml/tree/master/database) directory manage this with the [reload_db.sh](https://github.com/jakelever/corona-ml/blob/master/database/reload_db.sh) master script managing the individual steps outlined below.
+
+- [createDB.py](https://github.com/jakelever/corona-ml/blob/master/database/createDB.py): Building the database structure - for simplicity the database is dropped and everything is rebuilt
+- [loadDocsAndAnnotations.py](https://github.com/jakelever/corona-ml/blob/master/database/loadDocsAndAnnotations.py): Load the corpus with topic, article type and entity annotations
+- [loadAltmetricData.py](https://github.com/jakelever/corona-ml/blob/master/database/loadAltmetricData.py): Load the Altmetric data in for the documents
+- [loadLocationCoordinates.py](https://github.com/jakelever/corona-ml/blob/master/database/loadLocationCoordinates.py): Load the latitude and longitude coordinates in for geographic locations. This is used for the mapping functionality
+- [cleanupDB.py](https://github.com/jakelever/corona-ml/blob/master/database/cleanupDB.py): Do some database cleaning to make sure there aren't any unused entity types or entities
+
+## Additional Steps
+
+The update script will then direct the NodeJS web server to do a rebuild with the new database contents. The web server code is available at https://github.com/jakelever/corona-web.
 
 The regular update script will then potentially do the two following things:
 - Tweet once a day with the top three papers based on Altmetric scores
-- Upload the corpus to Zenodo once a week
+- Upload the corpus to [Zenodo](https://doi.org/10.5281/zenodo.4383289) once a week
+
