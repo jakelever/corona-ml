@@ -53,4 +53,18 @@ The [database/](https://github.com/jakelever/corona-ml/tree/master/database) dir
 
 ## Data
 
-If using data from this project, please cite this work along with the CORD-19 dataset.
+The full data is available at [Zenodo](https://doi.org/10.5281/zenodo.4383289). 
+
+## Citing
+
+If using the data from the project, it'd be lovely if you'd cite the work. There is currently a bioRxiv preprint with bibtex below:
+
+```
+@article{lever2020analyzing,
+  title={Analyzing the vast coronavirus literature with CoronaCentral},
+  author={Lever, Jake and Altman, Russ B},
+  journal={bioRxiv},
+  year={2020},
+  publisher={Cold Spring Harbor Laboratory}
+}
+```
