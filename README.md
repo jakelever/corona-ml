@@ -57,7 +57,7 @@ The full data is available at [Zenodo](https://doi.org/10.5281/zenodo.4383289).
 
 ## Citing
 
-If using the data from the project, it'd be lovely if you'd cite the work. There is currently a bioRxiv preprint with bibtex below:
+If using the data from the project, it'd be lovely if you'd cite the work. There is currently a [bioRxiv preprint](https://doi.org/10.1101/2020.12.21.423860) with bibtex below:
 
 ```
 @article{lever2020analyzing,
