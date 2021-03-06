@@ -17,16 +17,22 @@
 
 This repository contains the code for text mining the coronavirus literature for [CoronaCentral](https://coronacentral.ai). It manages the download, clean up, categorization (using deep learning) and many more steps to process the coronavirus literature. The output of this is then upload to the CoronaCentral website. The web interface of the website is kept in a [separate Github repo](https://github.com/jakelever/corona-web).
 
-This README will cover the three main steps
+## Detailed Step-by-Step Guide
+
+The [stepByStep.md](https://github.com/jakelever/corona-ml/blob/master/stepByStep.md) file contains a detailed guide of all the different steps involved in downloading and processing the documents. A quicker overview is below.
+
+## Quicker Overview
+
+This project follows three main steps
  - Downloading coronavirus literature
  - Running the full pipeline
  - Uploading to a database
  
-## Download the coronavirus literature
+### Download the coronavirus literature
 
 Scripts in the [data/](https://github.com/jakelever/corona-ml/tree/master/data) manage the download of the literature from [PubMed](https://www.nlm.nih.gov/databases/download/pubmed_medline.html) and [CORD-19](https://www.semanticscholar.org/cord19/download). These two sources are then combined into one file and fed through the pipeline where they are cleaned up.
 
-## Full Pipeline
+### Full Pipeline
 
 The full pipeline in the [pipeline/](https://github.com/jakelever/corona-ml/tree/master/pipeline) directory takes in documents from PubMed and CORD-19 and does cleaning, merging, categorization, and more steps outlined below. These are managed by a Snakemake script.
 
@@ -41,10 +47,24 @@ The full pipeline in the [pipeline/](https://github.com/jakelever/corona-ml/tree
 - A final filter does some final tidying up and checking
 - Document annotations are prepared for upload to a database
 
-## Database
+### Database
 
 The [database/](https://github.com/jakelever/corona-ml/tree/master/database) directory contains scripts for creating and managing a MySQL database containing documents and annotations.
 
 ## Data
 
-If using data from this project, please cite this work along with the CORD-19 dataset.
+The full data is available at [Zenodo](https://doi.org/10.5281/zenodo.4383289). 
+
+## Citing
+
+If using the data from the project, it'd be lovely if you'd cite the work. There is currently a [bioRxiv preprint](https://doi.org/10.1101/2020.12.21.423860) with bibtex below:
+
+```
+@article{lever2020analyzing,
+  title={Analyzing the vast coronavirus literature with CoronaCentral},
+  author={Lever, Jake and Altman, Russ B},
+  journal={bioRxiv},
+  year={2020},
+  publisher={Cold Spring Harbor Laboratory}
+}
+```
