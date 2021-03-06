@@ -112,7 +112,7 @@ rule:
 rule:
 	input: join(outDir,"alldocuments.geneticvariation.json"),
 	output: join(outDir,"alldocuments.categories.json")
-	shell: "python ../category_prediction/applyCategoryModel.py --inJSON {input} --prevJSON {output}.prev --modelDir ../category_prediction/optimal_model/ --outJSON {output} && cp {output} {output}.prev"
+	shell: "python ../category_prediction/applyCategoryModelFromHuggingFace.py --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
 
 rule:
 	input: join(outDir,"alldocuments.categories.json"),
