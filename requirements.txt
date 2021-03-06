@@ -12,3 +12,4 @@ nltk
 tabulate
 ray
 beautifulsoup4
+ktrain
