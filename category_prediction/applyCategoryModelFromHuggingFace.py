@@ -1,21 +1,35 @@
 
-import sys
-sys.path.insert(0,'/home/users/jlever/.local/lib/python3.6/site-packages')
+#import sys
+#sys.path.insert(0,'/home/users/jlever/.local/lib/python3.6/site-packages')
 
 import argparse
 import json
 import os
 import sys
 from collections import Counter
-from coronacode import DocumentClassifier
+
+import ktrain
+from transformers import AutoTokenizer, TFAutoModelForSequenceClassification
 
 def main():
-	parser = argparse.ArgumentParser('Build a model for a classifier')
+	parser = argparse.ArgumentParser('Use the jakelever/coronabert sequence classifier from HuggingFace.co to predict topics/article types')
 	parser.add_argument('--inJSON',required=True,type=str,help='Filename of JSON documents')
 	parser.add_argument('--prevJSON',type=str,required=False,help='Optional previously processed output (to save time)')
-	parser.add_argument('--modelDir',required=True,type=str,help='Directory of model data')
 	parser.add_argument('--outJSON',required=True,type=str,help='Output JSON file with documents')
 	args = parser.parse_args()
+
+	print("Loading tokenizer and model...")
+	tokenizer = AutoTokenizer.from_pretrained("jakelever/coronabert")
+	model = TFAutoModelForSequenceClassification.from_pretrained("jakelever/coronabert")
+	model.compile(loss='binary_crossentropy',optimizer='adam', metrics=['accuracy'])
+
+	print("Setting up ktrain...")
+	categories = list(model.config.id2label.values())
+	preproc = ktrain.text.Transformer('jakelever/coronabert',maxlen=500,class_names=categories)
+	preproc.preprocess_train_called = True
+	predictor = ktrain.get_predictor(model, preproc)
+
+	print("Loading documents...")
 
 	category_map = {}
 	if args.prevJSON and os.path.isfile(args.prevJSON):
@@ -54,10 +68,6 @@ def main():
 
 	print("%d annotated_docs and %d unannotated_docs in documents to process" % (len(annotated_docs),len(unannotated_docs)))
 
-	categories_file = os.path.join(args.modelDir,'categories.json')
-	with open(categories_file) as f:
-		categories = json.load(f)
-
 	annotated_counts = Counter()
 	for d in annotated_docs:
 		annotated_categories = [ a for a in d['annotations'] if a in categories ]
@@ -66,20 +76,18 @@ def main():
 		d['categories'] = annotated_categories
 	print("Annotated Category Counts in %d documents:" % len(annotated_docs), annotated_counts)
 
+
 	if len(unannotated_docs) > 0:
-		print("Loading model...")
-		clf = DocumentClassifier.load(args.modelDir)
-
 		print("Making predictions...")
-		predictions = clf.predict(unannotated_docs)
+		unannotated_texts = [ d['title'] + "\n" + d['abstract'] for d in unannotated_docs ]
+		predictions = predictor.predict(unannotated_texts)
 
-		assert predictions.shape[0] == len(unannotated_docs)
-		assert predictions.shape[1] == len(categories)
+		assert len(predictions) == len(unannotated_docs)
 
 		predicted_counts = Counter()
 		for i,d in enumerate(unannotated_docs):
-			predictions_for_doc = predictions[i,:]
-			predicted_categories = [ c for p,c in zip(predictions_for_doc,categories) if p ]
+			predictions_for_doc = predictions[i]
+			predicted_categories = [ c for c,p in predictions_for_doc if p > 0.5 ]
 			predicted_counts += Counter(predicted_categories)
 			d['categories'] = predicted_categories
 
