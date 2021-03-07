@@ -13,6 +13,9 @@
 <a href="https://github.com/jakelever/corona-web">
    <img src="https://img.shields.io/badge/web-code-darkgreen.svg" />
 </a>
+<a href="https://github.com/jakelever/corona-ml/actions/workflows/pipeline_test.yml">
+   <img src="https://github.com/jakelever/corona-ml/actions/workflows/pipeline_test.yml/badge.svg" />
+</a>
 </p>
 
 This repository contains the code for text mining the coronavirus literature for [CoronaCentral](https://coronacentral.ai). It manages the download, clean up, categorization (using deep learning) and many more steps to process the coronavirus literature. The output of this is then upload to the CoronaCentral website. The web interface of the website is kept in a [separate Github repo](https://github.com/jakelever/corona-web).
