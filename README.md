@@ -42,6 +42,8 @@ The core part of the pipeline predicts topics and article types using the title 
 - [HuggingFace example on Google Colab](https://colab.research.google.com/drive/1cBNgKd4o6FNWwjKXXQQsC_SaX1kOXDa4?usp=sharing)
 - [KTrain example on Google Colab](https://colab.research.google.com/drive/1h7oJa2NDjnBEoox0D5vwXrxiCHj3B1kU?usp=sharing)
 
+The method is described in the [preprint](https://doi.org/10.1101/2020.12.21.423860) and detailed performance results can be found in the [machine learning details](https://github.com/jakelever/corona-ml/blob/master/machineLearningDetails.md) document.
+
 ## Detailed Step-by-Step Guide
 
 The [stepByStep.md](https://github.com/jakelever/corona-ml/blob/master/stepByStep.md) file contains a detailed guide of all the different steps involved in downloading and processing the documents. A quicker overview is below.
@@ -82,7 +84,7 @@ The full data is available at [Zenodo](https://doi.org/10.5281/zenodo.4383289).
 
 ## Machine Learning Performance
 
-Detailed information of the parameter tuning, validation results and final test results for the optimal model are provided in the [machineLearningDetails](https://github.com/jakelever/corona-ml/blob/master/machineLearningDetails.md) document.
+Detailed information of the parameter tuning, validation results and final test results for the optimal model are provided in the [machine learning details](https://github.com/jakelever/corona-ml/blob/master/machineLearningDetails.md) document.
 
 ## Citing
 
