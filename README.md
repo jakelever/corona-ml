@@ -20,6 +20,28 @@
 
 This repository contains the code for text mining the coronavirus literature for [CoronaCentral](https://coronacentral.ai). It manages the download, clean up, categorization (using deep learning) and many more steps to process the coronavirus literature. The output of this is then upload to the CoronaCentral website. The web interface of the website is kept in a [separate Github repo](https://github.com/jakelever/corona-web).
 
+## Dependencies
+
+This is a Python3 project that relies on several machine learning libraries (e.g. transformers, scikit-learn, etc) and NLP library (e.g. NLTK and spacy). The requirements (including the NLTK stopwords set) can be installed as below: 
+
+```
+pip install -r requirements.txt
+python -m nltk.downloader stopwords
+```
+
+## Running the Pipeline
+
+A good place to start is to run the test run of the core part of the pipeline with the [run_test.sh](https://github.com/jakelever/corona-ml/blob/master/run_test.sh) script (which is run regularly by GitHub to test this repo).
+
+The pipeline, described in detail in the [step by step guide](https://github.com/jakelever/corona-ml/blob/master/stepByStep.md), is run by the master script [coronatime.sh](https://github.com/jakelever/corona-ml/blob/master/coronatime.sh). This requires substantial disk space and time.
+
+## Running the Topic / Article Type Prediction
+
+The core part of the pipeline predicts topics and article types using the title and abstract text of articles. This uses a BERT-based sequence classifier trained using [ktrain](https://github.com/amaiya/ktrain) and [HuggingFace transformers](https://huggingface.co/). The model ([jakelever/coronabert](https://huggingface.co/jakelever/coronabert])) is public and runnable using the transformers library. Below are two Google Colab notebooks with example code for running with transformers or ktrain. 
+
+- [HuggingFace example on Google Colab](https://colab.research.google.com/drive/1cBNgKd4o6FNWwjKXXQQsC_SaX1kOXDa4?usp=sharing)
+- [KTrain example on Google Colab](https://colab.research.google.com/drive/1h7oJa2NDjnBEoox0D5vwXrxiCHj3B1kU?usp=sharing)
+
 ## Detailed Step-by-Step Guide
 
 The [stepByStep.md](https://github.com/jakelever/corona-ml/blob/master/stepByStep.md) file contains a detailed guide of all the different steps involved in downloading and processing the documents. A quicker overview is below.
@@ -57,6 +79,10 @@ The [database/](https://github.com/jakelever/corona-ml/tree/master/database) dir
 ## Data
 
 The full data is available at [Zenodo](https://doi.org/10.5281/zenodo.4383289). 
+
+## Machine Learning Performance
+
+Detailed information of the parameter tuning, validation results and final test results for the optimal model are provided in the [machineLearningDetails](https://github.com/jakelever/corona-ml/blob/master/machineLearningDetails.md) document.
 
 ## Citing
 
