@@ -37,7 +37,7 @@ The pipeline, described in detail in the [step by step guide](https://github.com
 
 ## Running the Topic / Article Type Prediction
 
-The core part of the pipeline predicts topics and article types using the title and abstract text of articles. This uses a BERT-based sequence classifier trained using [ktrain](https://github.com/amaiya/ktrain) and [HuggingFace transformers](https://huggingface.co/). The model ([jakelever/coronabert](https://huggingface.co/jakelever/coronabert])) is public and runnable using the transformers library. Below are two Google Colab notebooks with example code for running with transformers or ktrain. 
+The core part of the pipeline predicts topics and article types using the title and abstract text of articles. This uses a BERT-based sequence classifier trained using [ktrain](https://github.com/amaiya/ktrain) and [HuggingFace transformers](https://huggingface.co/). The model ([jakelever/coronabert](https://huggingface.co/jakelever/coronabert)) is public and runnable using the transformers library. Below are two Google Colab notebooks with example code for running with transformers or ktrain. 
 
 - [HuggingFace example on Google Colab](https://colab.research.google.com/drive/1cBNgKd4o6FNWwjKXXQQsC_SaX1kOXDa4?usp=sharing)
 - [KTrain example on Google Colab](https://colab.research.google.com/drive/1h7oJa2NDjnBEoox0D5vwXrxiCHj3B1kU?usp=sharing)
