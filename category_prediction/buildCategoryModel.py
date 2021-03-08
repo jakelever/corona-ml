@@ -1,9 +1,5 @@
 
 import sys
-sys.path.insert(0,'/home/users/jlever/.local/lib/python3.6/site-packages')
-
-sys.path.append('/home/groups/rbaltman/jlever/corona-ml/pipeline')
-
 import argparse
 import json
 import os
