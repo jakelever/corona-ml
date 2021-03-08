@@ -129,9 +129,12 @@ For genomic variations, there are a large set of example phrasings that are mapp
 
 Viral lineages are also identified with a set of regular expressions. The main one is '\b[ABCP]\.\d\d?(\.\d+)\*\.?\b' which captures lineages named that start with ABCP and have numeric sub-numberings, e.g. B.1.1.7. Other regular expressions are used for a few other formats and a small set of curated synonyms are used to map lineages, e.g. '501Y.V1' to 'B.1.1.7 (UK)'.
 
-### Predict topics and article types using a BERT model ([applyCategoryModel.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/applyCategoryModel.py))
+### Predict topics and article types using a BERT model ([applyCategoryModelFromHuggingFace.py](https://github.com/jakelever/corona-ml/blob/master/category_prediction/applyCategoryModelFromHuggingFace.py))
 
-The main intense machine learning is dealt with by the applyCategoryModel.py script. At this point, topics and article types are combined together as "categories". The scripts for training, evaluating and running the machine learning models are in the separate category_prediction/ directory. The applyCategoryModel.py loads a pretrained model for topic and article type prediction. This model uses [ktrain](https://github.com/amaiya/ktrain). It is a BERT-based multi-label document classifier. As input, it takes the title and abstract text. The main bit of code that does the work is the DocumentClassifier class in coronacode/documentclassifier.py.
+The main intense machine learning is dealt with by the applyCategoryModelFromHuggingFace.py script. At this point, topics and article types are combined together as "categories". The scripts for training, evaluating and running the machine learning models are in the separate [category_prediction/](https://github.com/jakelever/corona-ml/tree/master/category_prediction) directory. The applyCategoryModelFromHuggingFace.py loads a pretrained model for topic and article type prediction. This model uses [ktrain](https://github.com/amaiya/ktrain). It is a BERT-based multi-label document classifier using the [jakelever/coronabert](https://huggingface.co/jakelever/coronabert) model. This model is fine-tuned from the [microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract](https://huggingface.co/microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract) model. As input, it takes the title and abstract text. Below are two Colab example notebooks showing how to use this model in HuggingFace and ktrain.
+
+- [HuggingFace example on Google Colab](https://colab.research.google.com/drive/1cBNgKd4o6FNWwjKXXQQsC_SaX1kOXDa4?usp=sharing)
+- [KTrain example on Google Colab](https://colab.research.google.com/drive/1h7oJa2NDjnBEoox0D5vwXrxiCHj3B1kU?usp=sharing)
 
 ### Predict several additional topics/article types using hand-coded rules ([doExtraCategories.py](https://github.com/jakelever/corona-ml/blob/master/pipeline/doExtraCategories.py))
 
