@@ -3,51 +3,51 @@ from os.path import join
 
 outDir = "data"
 
-rule:
+rule final_files:
 	input: join(outDir,"coronacentral.json.gz"), join(outDir,"terms_complete.txt")
 
-rule:
+rule terms_files:
 	input: join(outDir,"terms_drugs.json"), join(outDir,"terms_symptoms.json"), join(outDir,"terms_locations.json"), join(outDir,"terms_medicaldisciplines.json"), join(outDir,"terms_genes_and_proteins.json"), join(outDir,"terms_coronavirus_proteins.json"), join(outDir,"terms_custom.json")
 	output: join(outDir,"terms_complete.txt")
 	shell: "echo DONE > {output}"
 
-rule:
+rule getCustomTerms:
 	input: 
 		toexpand=join("predefined","more_custom.tsv"),
 		predefined=join("predefined","terms_custom.json")
 	output: join(outDir,"terms_custom.json")
 	shell: "python getCustomTerms.py --termsToExpand {input.toexpand} --predefined {input.predefined} --outJSON {output}"
 	
-rule:
+rule getDrugsFromWikidata:
 	output: join(outDir,"terms_drugs.json")
 	shell: "python getDrugsFromWikidata.py --outJSON {output}"
 	
-rule:
+rule getSpeciesFromWikidata:
 	output: join(outDir,"terms_species.json")
 	shell: "python getSpeciesFromWikidata.py --outJSON {output}"
 	
-rule:
+rule getMedicalDisciplinesFromWikidata:
 	output: join(outDir,"terms_medicaldisciplines.json")
 	shell: "python getMedicalDisciplinesFromWikidata.py --outJSON {output}"
 	
-rule:
+rule getGenesFromWikidata:
 	output: join(outDir,"terms_genes_and_proteins.json")
 	shell: "python getGenesFromWikidata.py --outJSON {output}"
 	
-rule:
+rule getCoronavirusProteins:
 	input: join("predefined","terms_viruses.json")
 	output: join(outDir,"terms_coronavirus_proteins.json")
 	shell: "python getCoronavirusProteins.py --viruses {input} --outJSON {output}"
 	
-rule:
+rule getSymptomsFromWikidata:
 	output: join(outDir,"terms_symptoms.json")
 	shell: "python getSymptomsFromWikidata.py --outJSON {output}"
 	
-rule:
+rule getGeonamesFromWikidata:
 	output: join(outDir,"terms_locations.json")
 	shell: "python getGeonamesFromWikidata.py --outJSON {output}"
 
-rule:
+rule applySpotfixesAndAddCustomDocs:
 	input: 
 		documents=join(outDir,"alldocuments.json"),
 		additions="additions.json",
@@ -55,41 +55,41 @@ rule:
 	output: join(outDir,"alldocuments.spotfixed.json")
 	shell: "python applySpotfixesAndAddCustomDocs.py --inJSON {input.documents} --additions {input.additions} --spotfixes {input.spotfixes} --outJSON {output}"
 
-rule:
+rule scrapeWebdata:
 	input: join(outDir,"alldocuments.spotfixed.json")
 	output: join(outDir,"alldocuments.scraped.json")
 	shell: "python scrapeWebdata.py --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
 	
-rule:
+rule integrateWebData:
 	input: join(outDir,"alldocuments.scraped.json")
 	output: join(outDir,"alldocuments.webdata.json")
 	shell: "python integrateWebData.py --inJSON {input} --outJSON {output}"
 	
-rule:
+rule cleanupDocs:
 	input: join(outDir,"alldocuments.webdata.json")
 	output: join(outDir,"alldocuments.cleaned.json")
 	shell: "python cleanupDocs.py --inJSON {input} --outJSON {output}"
 	
-rule:
+rule mergeDuplicates:
 	input: join(outDir,"alldocuments.cleaned.json")
 	output: join(outDir,"alldocuments.noduplicates.json")
 	shell: "python mergeDuplicates.py --inJSON {input} --outJSON {output}"
 	
-rule:
+rule filterOutLanguages:
 	input: join(outDir,"alldocuments.noduplicates.json")
 	output: 
 		documents=join(outDir,"alldocuments.english.json"),
 		nonenglish=join(outDir,"alldocuments.nonenglish.json")
 	shell: "python filterOutLanguages.py --inJSON {input} --prevNonEnglishDocs {output.nonenglish}.prev --prevEnglishDocs {output.documents}.prev --outNonEnglishDocs {output.nonenglish} --outEnglishDocs {output.documents} && cp {output.nonenglish} {output.nonenglish}.prev && cp {output.documents} {output.documents}.prev"
 	
-rule:
+rule integrateAnnotations:
 	input: 
 		json=join(outDir,"alldocuments.english.json"),
 		annotations="annotations.json"
 	output: join(outDir,"alldocuments.withannotations.json")
 	shell: "python integrateAnnotations.py --inJSON {input.json} --annotations {input.annotations} --outJSON {output}"
 
-rule:
+rule doNER:
 	input: 
 		json=join(outDir,"alldocuments.withannotations.json"),
 		entities="entities.json",
@@ -99,42 +99,42 @@ rule:
 	output: join(outDir,"alldocuments.ner.json")
 	shell: "python doNER.py --inJSON {input.json} --prevJSON {output}.prev --entities {input.entities} --stopwords {input.stopwords} --removals {input.removals} --outJSON {output} && cp {output} {output}.prev"
 
-rule:
+rule filterForVirusDocs:
 	input: join(outDir,"alldocuments.ner.json"),
 	output: join(outDir,"alldocuments.onlyviruses.json")
 	shell: "python filterForVirusDocs.py --inJSON {input} --outJSON {output}"
 
-rule:
+rule extractGeneticVariationAndLineages:
 	input: join(outDir,"alldocuments.onlyviruses.json"),
 	output: join(outDir,"alldocuments.geneticvariation.json")
 	shell: "python extractGeneticVariationAndLineages.py --stopwords predefined/geneticvariation_stopwords.txt --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
 
-rule:
+rule applyCategoryModelFromHuggingFace:
 	input: join(outDir,"alldocuments.geneticvariation.json"),
 	output: join(outDir,"alldocuments.categories.json")
 	shell: "python ../category_prediction/applyCategoryModelFromHuggingFace.py --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
 
-rule:
+rule doExtraCategories:
 	input: join(outDir,"alldocuments.categories.json"),
 	output: join(outDir,"alldocuments.extracategories.json")
 	shell: "python doExtraCategories.py --inJSON {input} --outJSON {output}"
 
-rule:
+rule separateArticleTypesAndTopics:
 	input: join(outDir,"alldocuments.extracategories.json"),
 	output: join(outDir,"alldocuments.articletypes_and_topics.json")
 	shell: "python separateArticleTypesAndTopics.py --inJSON {input} --outJSON {output}"
 
-rule:
+rule finalFilter:
 	input: join(outDir,"alldocuments.articletypes_and_topics.json"),
 	output: join(outDir,"coronacentral.json")
 	shell: "python finalFilter.py --inJSON {input} --outJSON {output}"
 
-rule:
+rule gzip:
 	input: join(outDir,"coronacentral.json")
 	output: join(outDir,"coronacentral.json.gz")
 	shell: "gzip -9 -c {input} > {output}"
 	
-rule:
+rule getAltmetricData:
 	input: join(outDir,"coronacentral.json")
 	output: join(outDir,"altmetric.json")
 	shell: "python ../altmetric/getAltmetricData.py --apiKeyFile ../altmetricApiKey.json --documents {input} --outData {output}"
