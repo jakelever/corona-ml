@@ -9,7 +9,7 @@ from collections import OrderedDict,defaultdict
 import sys
 import os
 import re
-import ray
+from multiprocessing import Pool
 
 from bs4 import BeautifulSoup
 
@@ -126,7 +126,6 @@ def scrapeURL(url,history=[]):
 
 	return tidied_metadata
 
-@ray.remote
 def scrapeDocument(d):
 	filtered_urls = [ u for u in d['urls'] if u and not ('ncbi.nlm.nih.gov' in u or u.endswith('.pdf')) ]
 
@@ -160,6 +159,9 @@ def main():
 
 	url_map = {}
 	if args.prevJSON and os.path.isfile(args.prevJSON):
+		print("Loading previous output...")
+		sys.stdout.flush()
+
 		with open(args.prevJSON) as f:
 			prev_documents = json.load(f)
 
@@ -171,6 +173,9 @@ def main():
 			#url_map[url_key] = d['webmetadata']
 			for u in d['urls']:
 				url_map[u] = d['webmetadata']
+
+	print("Loading documents...")
+	sys.stdout.flush()
 
 	with open(args.inJSON) as f:
 		documents = json.load(f)
@@ -205,42 +210,37 @@ def main():
 	print("%d documents previously processed" % len(already_done))
 	print("%d documents to be processed" % len(needs_doing))
 	print()
+	sys.stdout.flush()
 
-	#assert False
-	
 	random.seed(0)
 	random.shuffle(needs_doing)
 	
-
-	#for i,doc in enumerate(needs_doing):
-	#	scrapeDocument(doc)
-
-	#needs_doing = needs_doing[:10]
-
-	ray.init()
-
 	start_time = time.time()
 
-	new_results = [ scrapeDocument.remote(doc) for doc in needs_doing ]
-
 	print("Starting....")
+	sys.stdout.flush()
+
+	if len(needs_doing) > 0:
+		with Pool(5) as pool:
+			new_results = [ pool.apply_async(scrapeDocument, (doc,)) for doc in needs_doing ]
+			while True:
+				num_completed = len( [ r for r in new_results if r.ready() ] )
+				todo = len(needs_doing) - num_completed
+
+				estimateTime(start_time, num_completed, len(needs_doing))
+				if todo == 0:
+					break
+				time.sleep(5)
+
+			needs_doing = [ r.get() for r in new_results ]
 	
-	if len(new_results) > 0:
-		while True:
-			done,todo = ray.wait(new_results,num_returns=len(needs_doing),timeout=1)
-			estimateTime(start_time, len(done), len(needs_doing))
-			if len(todo) == 0:
-				break
-			time.sleep(5)
-
-	needs_doing = ray.get(new_results)
-
 	output_documents = already_done + needs_doing
 
 	assert len(output_documents) == len(documents)
 	assert all( 'webmetadata' in d for d in output_documents ), "Some documents do not contain webmetadata output"
 	
 	print("Saving...")
+	sys.stdout.flush()
 	with open(args.outJSON,'w') as f:
 		json.dump(output_documents,f,indent=2,sort_keys=True)
 
