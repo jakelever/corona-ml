@@ -161,8 +161,7 @@ def main():
 		json.dump(nonenglishDocuments,f,indent=2,sort_keys=True)
 		
 	languageCounter = Counter(lang for doc in nonenglishDocuments for lang in doc['languages'])
-	print(languageCounter)
-	print("Filtered %d documents with non-english language" % len(nonenglishDocuments))
+	print("Languages found in %d non-English documents: %s" % (len(nonenglishDocuments),str(languageCounter)))
 
 if __name__ == '__main__':
 	main()
