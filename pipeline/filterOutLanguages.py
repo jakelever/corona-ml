@@ -3,11 +3,11 @@ from collections import Counter,defaultdict
 import json
 import os
 import time
-import ray
 import sys
 
 from nltk.corpus import stopwords
 import re
+from multiprocessing import Pool
 
 filterREs = None
 def prepare():
@@ -66,7 +66,6 @@ def detect_language(text):
 		
 	return found
 	
-@ray.remote
 def processDoc(doc):
 	combined_text = doc['title'] + '\n' + doc['abstract']
 		
@@ -86,8 +85,6 @@ def main():
 	parser.add_argument('--outNonEnglishDocs',required=True,type=str,help='JSON file with languages extracted for non-English documents')
 	args = parser.parse_args()
 	
-	ray.init()
-	
 	keys = ['title','abstract']
 
 	prepare()
@@ -100,9 +97,6 @@ def main():
 	for doc in documents:
 		identifier = tuple([ doc[k] for k in keys ])
 		documentsByIdentifier[identifier] = doc
-		
-	print(args.prevEnglishDocs, os.path.isfile(args.prevEnglishDocs))
-	print(args.prevNonEnglishDocs, os.path.isfile(args.prevNonEnglishDocs))
 		
 	prev_results = {}
 	if args.prevEnglishDocs and args.prevNonEnglishDocs and os.path.isfile(args.prevEnglishDocs) and os.path.isfile(args.prevNonEnglishDocs):
@@ -127,18 +121,22 @@ def main():
 	print("Found %d documents to process" % len(needs_processing))
 
 	print("Filtering...")
-	new_results = [ processDoc.remote(doc) for doc in needs_processing ]
 	
-	if len(new_results) > 0:
-		while True:
-			done,todo = ray.wait(new_results,num_returns=len(needs_processing),timeout=1)
-			print("  Processed %.1f%% (%d/%d)" % (100*len(done)/len(needs_processing),len(done),len(needs_processing)))
-			sys.stdout.flush()
-			if len(todo) == 0:
-				break
-			time.sleep(5)
-	new_results = ray.get(new_results)
-	
+	if len(needs_processing) > 0:
+		with Pool(5) as pool:
+			new_results = [ pool.apply_async(processDoc, (doc,)) for doc in needs_processing ]
+			while True:
+				num_completed = len( [ r for r in new_results if r.ready() ] )
+				todo = len(needs_processing) - num_completed
+
+				print("  Processed %.1f%% (%d/%d)" % (100*num_completed/len(needs_processing),num_completed,len(needs_processing)))
+				sys.stdout.flush()
+				if todo == 0:
+					break
+				time.sleep(5)
+
+			new_results = [ r.get() for r in new_results ]
+
 	for doc,new_result in zip(needs_processing,new_results):
 		identifier = tuple([ doc[k] for k in keys ])
 		prev_results[identifier] = new_result

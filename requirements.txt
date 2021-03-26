@@ -10,7 +10,6 @@ matplotlib
 seaborn
 nltk
 tabulate
-ray
 beautifulsoup4
 tensorflow
 ktrain

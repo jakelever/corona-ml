@@ -4,10 +4,10 @@ import requests
 import urllib.parse
 import time
 import datetime
-import ray
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import sys
+from multiprocessing import Pool
 
 # From: https://www.peterbe.com/plog/best-practice-with-retries-with-requests
 def requests_retry_session(
@@ -48,6 +48,26 @@ def nice_time(seconds):
 	
 	return ", ".join(bits)
 	
+def estimateTime(start_time,num_completed,num_total):
+	now = time.time()
+	perc = 100*num_completed/num_total
+	
+	time_so_far = (now-start_time)
+	time_per_item = time_so_far / (num_completed+1)
+	remaining_items = num_total - num_completed
+	remaining_time = time_per_item * remaining_items
+	total_time = time_so_far + remaining_time
+	
+	print("Completed %.1f%% (%d/%d)" % (perc,num_completed,num_total))
+	print("time_per_item = %.4fs" % time_per_item)
+	print("remaining_items = %d" % remaining_items)
+	print("time_so_far = %.1fs (%s)" % (time_so_far,nice_time(time_so_far)))
+	print("remaining_time = %.1fs (%s)" % (remaining_time,nice_time(remaining_time)))
+	print("total_time = %.1fs (%s)" % (total_time,nice_time(total_time)))
+	print('-'*30)
+	print()
+	sys.stdout.flush()
+
 def associate_altmetric_data_with_documents(documents, altmetric_filename, filter_empty):
 	with open(altmetric_filename) as f:
 		altmetric_data = json.load(f)
@@ -81,7 +101,6 @@ def associate_altmetric_data_with_documents(documents, altmetric_filename, filte
 		
 		d['altmetric'] = altmetric_for_doc
 		
-@ray.remote
 def get_altmetric_for_doc(apiKey,d):
 	cord_uid = d['cord_uid']
 	pubmed_id = d['pubmed_id']
@@ -133,8 +152,6 @@ if __name__ == '__main__':
 	parser.add_argument('--outData',type=str,required=True,help='JSON file with Altmetric data for documents')
 	args = parser.parse_args()
 	
-	ray.init()
-	
 	with open(args.apiKeyFile) as f:
 		apiKey = json.load(f)['key']
 		
@@ -181,37 +198,24 @@ if __name__ == '__main__':
 		documents = popularOrRecent
 		
 	print("Starting processing of %d documents..." % len(documents))
-	output = [ get_altmetric_for_doc.remote(apiKey,d) for d in documents ]
 		
-	start = time.time()
-	if len(output) > 0:
-		while True:
-			done,todo = ray.wait(output,num_returns=len(documents),timeout=1)
-			
-			now = time.time()
-			perc = 100*len(done)/len(documents)
-			
-			time_so_far = (now-start)
-			time_per_doc = time_so_far / (len(done)+1)
-			remaining_docs = len(documents) - len(done)
-			remaining_time = time_per_doc * remaining_docs
-			total_time = time_so_far + remaining_time
-			
-			print("Completed %.1f%% (%d/%d)" % (perc,len(done),len(documents)))
-			print("time_per_doc = %.4fs" % time_per_doc)
-			print("remaining_docs = %d" % remaining_docs)
-			print("time_so_far = %.1fs (%s)" % (time_so_far,nice_time(time_so_far)))
-			print("remaining_time = %.1fs (%s)" % (remaining_time,nice_time(remaining_time)))
-			print("total_time = %.1fs (%s)" % (total_time,nice_time(total_time)))
-			print('-'*30)
-			sys.stdout.flush()
-			
-			if len(todo) == 0:
-				break
-			time.sleep(10)
+	start_time = time.time()
+	output = []
+	if len(documents) > 0:
+		with Pool(5) as pool:
+			new_results = [ pool.apply_async(get_altmetric_for_doc, (apiKey,doc,)) for doc in documents ]
+			while True:
+				num_completed = len( [ r for r in new_results if r.ready() ] )
+				todo = len(documents) - num_completed
+
+				estimateTime(start_time, num_completed, len(documents))
+				if todo == 0:
+					break
+				time.sleep(5)
+
+			output = [ r.get() for r in new_results ]
 	
-	output = ray.get(output)
-		
 	print("Saving data...")
 	with open(args.outData,'w',encoding='utf8') as f:
 		json.dump(output,f,indent=2,sort_keys=True)
+
