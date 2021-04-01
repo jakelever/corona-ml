@@ -13,3 +13,7 @@ tabulate
 beautifulsoup4
 tensorflow
 ktrain
+
+python-twitter
+bigzenodo
+
