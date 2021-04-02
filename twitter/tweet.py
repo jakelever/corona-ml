@@ -1,5 +1,5 @@
 import twitter
-from TwitterAPI import TwitterAPI
+#from TwitterAPI import TwitterAPI
 from threader import Threader
 
 import json
