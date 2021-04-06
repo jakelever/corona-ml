@@ -4,7 +4,7 @@
 #SBATCH --dependency=singleton
 #SBATCH --time=12:00:00
 #SBATCH --mail-type=FAIL
-#SBATCH --mem=16G
+#SBATCH --mem=32G
 #SBATCH -p rbaltman
 set -ex
 

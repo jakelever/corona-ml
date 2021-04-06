@@ -3,7 +3,7 @@
 #SBATCH --job-name=coronaBigUpdate
 #
 #SBATCH --time=12:00:00
-#SBATCH --mem=16G
+#SBATCH --mem=32G
 #SBATCH -p rbaltman
 
 set -ex
@@ -18,14 +18,17 @@ base=/home/groups/rbaltman/jlever/corona-ml
 aws_login=`cat $base/aws_login.txt`
 
 origdate=NONE
-if [ -f $base/pipeline/data/alldocuments.json ]; then
-	origdate=`stat -c %y $base/pipeline/data/alldocuments.json`
+if [ -f $base/pipeline/data/coronacentral.json ]; then
+	origdate=`stat -c %y $base/pipeline/data/coronacentral.json`
 fi
 
 cd $base/data
 sh run_update.sh
 
-newdate=`stat -c %y $base/pipeline/data/alldocuments.json`
+cd $base/pipeline
+snakemake --cores 1 data/coronacentral.json.gz
+
+newdate=`stat -c %y $base/pipeline/data/coronacentral.json`
 
 if [[ "$origdate" == "$newdate" ]] && [ -f $base/pipeline/data/coronacentral.json ] && [ -f $base/pipeline/data/altmetric.json ]; then
 	echo "NO update so running quick Altmetric update..."
@@ -37,10 +40,10 @@ if [[ "$origdate" == "$newdate" ]] && [ -f $base/pipeline/data/coronacentral.jso
 	python ../database/loadAltmetricData.py --db $db --json recent_altmetric.json
 
 else
-	echo "New data so running full pipeline..."
+	echo "New data so fetching full altmetric and refreshing full DB..."
 
 	cd $base/pipeline
-	snakemake --cores 1 data/altmetric.json data/coronacentral.json.gz
+	snakemake --cores 1 data/altmetric.json
 
 	cd $base/database
 	sh reload_db.sh
