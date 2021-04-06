@@ -6,7 +6,7 @@ import json
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Calculate the year-on-year differences in entity mention counts')
 	parser.add_argument('--counts',required=True,type=str,help='File with entity counts by year')
-	parser.add_argument('--mapping',required=True,type=str,help='MeSH mapping')
+	#parser.add_argument('--mapping',required=True,type=str,help='MeSH mapping')
 	parser.add_argument('--outFile',required=True,type=str,help='Output file')
 	args = parser.parse_args()
 
@@ -14,19 +14,23 @@ if __name__ == '__main__':
 	years = set()
 	counts = Counter()
 
-	with open(args.mapping) as f:
-		mapping = json.load(f)
+	#with open(args.mapping) as f:
+	#	mapping = json.load(f)
+
+	mapping = {}
 
 	print("Loading counts...")
 	sys.stdout.flush()
 	with open(args.counts) as f:
 		for lineno,line in enumerate(f):
-			count,year,entity_type,entity_id = line.strip('\n').split('\t')
+			count,year,entity_type,entity_id,entity_name = line.strip('\n').split('\t')
 			count = int(count)
 			year = int(year)
 
 			entities.add((entity_type,entity_id))
 			years.add(year)
+
+			mapping[(entity_type,entity_id)] = entity_name
 
 			counts[ (year,entity_type,entity_id) ] = count
 
@@ -45,7 +49,7 @@ if __name__ == '__main__':
 			prev_count = counts[ (prev_year,entity_type,entity_id) ]
 			next_count = counts[ (prev_year+1,entity_type,entity_id) ]
 			diff = next_count - prev_count
-			mapping_key = "%s|%s" % (entity_type, entity_id)
+			mapping_key = (entity_type, entity_id)
 			normalized = mapping[ mapping_key ] if mapping_key in mapping else 'Unknown'
 			diffs.append( ( diff, prev_count, next_count, prev_year, entity_type, entity_id, normalized) )
 
@@ -55,7 +59,7 @@ if __name__ == '__main__':
 	sys.stdout.flush()
 
 	with open(args.outFile,'w') as f:
-		for diff_data in diffs[:10000]:
+		for diff_data in diffs[:100000]:
 			f.write( "\t".join(map(str,diff_data)) + "\n" )
 
 	print("Done")

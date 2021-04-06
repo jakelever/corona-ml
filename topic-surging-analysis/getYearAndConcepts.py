@@ -16,6 +16,7 @@ if __name__ == '__main__':
 	pmidsAlreadySeen = set()
 
 	conceptsByYear = defaultdict(Counter)
+	entityToCommonName = defaultdict(Counter)
 
 	for filename in sorted(filenames,reverse=True):
 		print("Processing %s" % filename)
@@ -39,15 +40,25 @@ if __name__ == '__main__':
 					continue
 				pmidsInThisFile.add(pmid)
 
-				concepts = [ (a.infons['type'],a.infons['conceptid']) for p in doc.passages for a in p.annotations ]
-				concepts = [ (conceptType,conceptID) for conceptType,conceptID in concepts if conceptType != 'Species' ]
-				concepts = [ (conceptType,conceptID) for conceptType,conceptID in concepts if conceptID != '-' ]
+				concepts = [ (a.infons['type'],a.infons['conceptid'],a.text) for p in doc.passages for a in p.annotations ]
+				concepts = [ (conceptType,conceptID,conceptText) for conceptType,conceptID,conceptText in concepts if conceptType != 'Species' ]
+				concepts = [ (conceptType,conceptID,conceptText) for conceptType,conceptID,conceptText in concepts if conceptID != '-' ]
 				concepts = sorted(set(concepts))
 
-				for conceptType,conceptID in concepts:
-					conceptsByYear[year][(conceptType,conceptID)] += 1
+				for conceptType,conceptID,conceptText in concepts:
+					k = (conceptType,conceptID)
+
+					entityToCommonName[k][conceptText.lower().strip()] += 1
+					conceptsByYear[year][k] += 1
+
+		#break
 
 		pmidsAlreadySeen.update(pmidsInThisFile)
+
+	print("Generating MeSH mapping...")
+	sys.stdout.flush()
+
+	entityToCommonName = { k:counts.most_common(1)[0][0] for k,counts in entityToCommonName.items() }
 
 	print("Saving...")
 	sys.stdout.flush()
@@ -55,7 +66,8 @@ if __name__ == '__main__':
 	with open(args.outFile,'w') as f:
 		for year in conceptsByYear:
 			for (conceptType,conceptID),count in conceptsByYear[year].items():
-				f.write("%d\t%d\t%s\t%s\n" % (count,year,conceptType,conceptID))
+				conceptName = entityToCommonName[(conceptType,conceptID)]
+				f.write("%d\t%d\t%s\t%s\t%s\n" % (count,year,conceptType,conceptID,conceptName))
 
 	print("Done")
 
