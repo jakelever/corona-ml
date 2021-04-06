@@ -1,6 +1,4 @@
 import twitter
-#from TwitterAPI import TwitterAPI
-from threader import Threader
 
 import json
 from datetime import date
@@ -226,13 +224,6 @@ if __name__ == '__main__':
 			tweet_mode='extended',
 			sleep_on_rate_limit=True)
 
-	#	keys = dict(consumer_key=consumer_key,
-	#            consumer_secret=consumer_secret,
-	#            access_token_key=access_token,
-	#            access_token_secret=access_token_secret)
-	#
-	#	api = TwitterAPI(**keys)
-			
 		print("Sending tweets...")
 		prev_status_id = None
 		for message in messages:
@@ -244,8 +235,5 @@ if __name__ == '__main__':
 			prev_status_id = status.id
 			time.sleep(20)
 
-		#th = Threader(messages, api, wait=2)
-		#th.send_tweets()
-		
 	print("Done")
 	
