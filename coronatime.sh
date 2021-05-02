@@ -10,8 +10,11 @@ set -ex
 
 date
 
-#base="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-base=/home/groups/rbaltman/jlever/corona-ml
+if [ -n $SLURM_JOB_ID ] ; then
+	base=$(scontrol show job $SLURM_JOBID | awk -F= '/Command=/{print $2}' | xargs dirname)
+else
+	base=$(dirname "$0")
+fi
 
 #mkdir .coronalock
 
