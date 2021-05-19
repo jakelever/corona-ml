@@ -57,6 +57,20 @@ def main():
 		if 'webmetadata' in d:
 			del d['webmetadata']
 			
+	output_fields = ['pubmed_id', 'pmcid', 'doi', 'cord_uid', 'url', 'journal', 'publish_year', 'publish_month', 'publish_day', 'title', 'abstract', 'is_preprint', 'topics', 'articletypes', 'entities']
+	print("Checking final output fields...")
+	print("Only the following are output for each document: %s" % output_fields)
+	
+	for i in range(len(filtered)):
+		d = filtered[i]
+		
+		missing_fields = [ k for k in output_fields if not k in d ]
+		assert len(missing_fields) == 0, "Document missing expected field(s): %s" % missing_fields
+		
+		d = { k:d[k] for k in output_fields }
+		
+		filtered[i] = d
+			
 	print("Saving JSON file...")
 	with open(args.outJSON,'w') as f:
 		json.dump(filtered,f,indent=2,sort_keys=True)

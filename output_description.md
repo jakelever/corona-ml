@@ -16,7 +16,8 @@ The fields that documents should have are:
 * title: Title of article
 * abstract: Abstract of article (optional)
 * is\_preprint: Whether the article is a preprint
-* categories: Predicted categories for article
+* topics: Predicted topics for article
+* articletypes: Predicted article types for article
 * entities: Extracted entities (e.g. drugs) with identifiers and locations within text
 
 Please report issues to the [corona-ml Github issues page](https://github.com/jakelever/corona-ml/issues).
