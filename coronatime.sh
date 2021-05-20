@@ -11,10 +11,11 @@ set -ex
 date
 
 if [ -n $SLURM_JOB_ID ] ; then
-	base=$(scontrol show job $SLURM_JOBID | awk -F= '/Command=/{print $2}' | xargs dirname)
+	thisscript=$(scontrol show job $SLURM_JOBID | awk -F= '/Command=/{print $2}' | xargs realpath)
 else
-	base=$(dirname "$0")
+	thisscript=$(realpath $0)
 fi
+base=$(dirname $thisscript)
 
 #mkdir .coronalock
 

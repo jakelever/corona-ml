@@ -8,17 +8,18 @@
 #SBATCH -p rbaltman
 set -ex
 
+if [ -n $SLURM_JOB_ID ] ; then
+	thisscript=$(scontrol show job $SLURM_JOBID | awk -F= '/Command=/{print $2}' | xargs realpath)
+else
+	thisscript=$(realpath $0)
+fi
+
 ## Resubmit the job for the next execution
-sbatch $0
+sbatch $thisscript
 
 ## Insert the command to run below. Here, we're just storing the date in a
 ## cron.log file
 
-if [ -n $SLURM_JOB_ID ] ; then
-	base=$(scontrol show job $SLURM_JOBID | awk -F= '/Command=/{print $2}' | xargs dirname)
-else
-	base=$(dirname "$0")
-fi
-
+base=$(dirname $thisscript)
 sh $base/coronatime.sh
 
