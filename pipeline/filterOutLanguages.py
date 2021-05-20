@@ -121,7 +121,7 @@ def main():
 	print("Found %d documents to process" % len(needs_processing))
 
 	print("Filtering...")
-	
+
 	if len(needs_processing) > 0:
 		with Pool(5) as pool:
 			new_results = [ pool.apply_async(processDoc, (doc,)) for doc in needs_processing ]
@@ -137,9 +137,9 @@ def main():
 
 			new_results = [ r.get() for r in new_results ]
 
-	for doc,new_result in zip(needs_processing,new_results):
-		identifier = tuple([ doc[k] for k in keys ])
-		prev_results[identifier] = new_result
+		for doc,new_result in zip(needs_processing,new_results):
+			identifier = tuple([ doc[k] for k in keys ])
+			prev_results[identifier] = new_result
 		
 	englishDocuments, nonenglishDocuments = [], []
 	for doc in documents:
