@@ -7,8 +7,8 @@
 <a href="https://doi.org/10.5281/zenodo.4383289">
    <img src="https://img.shields.io/badge/data-download-blue.svg" />
 </a>
-<a href="https://doi.org/10.1101/2020.12.21.423860">
-   <img src="https://img.shields.io/badge/bioRxiv-preprint-67baea.svg" />
+<a href="https://doi.org/10.1073/pnas.2100766118">
+   <img src="https://img.shields.io/badge/PNAS-paper-67baea.svg" />
 </a>
 <a href="https://github.com/jakelever/corona-web">
    <img src="https://img.shields.io/badge/web-code-darkgreen.svg" />
@@ -42,7 +42,7 @@ The core part of the pipeline predicts topics and article types using the title 
 - [HuggingFace example on Google Colab](https://colab.research.google.com/drive/1cBNgKd4o6FNWwjKXXQQsC_SaX1kOXDa4?usp=sharing)
 - [KTrain example on Google Colab](https://colab.research.google.com/drive/1h7oJa2NDjnBEoox0D5vwXrxiCHj3B1kU?usp=sharing)
 
-The method is described in the [preprint](https://doi.org/10.1101/2020.12.21.423860) and detailed performance results can be found in the [machine learning details](https://github.com/jakelever/corona-ml/blob/master/machineLearningDetails.md) document.
+The method is described in the supplementary materials of the [paper](https://doi.org/10.1073/pnas.2100766118) and detailed performance results can be found in the [machine learning details](https://github.com/jakelever/corona-ml/blob/master/machineLearningDetails.md) document.
 
 ## Detailed Step-by-Step Guide
 
@@ -88,14 +88,21 @@ Detailed information of the parameter tuning, validation results and final test 
 
 ## Citing
 
-If using the data from the project, it'd be lovely if you'd cite the work. There is currently a [bioRxiv preprint](https://doi.org/10.1101/2020.12.21.423860) with bibtex below:
+If using the data from the project, it'd be lovely if you'd cite the work. There is currently a [PNAS paper](https://doi.org/10.1073/pnas.2100766118) with bibtex below:
 
 ```
-@article{lever2020analyzing,
-  title={Analyzing the vast coronavirus literature with CoronaCentral},
-  author={Lever, Jake and Altman, Russ B},
-  journal={bioRxiv},
-  year={2020},
-  publisher={Cold Spring Harbor Laboratory}
+@article {coronacentral,
+	author = {Lever, Jake and Altman, Russ B.},
+	title = {Analyzing the vast coronavirus literature with {C}orona{C}entral},
+	volume = {118},
+	number = {23},
+	elocation-id = {e2100766118},
+	year = {2021},
+	doi = {10.1073/pnas.2100766118},
+	publisher = {National Academy of Sciences},
+	issn = {0027-8424},
+	URL = {https://www.pnas.org/content/118/23/e2100766118},
+	eprint = {https://www.pnas.org/content/118/23/e2100766118.full.pdf},
+	journal = {Proceedings of the National Academy of Sciences}
 }
 ```
