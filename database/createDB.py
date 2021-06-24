@@ -116,22 +116,4 @@ if __name__ == '__main__':
 	print(sql)
 	mycursor.execute(sql)
 
-	#sql = "INSERT INTO entitytypes(entitytype_id,name) VALUES (1,'undefined')"
-	#print(sql)
-	#mycursor.execute(sql)
-	
-	columns = OrderedDict()
-	columns['annotationspan_id'] = 'INT NOT NULL AUTO_INCREMENT'
-	columns['annotation_id'] = 'INT'
-	columns['in_title'] = 'BOOLEAN'
-	columns['start_pos'] = 'INT'
-	columns['end_pos'] = 'INT'
-
-	fields = ", ".join("%s %s" % (n,t) for n,t in columns.items())
-	fields += ", PRIMARY KEY(%s)" % list(columns.keys())[0]
-	fields += ", INDEX(annotation_id)"
-	sql = "CREATE TABLE annotationspans (%s) ENGINE=%s" % (fields,engine)
-	print(sql)
-	mycursor.execute(sql)
-
 	mydb.commit()

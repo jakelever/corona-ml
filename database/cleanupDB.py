@@ -26,11 +26,6 @@ if __name__ == '__main__':
 	mycursor.execute(sql)
 	print("Deleted %d annotations" % mycursor.rowcount)
 	
-	sql = "DELETE FROM annotationspans WHERE annotation_id NOT IN (SELECT annotation_id FROM annotations)"
-	print(sql)
-	mycursor.execute(sql)
-	print("Deleted %d annotationspans" % mycursor.rowcount)
-	
 	sql = "DELETE FROM entities WHERE entity_id NOT IN (SELECT entity_id FROM annotations)"
 	print(sql)
 	mycursor.execute(sql)

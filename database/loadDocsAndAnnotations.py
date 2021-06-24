@@ -201,28 +201,3 @@ if __name__ == '__main__':
 	print("Adding %d annotations" % len(anno_records))
 	pushRecords(mydb,mycursor,insert_annotation_sql,anno_records,1000,perc_interval=1.0)	
 	
-	position_records = []
-	insert_annotationspan_sql = "INSERT INTO annotationspans(annotationspan_id,annotation_id,in_title,start_pos,end_pos) VALUES(%s,%s,%s,%s,%s)"
-	annotationsWithPositions = [ anno for anno in annotations if all( k in anno for k in ['section','start_pos','end_pos'] ) ]
-	for i,anno in enumerate(annotationsWithPositions):
-		document_id = anno['document_id']
-		
-		entity_name = anno['entity_name']
-		entity_type = anno['entity_type']
-		entitytype_id = entitytype_to_id[entity_type]
-		external_id = anno['external_id'] if 'external_id' in anno else None
-		entity_id = entity_to_id[(entity_name,entitytype_id,external_id)]
-				
-		anno_record = (document_id,entity_id)
-		
-		annotation_id = annotation_to_id[anno_record]
-		
-		in_title = (anno['section'] == 'title')
-		start_pos = anno['start_pos']
-		end_pos = anno['end_pos']
-		
-		position_record = (i+1,annotation_id,in_title,start_pos,end_pos)
-		position_records.append(position_record)
-		
-	print("Adding %d annotation positions" % len(position_records))
-	pushRecords(mydb,mycursor,insert_annotationspan_sql,position_records,5000,perc_interval=1.0)
