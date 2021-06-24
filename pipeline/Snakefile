@@ -137,5 +137,5 @@ rule gzip:
 rule getAltmetricData:
 	input: join(outDir,"coronacentral.json")
 	output: join(outDir,"altmetric.json")
-	shell: "python ../altmetric/getAltmetricData.py --apiKeyFile ../altmetricApiKey.json --documents {input} --outData {output}"
+	shell: "python ../altmetric/getAltmetricData.py --apiKeyFile ../altmetricApiKey.json --documents {input} --outData {output} && cp {output} {output}.backup"
 
