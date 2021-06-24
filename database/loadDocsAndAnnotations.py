@@ -5,11 +5,34 @@ import json
 import argparse
 from datetime import datetime, date
 import calendar
+import sys
+
+def now():
+	return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 def chunks(lst, n):
 	"""Yield successive n-sized chunks from lst."""
 	for i in range(0, len(lst), n):
 		yield lst[i:i + n]
+		
+def pushRecords(mydb,mycursor,sql,records,chunk_size,perc_interval=1.0):
+	sys.stdout.flush()
+	
+	done = 0
+	next_perc = 0
+	for chunk in chunks(records, chunk_size):
+		mycursor.executemany(sql, chunk)
+		
+		done += len(chunk)
+		perc = 100 * done / len(records)
+		if perc > next_perc:
+			print("  %.1f%% (%d/%d) - %s" % (perc,done,len(records),now()))
+			sys.stdout.flush()
+			next_perc += perc_interval
+		
+	mydb.commit()
+	print("  Done.")
+	sys.stdout.flush()
 		
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Load documents into database')
@@ -93,17 +116,10 @@ if __name__ == '__main__':
 		
 		insertrecords.append(record)
 		
-	for chunk in chunks(insertrecords, 100):
-		mycursor.executemany(insertsql, chunk)
+	print("Adding %d documents..." % len(insertrecords))
+	
+	pushRecords(mydb,mycursor,insertsql,insertrecords,100,perc_interval=5.0)
 		
-	mydb.commit()
-	print("Added %d documents" % len(insertrecords))
-	
-	
-	
-	
-	
-	
 	annotations = []
 	for d in documents:
 		if not any(entity['type'] == 'Virus' for entity in d['entities']):
@@ -142,6 +158,7 @@ if __name__ == '__main__':
 	
 	mycursor.executemany(insert_entity_type_sql, entitytype_records)
 	print("Added %d entity types" % len(entitytype_records))
+	sys.stdout.flush()
 				
 	insert_entity_sql = "INSERT INTO entities(entity_id,name,entitytype_id,external_id,doc_count) VALUES(%s,%s,%s,%s,%s)"
 	entity_to_id, entity_records = {}, []
@@ -158,9 +175,9 @@ if __name__ == '__main__':
 			
 			entity_records.append((entity_id,entity_name,entitytype_id,external_id,doc_count))
 	
-	for chunk in chunks(entity_records, 500):
-		mycursor.executemany(insert_entity_sql, chunk)
-	print("Added %d entities" % len(entity_records))
+	
+	print("Adding %d entities" % len(entity_records))
+	pushRecords(mydb,mycursor,insert_entity_sql,entity_records,500,perc_interval=10.0)
 		
 	
 	insert_annotation_sql = "INSERT INTO annotations(annotation_id,document_id,entity_id) VALUES(%s,%s,%s)"
@@ -181,10 +198,8 @@ if __name__ == '__main__':
 			
 			anno_records.append((annotation_id,document_id,entity_id))
 	
-	for chunk in chunks(anno_records, 500):
-		mycursor.executemany(insert_annotation_sql, chunk)
-	print("Added %d annotations" % len(anno_records))
-	
+	print("Adding %d annotations" % len(anno_records))
+	pushRecords(mydb,mycursor,insert_annotation_sql,anno_records,1000,perc_interval=1.0)	
 	
 	position_records = []
 	insert_annotationspan_sql = "INSERT INTO annotationspans(annotationspan_id,annotation_id,in_title,start_pos,end_pos) VALUES(%s,%s,%s,%s,%s)"
@@ -209,6 +224,5 @@ if __name__ == '__main__':
 		position_record = (i+1,annotation_id,in_title,start_pos,end_pos)
 		position_records.append(position_record)
 		
-	for chunk in chunks(position_records, 500):
-		mycursor.executemany(insert_annotationspan_sql, chunk)
-	print("Added %d annotation positions" % len(position_records))
+	print("Adding %d annotation positions" % len(position_records))
+	pushRecords(mydb,mycursor,insert_annotationspan_sql,position_records,5000,perc_interval=1.0)
