@@ -136,6 +136,10 @@ def cleanup_documents(documents):
 		if doc['pubmed_id'] and not re.match('^\d+$',doc['pubmed_id']):
 			doc['pubmed_id'] = ''
 
+		# Remove suffix forward-slashes that are appearing in CORD data
+		if doc['doi']:
+			doc['doi'] = doc['doi'].rstrip('/')
+
 def main():
 	parser = argparse.ArgumentParser('Clean up various bits of document metadata and document text')
 	parser.add_argument('--inJSON',required=True,type=str,help='Input JSON documents')
