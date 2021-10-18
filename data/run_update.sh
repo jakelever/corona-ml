@@ -3,7 +3,7 @@ set -ex
 
 bash updatePubmedListing.sh 
 
-snakemake --cores 1
+snakemake --cores 1 -T 3
 
 bash downloadCORD19_metadataOnly.sh 
 
