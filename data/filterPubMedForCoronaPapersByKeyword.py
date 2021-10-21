@@ -1,6 +1,4 @@
 import argparse
-import os
-import csv
 import json
 import xml.etree.cElementTree as etree
 from html.parser import HTMLParser
@@ -8,6 +6,15 @@ import re
 import calendar
 import unicodedata
 import sys
+
+import tempfile
+import hashlib
+
+import shutil
+import urllib.request as request
+from contextlib import closing
+import time
+import gzip
 
 coronaDescriptors = {}
 coronaDescriptors['D018352'] = 'Coronavirus Infections'
@@ -23,6 +30,44 @@ coronaDescriptors['D006517'] = 'Murine hepatitis virus'
 covidSuppDescriptors = {}
 covidSuppDescriptors['C000657245'] = 'COVID-19'
 covidSuppDescriptors['C000656484'] = 'severe acute respiratory syndrome coronavirus 2'
+
+def download_file(url,local_filename):
+	with closing(request.urlopen(url)) as r:
+		with open(local_filename, 'wb') as f:
+			shutil.copyfileobj(r, f)
+
+def download_file_and_check_md5sum(url, local_filename):
+	with tempfile.NamedTemporaryFile() as tf:
+		md5_url = "%s.md5" % url
+		download_file(md5_url, tf.name)
+		
+		with open(tf.name) as f:
+			expected_md5 = f.read().strip()
+			assert expected_md5.startswith('MD5(') and '=' in expected_md5
+			expected_md5 = expected_md5.split('=')[1].strip()
+		#print("expected:", expected_md5)
+
+	download_file(url, local_filename)
+	with open(local_filename,'rb') as f:
+		got_md5 = hashlib.md5(f.read()).hexdigest()
+	#print("got:", got_md5)
+
+	if expected_md5 != got_md5:
+		raise RuntimeError("MD5 of downloaded file doesn't match expected: %s != %s" % (expected_md5,got_md5))
+
+def download_file_with_retries(url, local_filename, check_md5=False, retries=10):
+	for tryno in range(retries):
+		try:
+			if check_md5:
+				download_file_and_check_md5sum(url, local_filename)
+			else:
+				download_file(url,local_filename)
+			return
+		except:
+			print("Unexpected error:", sys.exc_info()[0], sys.exc_info()[1])
+			time.sleep(5*(tryno+1))
+
+	raise RuntimeError("Unable to download %s" % url)
 
 # Remove empty brackets (that could happen if the contents have been removed already
 # e.g. for citation ( [3] [4] ) -> ( ) -> nothing
@@ -310,10 +355,18 @@ def filterPubmedFile(inFile,virusKeywordFile,outFile):
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Filter a PubMed file for papers that discuss coronavirus (SARS/MERS/COVID)")
-	parser.add_argument('--inFile',required=True,type=str,help='Input PubMed file')
+	parser.add_argument('--inURL',required=True,type=str,help='Input PubMed file URL on FTP')
 	parser.add_argument('--virusKeywords',required=True,type=str,help='Input JSON file')
 	parser.add_argument('--outFile',required=True,type=str,help='Output filtered PubMed file')
 	args = parser.parse_args()
 
-	filterPubmedFile(args.inFile, args.virusKeywords, args.outFile)
+	with tempfile.NamedTemporaryFile() as tf_pubmed_gz, tempfile.NamedTemporaryFile() as tf_pubmed:
+		print("Downloading...")
+		download_file_with_retries(args.inURL, tf_pubmed_gz.name, check_md5=True)
+
+		with gzip.open(tf_pubmed_gz.name, 'rb') as f_in:
+			with open(tf_pubmed.name, 'wb') as f_out:
+				shutil.copyfileobj(f_in, f_out)
+			
+		filterPubmedFile(tf_pubmed.name, args.virusKeywords, args.outFile)
 
