@@ -9,7 +9,7 @@ from collections import OrderedDict,defaultdict
 import sys
 import os
 import re
-from multiprocessing import Pool
+from tqdm import tqdm
 
 from bs4 import BeautifulSoup
 
@@ -220,20 +220,11 @@ def main():
 	print("Starting....")
 	sys.stdout.flush()
 
-	if len(needs_doing) > 0:
-		with Pool(5) as pool:
-			new_results = [ pool.apply_async(scrapeDocument, (doc,)) for doc in needs_doing ]
-			while True:
-				num_completed = len( [ r for r in new_results if r.ready() ] )
-				todo = len(needs_doing) - num_completed
+	new_results = []
+	for doc in tqdm(needs_doing):
+		new_results.append( scrapeDocument(doc) )
+	needs_doing = new_results
 
-				estimateTime(start_time, num_completed, len(needs_doing))
-				if todo == 0:
-					break
-				time.sleep(5)
-
-			needs_doing = [ r.get() for r in new_results ]
-	
 	output_documents = already_done + needs_doing
 
 	assert len(output_documents) == len(documents)
