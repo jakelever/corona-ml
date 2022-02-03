@@ -30,7 +30,7 @@ cd $base/data
 sh run_update.sh
 
 cd $base/pipeline
-snakemake --cores 1 data/coronacentral.json.gz
+snakemake --cores 1 --nolock --rerun-incomplete data/coronacentral.json.gz
 
 newdate=`stat -c %y $base/pipeline/data/coronacentral.json`
 
@@ -47,7 +47,7 @@ else
 	echo "New data so fetching full altmetric and refreshing full DB..."
 
 	cd $base/pipeline
-	snakemake --cores 1 data/altmetric.json
+	snakemake --cores 1 --nolock --rerun-incomplete data/altmetric.json
 
 	cd $base/database
 	sh reload_db.sh
