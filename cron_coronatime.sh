@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=cronCoronaCentral
-#SBATCH --begin=now+12hours
+#SBATCH --begin=now+24hours
 #SBATCH --dependency=singleton
-#SBATCH --time=11:00:00
+#SBATCH --time=23:00:00
 #SBATCH --mail-type=FAIL
 #SBATCH --mem=48G
 #SBATCH -p rbaltman
