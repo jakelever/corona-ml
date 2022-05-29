@@ -63,8 +63,8 @@ python pokeWebsite.py
 
 #rmdir .coronalock
 
-cd $base/twitter
-sh dotweet.sh
+#cd $base/twitter
+#sh dotweet.sh
 
 cd $base
 last_upload=`cat last_upload.log`
