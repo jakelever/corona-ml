@@ -128,8 +128,13 @@ def get_altmetric_for_doc(apiKey,d):
 		
 	doc_data = {'cord_uid':cord_uid,'pubmed_id':pubmed_id,'doi':doi,'arxiv_id':arxiv_id,'url':url,'altmetric':{'response':False}}
 	if altmetric_url:
-		response = requests_retry_session(session=s).get(altmetric_url)
-		if response.text == 'Not Found':
+		response = None
+		try:
+			response = requests_retry_session(session=s).get(altmetric_url)
+		except requests.exceptions.RetryError:
+			pass
+
+		if response is None or response.text == 'Not Found':
 			#counts['not found'] += 1
 			pass
 		else:
