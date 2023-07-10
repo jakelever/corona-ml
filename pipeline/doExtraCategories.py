@@ -53,10 +53,6 @@ def main():
 		if not any(at in d['categories'] for at in nonResearchArticleTypes):
 			d['categories'].append('Research')
 
-		if d['inferred_article_type']:
-			d['categories'] = [ c for c in d['categories'] if not c in allArticleTypes ]
-			d['categories'].append(d['inferred_article_type'])
-
 		d['categories'] = sorted(set(d['categories']))	
 
 	afterCategoryCount = Counter( c for d in documents if 'categories' in d for c in d['categories'] )

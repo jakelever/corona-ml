@@ -22,11 +22,6 @@ def main():
 		
 	print("Loaded %d documents" % len(documents))
 
-	print("Removing erratum...")
-	erratum = [ d for d in documents if d['inferred_article_type'] == 'Erratum' ]
-	documents = [ d for d in documents if d['inferred_article_type'] != 'Erratum' ]
-	print("%d errata removed" % len(erratum))
-
 	print("Lowercasing DOIs as they are case insensitive...")		
 	doiRegex = re.compile(r'^[0-9\.]+\/.+[^\/]$')
 	for d in documents:

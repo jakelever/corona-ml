@@ -55,18 +55,8 @@ rule applySpotfixesAndAddCustomDocs:
 	output: join(outDir,"alldocuments.spotfixed.json")
 	shell: "python applySpotfixesAndAddCustomDocs.py --inJSON {input.documents} --additions {input.additions} --spotfixes {input.spotfixes} --outJSON {output}"
 
-rule scrapeWebdata:
-	input: join(outDir,"alldocuments.spotfixed.json")
-	output: join(outDir,"alldocuments.scraped.json")
-	shell: "python scrapeWebdata.py --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
-	
-rule integrateWebData:
-	input: join(outDir,"alldocuments.scraped.json")
-	output: join(outDir,"alldocuments.webdata.json")
-	shell: "python integrateWebData.py --inJSON {input} --outJSON {output}"
-	
 rule cleanupDocs:
-	input: join(outDir,"alldocuments.webdata.json")
+	input: join(outDir,"alldocuments.spotfixed.json")
 	output: join(outDir,"alldocuments.cleaned.json")
 	shell: "python cleanupDocs.py --inJSON {input} --outJSON {output}"
 	
@@ -75,16 +65,9 @@ rule mergeDuplicates:
 	output: join(outDir,"alldocuments.noduplicates.json")
 	shell: "python mergeDuplicates.py --inJSON {input} --outJSON {output}"
 	
-rule filterOutLanguages:
-	input: join(outDir,"alldocuments.noduplicates.json")
-	output: 
-		documents=join(outDir,"alldocuments.english.json"),
-		nonenglish=join(outDir,"alldocuments.nonenglish.json")
-	shell: "python filterOutLanguages.py --inJSON {input} --prevNonEnglishDocs {output.nonenglish}.prev --prevEnglishDocs {output.documents}.prev --outNonEnglishDocs {output.nonenglish} --outEnglishDocs {output.documents} && cp {output.nonenglish} {output.nonenglish}.prev && cp {output.documents} {output.documents}.prev"
-	
 rule integrateAnnotations:
 	input: 
-		json=join(outDir,"alldocuments.english.json"),
+		json=join(outDir,"alldocuments.noduplicates.json"),
 		annotations="annotations.json"
 	output: join(outDir,"alldocuments.withannotations.json")
 	shell: "python integrateAnnotations.py --inJSON {input.json} --annotations {input.annotations} --outJSON {output}"
