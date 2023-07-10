@@ -1,7 +1,7 @@
 import argparse
 import json
 import xml.etree.cElementTree as etree
-from html.parser import HTMLParser
+import html
 import re
 import calendar
 import unicodedata
@@ -15,6 +15,7 @@ import urllib.request as request
 from contextlib import closing
 import time
 import gzip
+import traceback
 
 coronaDescriptors = {}
 coronaDescriptors['D018352'] = 'Coronavirus Infections'
@@ -31,40 +32,40 @@ covidSuppDescriptors = {}
 covidSuppDescriptors['C000657245'] = 'COVID-19'
 covidSuppDescriptors['C000656484'] = 'severe acute respiratory syndrome coronavirus 2'
 
-def download_file(url,local_filename):
+def download_file(url,local_filehandle):
 	with closing(request.urlopen(url)) as r:
-		with open(local_filename, 'wb') as f:
-			shutil.copyfileobj(r, f)
+		shutil.copyfileobj(r, local_filehandle)
 
-def download_file_and_check_md5sum(url, local_filename):
+def download_file_and_check_md5sum(url, local_filehandle):
 	with tempfile.NamedTemporaryFile() as tf:
 		md5_url = "%s.md5" % url
-		download_file(md5_url, tf.name)
+		download_file(md5_url, tf.file)
 		
-		with open(tf.name) as f:
-			expected_md5 = f.read().strip()
-			assert expected_md5.startswith('MD5(') and '=' in expected_md5
-			expected_md5 = expected_md5.split('=')[1].strip()
+		tf.file.seek(0)
+		expected_md5 = tf.file.read().decode().strip()
+		assert expected_md5.startswith('MD5(') and '=' in expected_md5
+		expected_md5 = expected_md5.split('=')[1].strip()
 		#print("expected:", expected_md5)
 
-	download_file(url, local_filename)
-	with open(local_filename,'rb') as f:
-		got_md5 = hashlib.md5(f.read()).hexdigest()
+	download_file(url, local_filehandle)
+	local_filehandle.seek(0)
+	got_md5 = hashlib.md5(local_filehandle.read()).hexdigest()
 	#print("got:", got_md5)
 
 	if expected_md5 != got_md5:
 		raise RuntimeError("MD5 of downloaded file doesn't match expected: %s != %s" % (expected_md5,got_md5))
 
-def download_file_with_retries(url, local_filename, check_md5=False, retries=10):
+def download_file_with_retries(url, local_filehandle, check_md5=False, retries=10):
 	for tryno in range(retries):
 		try:
 			if check_md5:
-				download_file_and_check_md5sum(url, local_filename)
+				download_file_and_check_md5sum(url, local_filehandle)
 			else:
-				download_file(url,local_filename)
+				download_file(url,local_filehandle)
 			return
 		except:
 			print("Unexpected error:", sys.exc_info()[0], sys.exc_info()[1])
+			traceback.print_exc()
 			time.sleep(5*(tryno+1))
 
 	raise RuntimeError("Unable to download %s" % url)
@@ -95,11 +96,6 @@ def cleanupText(text):
 	text = re.sub(',(\s*,)*',',',text)
 	text = re.sub('(,\s*)*\.','.',text)
 	return text.strip()
-
-# Unescape HTML special characters e.g. &gt; is changed to >
-htmlParser = HTMLParser()
-def htmlUnescape(text):
-	return htmlParser.unescape(text)
 
 # XML elements to ignore the contents of
 ignoreList = ['table', 'table-wrap', 'xref', 'disp-formula', 'inline-formula', 'ref-list', 'bio', 'ack', 'graphic', 'media', 'tex-math', 'mml:math', 'object-id', 'ext-link']
@@ -293,13 +289,13 @@ def filterPubmedFile(inFile,virusKeywordFile,outFile):
 					titleText = extractTextFromElemList(titleElems)
 				titleText = [ removeWeirdBracketsFromOldTitles(t) for t in titleText ]
 				titleText = [ t for t in titleText if t ]
-				titleText = [ htmlUnescape(t) for t in titleText ]
+				titleText = [ html.unescape(t) for t in titleText ]
 				titleText = [ removeBracketsWithoutWords(t) for t in titleText ]
 
 				abstractElems = elem.findall('./MedlineCitation/Article/Abstract/AbstractText')
 				abstractText = extractTextFromElemList(abstractElems)
 				abstractText = [ t for t in abstractText if t ]
-				abstractText = [ htmlUnescape(t) for t in abstractText ]
+				abstractText = [ html.unescape(t) for t in abstractText ]
 				abstractText = [ removeBracketsWithoutWords(t) for t in abstractText ]
 
 				combinedText_lower = "\n".join(titleText + abstractText).lower()
@@ -362,11 +358,12 @@ if __name__ == "__main__":
 
 	with tempfile.NamedTemporaryFile() as tf_pubmed_gz, tempfile.NamedTemporaryFile() as tf_pubmed:
 		print("Downloading...")
-		download_file_with_retries(args.inURL, tf_pubmed_gz.name, check_md5=True)
-
-		with gzip.open(tf_pubmed_gz.name, 'rb') as f_in:
-			with open(tf_pubmed.name, 'wb') as f_out:
-				shutil.copyfileobj(f_in, f_out)
+		download_file_with_retries(args.inURL, tf_pubmed_gz.file, check_md5=True)
+				
+		tf_pubmed_gz.file.seek(0)
+		gzippedFile = gzip.GzipFile(fileobj=tf_pubmed_gz.file)
 			
-		filterPubmedFile(tf_pubmed.name, args.virusKeywords, args.outFile)
-
+		print("Filtering Pubmed file...")
+		filterPubmedFile(gzippedFile, args.virusKeywords, args.outFile)
+		
+		print("Done.")
