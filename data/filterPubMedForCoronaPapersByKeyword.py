@@ -80,7 +80,7 @@ def removeBracketsWithoutWords(text):
 
 # Some older articles have titles like "[A study of ...]."
 # This removes the brackets while retaining the full stop
-def removeWeirdBracketsFromOldTitles(titleText):
+def removeBracketsFromTitles(titleText):
 	titleText = titleText.strip()
 	if titleText[0] == '[' and titleText[-2:] == '].':
 		titleText = titleText[1:-2] + '.'
@@ -283,7 +283,7 @@ def filterPubmedFile(inFile,virusKeywordFile,outFile):
 				if not titleText or all( t is None or t=='' for t in titleText) :
 					titleElems = elem.findall('./MedlineCitation/Article/VernacularTitle')
 					titleText = extractTextFromElemList(titleElems)
-				titleText = [ removeWeirdBracketsFromOldTitles(t) for t in titleText ]
+				titleText = [ removeBracketsFromTitles(t) for t in titleText ]
 				titleText = [ t for t in titleText if t ]
 				titleText = [ html.unescape(t) for t in titleText ]
 				titleText = [ removeBracketsWithoutWords(t) for t in titleText ]
@@ -296,6 +296,10 @@ def filterPubmedFile(inFile,virusKeywordFile,outFile):
 
 				combinedText_lower = "\n".join(titleText + abstractText).lower()
 
+
+				language = elem.find('./MedlineCitation/Article/Language').text
+				if language.lower() not in ['en','eng','english']:
+					continue
 
 				journalYear,journalMonth,journalDay = getJournalDateForMedlineFile(elem,pmid)
 				entryYear,entryMonth,entryDay = getPubmedEntryDate(elem,pmid)
