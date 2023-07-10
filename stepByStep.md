@@ -181,6 +181,5 @@ Once the CoronaCentral corpus is prepared, it needs to be uploaded to the databa
 The update script will then direct the NodeJS web server to do a rebuild with the new database contents. The web server code is available at https://github.com/jakelever/corona-web.
 
 The regular update script will then potentially do the two following things:
-- Tweet once a day with the top three papers based on Altmetric scores
 - Upload the corpus to [Zenodo](https://doi.org/10.5281/zenodo.4383289) once a week
 
