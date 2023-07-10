@@ -253,12 +253,8 @@ separationList = ['title', 'p', 'sec', 'break', 'def-item', 'list-item', 'captio
 def filterPubmedFile(inFile,virusKeywordFile,outFile):
 	with open(virusKeywordFile) as f:
 		virusKeywordData = json.load(f)
-		#sarscov2Keywords = []
 	coronaKeywords = []
 	for wikidataID,virus in virusKeywordData.items():
-		#if virus['name'] == 'SARS-CoV-2':
-		#	sarscov2Keywords.append(virus['name'])
-		#	sarscov2Keywords += virus['aliases']
 		coronaKeywords.append(virus['name'])
 		coronaKeywords += virus['aliases']
 	
@@ -317,7 +313,6 @@ def filterPubmedFile(inFile,virusKeywordFile,outFile):
 					isCoronaPaper = True
 
 				if any( keyword in combinedText_lower for keyword in coronaKeywords ):
-					#print("COVID_KEYWORD\t%s" % pmid)
 					if any (regex.search(combinedText_lower) for regex in coronaRegexes):
 						isCoronaPaper = True
 
@@ -325,7 +320,6 @@ def filterPubmedFile(inFile,virusKeywordFile,outFile):
 				for meshElem in meshElems:
 					descriptorElem = meshElem.find('./DescriptorName')
 					descriptorID = descriptorElem.attrib['UI']
-					#majorTopicYN = descriptorElem.attrib['MajorTopicYN']
 					descriptorName = descriptorElem.text
 
 					isCoronaDescriptor = descriptorID in coronaDescriptors
@@ -338,7 +332,6 @@ def filterPubmedFile(inFile,virusKeywordFile,outFile):
 					descriptorName = suppMeshElem.text
 
 					if descriptorID in covidSuppDescriptors:
-						#print("COVID_SUPPMESH\t%s" % pmid)
 						isCoronaPaper = True
 					
 
