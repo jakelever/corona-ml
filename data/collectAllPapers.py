@@ -365,7 +365,7 @@ def processPubMed(inDir):
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Collect all relevant papers into one big file')
-	parser.add_argument('--cord19Metadata',required=True,type=str,help='Kaggle CORD-19 metadata file')
+	parser.add_argument('--cord19Metadata',required=False,type=str,help='Kaggle CORD-19 metadata file')
 	parser.add_argument('--pubmed',required=True,type=str,help='PubMed directory, prefiltered for corona papers')
 	parser.add_argument('--pretty', action='store_true',help='Pretty JSON output')
 	parser.add_argument('--outFile',required=True,type=str,help='Mega JSON output file')
@@ -391,11 +391,12 @@ if __name__ == '__main__':
 	print("Loaded %d from PubMed" % len(pubmed))
 
 	cord19 = []
-	with open(args.cord19Metadata, newline='') as csvfile:
-		csvreader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
+	if args.cord19Metadata:
+		with open(args.cord19Metadata, newline='') as csvfile:
+			csvreader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
 
-		for i,row in enumerate(csvreader):
-			cord19.append(row)
+			for i,row in enumerate(csvreader):
+				cord19.append(row)
 
 	print("Loaded %d from Kaggle" % len(cord19))
 
