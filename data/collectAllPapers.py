@@ -393,29 +393,9 @@ if __name__ == '__main__':
 	cord19 = []
 	with open(args.cord19Metadata, newline='') as csvfile:
 		csvreader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
-		#cord19_by_source = defaultdict(dict)
 
 		for i,row in enumerate(csvreader):
 			cord19.append(row)
-
-		if False:
-			doi_to_doc = {}
-			for i,row in enumerate(csvreader):
-				doi = row['doi']
-				source = row['source_x']
-				if row['pubmed_id'] in pubmed:
-					article = pubmed[row['pubmed_id']]
-					article['cord_uid'] = row['cord_uid']
-				elif doi and doi in doi_to_doc:
-					if source == 'PMC':
-						doc = doi_to_doc[doi]
-						doc.update(row)
-				else:
-					cord19.append(row)
-					if doi:
-						doi_to_doc[doi] = row
-					#assert 
-					#cord19_by_source[source][doi] = 
 
 	print("Loaded %d from Kaggle" % len(cord19))
 
