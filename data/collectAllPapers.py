@@ -3,7 +3,7 @@ import os
 import csv
 import json
 import xml.etree.cElementTree as etree
-from html.parser import HTMLParser
+import html
 import re
 import calendar
 import unicodedata
@@ -40,11 +40,6 @@ def cleanupText(text):
 	text = re.sub(',(\s*,)*',',',text)
 	text = re.sub('(,\s*)*\.','.',text)
 	return text.strip()
-
-# Unescape HTML special characters e.g. &gt; is changed to >
-htmlParser = HTMLParser()
-def htmlUnescape(text):
-	return htmlParser.unescape(text)
 
 # XML elements to ignore the contents of
 ignoreList = ['table', 'table-wrap', 'xref', 'disp-formula', 'inline-formula', 'ref-list', 'bio', 'ack', 'graphic', 'media', 'tex-math', 'mml:math', 'object-id', 'ext-link']
@@ -282,13 +277,13 @@ def processElem(elem):
 		titleText = extractTextFromElemList(titleElems)
 	titleText = [ removeWeirdBracketsFromOldTitles(t) for t in titleText ]
 	titleText = [ t for t in titleText if t ]
-	titleText = [ htmlUnescape(t) for t in titleText ]
+	titleText = [ html.unescape(t) for t in titleText ]
 	titleText = [ removeBracketsWithoutWords(t) for t in titleText ]
 
 	abstractElems = elem.findall('./MedlineCitation/Article/Abstract/AbstractText')
 	abstractText = extractTextFromElemList(abstractElems)
 	abstractText = [ t for t in abstractText if t ]
-	abstractText = [ htmlUnescape(t) for t in abstractText ]
+	abstractText = [ html.unescape(t) for t in abstractText ]
 	abstractText = [ removeBracketsWithoutWords(t) for t in abstractText ]
 
 	referenceCount = None
@@ -371,14 +366,13 @@ if __name__ == '__main__':
 	parser.add_argument('--outFile',required=True,type=str,help='Mega JSON output file')
 	args = parser.parse_args()
 
-	assert os.path.isfile(args.cord19Metadata)
 	assert os.path.isdir(args.pubmed)
 
 	print("Checking file modification dates...")
 	previous_output_time = os.path.getmtime(args.outFile) if os.path.isfile(args.outFile) else None
 	pubmed_times = [ os.path.getmtime(os.path.join(args.pubmed,filename)) for filename in sorted(os.listdir(args.pubmed)) ]
-	cord19_time = os.path.getmtime(args.cord19Metadata)
-	newest_input = sorted(pubmed_times + [cord19_time])[-1]
+	cord19_time = [os.path.getmtime(args.cord19Metadata)] if args.cord19Metadata else []
+	newest_input = sorted(pubmed_times + cord19_time)[-1]
 	if previous_output_time is not None and previous_output_time > newest_input:
 		print("Input is older than last output. So no processing is needed!")
 		print("Previous output file: %s" % datetime.fromtimestamp(previous_output_time).strftime('%Y-%m-%d %H:%M:%S'))
@@ -387,16 +381,18 @@ if __name__ == '__main__':
 		print("Exiting...")
 		sys.exit(0)
 
-	pubmed = processPubMed(args.pubmed)
-	print("Loaded %d from PubMed" % len(pubmed))
-
 	cord19 = []
 	if args.cord19Metadata:
+		assert os.path.isfile(args.cord19Metadata)
 		with open(args.cord19Metadata, newline='') as csvfile:
 			csvreader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
 
 			for i,row in enumerate(csvreader):
 				cord19.append(row)
+				
+				
+	pubmed = processPubMed(args.pubmed)
+	print("Loaded %d from PubMed" % len(pubmed))
 
 	print("Loaded %d from Kaggle" % len(cord19))
 
