@@ -6,12 +6,17 @@ import gzip
 def main():
 	parser = argparse.ArgumentParser('Note which files and Pubmed IDs have been processed')
 	parser.add_argument('--pubmedDir',required=True,type=str,help='Directory with PubMed files')
+	parser.add_argument('--previousReleaseProcessedFiles',required=True,type=str,help='process_record.json.gz from previous release')
 	parser.add_argument('--initialDocuments',required=True,type=str,help='Initial documents file')
 	parser.add_argument('--finalRelease',required=True,type=str,help='Final file (gzipped)')
 	parser.add_argument('--outJSONGZ',required=True,type=str,help='Output JSON GZ')
 	args = parser.parse_args()
 	
-	pubmed_files = sorted( [ f for f in os.listdir(args.pubmedDir) if f.startswith('pubmed') ] )
+	with gzip.open(args.previousReleaseProcessedFiles) as f:
+		pubmed_files = json.load(f)['pubmed_files']
+	
+	pubmed_files += sorted( [ f for f in os.listdir(args.pubmedDir) if f.startswith('pubmed') ] )
+	pubmed_files = sorted(set(pubmed_files))
 	
 	print("Loading documents...")
 	with gzip.open(args.initialDocuments,'rt') as f:

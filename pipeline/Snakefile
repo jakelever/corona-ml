@@ -122,7 +122,7 @@ rule recordProcessedFiles:
 		initial=join(outDir,"alldocuments.json.gz"),
 		final=join(outDir,"coronacentral.json.gz")
 	output: join(outDir,"process_record.json.gz")
-	shell: "python recordProcessedFiles.py --pubmedDir ../data/pubmed_corona/ --initialDocuments {input.initial} --finalRelease {input.final} --outJSONGZ {output}"
+	shell: "python recordProcessedFiles.py --pubmedDir ../data/pubmed_corona/ --previousReleaseProcessedFiles ../last_release/process_record.json.gz --initialDocuments {input.initial} --finalRelease {input.final} --outJSONGZ {output}"
 
 rule getAltmetricData:
 	input: join(outDir,"coronacentral.json.gz")
