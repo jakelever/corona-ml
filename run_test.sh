@@ -2,7 +2,6 @@
 set -ex
 
 # Set up a temporary testing directory (to not interfere with a pipeline run)
-
 mkdir testing_dir
 mkdir testing_dir/data
 
@@ -15,6 +14,9 @@ cp -r pipeline/predefined testing_dir
 
 # Copy the small test dataset into the data directory
 gzip -c test_documents.json > testing_dir/data/alldocuments.json.gz
+
+# Make a directory that (in a full run) would contain the preprocessed PubMed files
+mkdir data/pubmed_corona
 
 # Set up a dummy empty old release of CoronaCentral
 rm -fr last_release
