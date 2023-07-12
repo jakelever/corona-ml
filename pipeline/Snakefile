@@ -80,7 +80,7 @@ rule doNER:
 		stopwords=join("predefined","stopwords.txt"),
 		removals=join("predefined","removals.tsv")
 	output: join(outDir,"alldocuments.ner.json.gz")
-	shell: "python doNER.py --inJSON {input.json} --prevJSON {output}.prev --entities {input.entities} --stopwords {input.stopwords} --removals {input.removals} --outJSON {output} && cp {output} {output}.prev"
+	shell: "python doNER.py --inJSON {input.json} --entities {input.entities} --stopwords {input.stopwords} --removals {input.removals} --outJSON {output}"
 
 rule filterForVirusDocs:
 	input: join(outDir,"alldocuments.ner.json.gz"),
@@ -90,12 +90,12 @@ rule filterForVirusDocs:
 rule extractGeneticVariationAndLineages:
 	input: join(outDir,"alldocuments.onlyviruses.json.gz"),
 	output: join(outDir,"alldocuments.geneticvariation.json.gz")
-	shell: "python extractGeneticVariationAndLineages.py --stopwords predefined/geneticvariation_stopwords.txt --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
+	shell: "python extractGeneticVariationAndLineages.py --stopwords predefined/geneticvariation_stopwords.txt --inJSON {input} --outJSON {output}"
 
 rule applyCategoryModelFromHuggingFace:
 	input: join(outDir,"alldocuments.geneticvariation.json.gz"),
 	output: join(outDir,"alldocuments.categories.json.gz")
-	shell: "python ../category_prediction/applyCategoryModelFromHuggingFace.py --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
+	shell: "python ../category_prediction/applyCategoryModelFromHuggingFace.py --inJSON {input} --outJSON {output}"
 
 rule doExtraCategories:
 	input: join(outDir,"alldocuments.categories.json.gz"),
