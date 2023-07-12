@@ -19,5 +19,5 @@ fi
 
 url=`grep $pubmedFilename pubmed_listing.txt`
 
-python filterPubMedForCoronaPapersByKeyword.py --inURL $url --virusKeywords ../pipeline/predefined/terms_viruses.json --outFile $outputFilename
+python filterPubMedForCoronaPapersByKeyword.py --inURL $url --lastRelease ../last_release/process_record.json.gz --virusKeywords ../pipeline/predefined/terms_viruses.json --outFile $outputFilename
 

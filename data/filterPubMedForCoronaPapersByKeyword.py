@@ -250,7 +250,7 @@ def getPubmedEntryDate(elem,pmid):
 
 # XML elements to separate text between
 separationList = ['title', 'p', 'sec', 'break', 'def-item', 'list-item', 'caption']
-def filterPubmedFile(inFile,virusKeywordFile,outFile):
+def filterPubmedFile(inFile,virusKeywordFile,outFile,alreadyProcessedPubmedIDs):
 	with open(virusKeywordFile) as f:
 		virusKeywordData = json.load(f)
 	coronaKeywords = []
@@ -277,6 +277,10 @@ def filterPubmedFile(inFile,virusKeywordFile,outFile):
 			if (event=='end' and elem.tag=='PubmedArticle'): #MedlineCitation'):
 				pmidField = elem.find('./MedlineCitation/PMID')
 				pmid = pmidField.text
+				
+				# Skipping as it has already been processed
+				if pmid in alreadyProcessedPubmedIDs:
+					continue
 
 				titleElems = elem.findall('./MedlineCitation/Article/ArticleTitle')
 				titleText = extractTextFromElemList(titleElems)
@@ -349,9 +353,13 @@ def filterPubmedFile(inFile,virusKeywordFile,outFile):
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Filter a PubMed file for papers that discuss coronavirus (SARS/MERS/COVID)")
 	parser.add_argument('--inURL',required=True,type=str,help='Input PubMed file URL on FTP')
+	parser.add_argument('--lastRelease',required=True,type=str,help='process_record.json.gz file from last CoronaCentral release')
 	parser.add_argument('--virusKeywords',required=True,type=str,help='Input JSON file')
 	parser.add_argument('--outFile',required=True,type=str,help='Output filtered PubMed file')
 	args = parser.parse_args()
+	
+	with gzip.open(args.lastRelease,'rt') as f:
+		pubmed_ids = set(json.load(f)['pubmed_id'])
 
 	with tempfile.NamedTemporaryFile() as tf_pubmed_gz, tempfile.NamedTemporaryFile() as tf_pubmed:
 		print("Downloading...")
@@ -361,6 +369,6 @@ if __name__ == "__main__":
 		gzippedFile = gzip.GzipFile(fileobj=tf_pubmed_gz.file)
 			
 		print("Filtering Pubmed file...")
-		filterPubmedFile(gzippedFile, args.virusKeywords, args.outFile)
+		filterPubmedFile(gzippedFile, args.virusKeywords, args.outFile, pubmed_ids)
 		
 		print("Done.")
