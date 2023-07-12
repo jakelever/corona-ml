@@ -114,19 +114,16 @@ rule finalFilter:
 
 rule combineWithLastRelease:
 	input: join(outDir,"alldocuments.filtered.json"),
-	output: join(outDir,"coronacentral.json")
-	shell: "python combineWithLastRelease.py --inJSON {input} --lastRelease ../last_release/coronacentral.json.gz --outJSON {output}"
+	output: join(outDir,"coronacentral.json.gz")
+	shell: "python combineWithLastRelease.py --inJSON {input} --lastRelease ../last_release/coronacentral.json.gz --outJSONGZ {output}"
 	
 rule recordProcessedFiles:
-	input: join(outDir,"alldocuments.json")
+	input: 
+		initial=join(outDir,"alldocuments.json"),
+		final=join(outDir,"coronacentral.json.gz")
 	output: join(outDir,"process_record.json.gz")
-	shell: "python recordProcessedFiles.py --pubmedDir ../data/pubmed_corona/ --initialDocuments {input} --outJSONGZ {output}"
+	shell: "python recordProcessedFiles.py --pubmedDir ../data/pubmed_corona/ --initialDocuments {input.initial} --finalRelease {input.final} --outJSONGZ {output}"
 
-rule gzip:
-	input: join(outDir,"coronacentral.json")
-	output: join(outDir,"coronacentral.json.gz")
-	shell: "gzip -9 -c {input} > {output}"
-	
 rule getAltmetricData:
 	input: join(outDir,"coronacentral.json")
 	output: join(outDir,"altmetric.json")

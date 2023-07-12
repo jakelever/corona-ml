@@ -6,7 +6,7 @@ def main():
 	parser = argparse.ArgumentParser('Combine the output with the last release of CoronaCentral')
 	parser.add_argument('--inJSON',required=True,type=str,help='Input JSON documents')
 	parser.add_argument('--lastRelease',required=True,type=str,help='coronacentral.json.gz file from last release')
-	parser.add_argument('--outJSON',required=True,type=str,help='Output JSON')
+	parser.add_argument('--outJSONGZ',required=True,type=str,help='Output JSON GZ file')
 	args = parser.parse_args()
 		
 	print("Loading last release documents...")
@@ -28,7 +28,7 @@ def main():
 	print(f"Added {added} documents from current run to last release")
 			
 	print("Saving data...")
-	with open(args.outJSON,'w',encoding='utf8') as f:
+	with gzip.open(args.outJSONGZ,'wt',encoding='utf8') as f:
 		json.dump(documents,f)
 	print(f"Saved {len(documents)} documents")
 
