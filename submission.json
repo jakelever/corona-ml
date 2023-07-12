@@ -1,6 +1,7 @@
 {
 	"file_list": [
-		"pipeline/data/coronacentral.json.gz"
+		"pipeline/data/coronacentral.json.gz",
+		"pipeline/data/process_record.json.gz"
 	],
 	"title": "CoronaCentral",
 	"author": "Jake Lever",
