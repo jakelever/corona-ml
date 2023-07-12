@@ -359,7 +359,10 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 	
 	with gzip.open(args.lastRelease,'rt') as f:
-		pubmed_ids = set(json.load(f)['pubmed_id'])
+		last_release = json.load(f)
+		
+		pubmed_ids = last_release['pubmed_id'] if 'pubmed_id' in last_release else last_release['pubmed_ids'] # Quick fix for misspelling
+		pubmed_ids = set(pubmed_ids)
 
 	with tempfile.NamedTemporaryFile() as tf_pubmed_gz, tempfile.NamedTemporaryFile() as tf_pubmed:
 		print("Downloading...")
