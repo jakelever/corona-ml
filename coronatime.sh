@@ -30,7 +30,7 @@ cd $base/data
 sh run_update.sh
 
 cd $base/pipeline
-snakemake --cores 1 --nolock --rerun-incomplete data/coronacentral.json.gz
+snakemake --cores 1 --nolock --rerun-incomplete
 
 newdate=`stat -c %y $base/pipeline/data/coronacentral.json`
 
