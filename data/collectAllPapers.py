@@ -11,6 +11,7 @@ from datetime import date,datetime
 import string
 import calendar
 import sys
+import gzip
 
 pubTypeSkips = {"Research Support, N.I.H., Intramural","Research Support, Non-U.S. Gov't","Research Support, U.S. Gov't, P.H.S.","Research Support, N.I.H., Extramural","Research Support, U.S. Gov't, Non-P.H.S.","English Abstract"}
 
@@ -340,21 +341,21 @@ def processElem(elem):
 	return pmid,article
 
 def processPubMed(inDir):
-	pubmedFiles = sorted( os.path.join(inDir,f) for f in os.listdir(inDir) if f.endswith('.xml') )
+	pubmedFiles = sorted( os.path.join(inDir,f) for f in os.listdir(inDir) if f.endswith('.xml.gz') )
 
 	allData = {}
 	for pubmedFile in pubmedFiles:
-
 		print(os.path.basename(pubmedFile))
-		for event, elem in etree.iterparse(pubmedFile, events=('start', 'end', 'start-ns', 'end-ns')):
-			if (event=='end' and elem.tag=='PubmedArticle'):
-				result = processElem(elem)
-				if result is not None:
-					pmid,articleData = result
-					allData[pmid] = articleData
+		with gzip.open(pubmedFile,'rt') as f:
+			for event, elem in etree.iterparse(f, events=('start', 'end', 'start-ns', 'end-ns')):
+				if (event=='end' and elem.tag=='PubmedArticle'):
+					result = processElem(elem)
+					if result is not None:
+						pmid,articleData = result
+						allData[pmid] = articleData
 
-				# Important: clear the current element from memory to keep memory usage low
-				elem.clear()
+					# Important: clear the current element from memory to keep memory usage low
+					elem.clear()
 
 	return allData
 
@@ -394,7 +395,7 @@ if __name__ == '__main__':
 	pubmed = processPubMed(args.pubmed)
 	print("Loaded %d from PubMed" % len(pubmed))
 
-	print("Loaded %d from Kaggle" % len(cord19))
+	print("Loaded %d from Cord19" % len(cord19))
 
 	defaults = {}
 	defaults['cord_uid'] = None
@@ -406,7 +407,7 @@ if __name__ == '__main__':
 	print("Loaded %d in total" % len(combined))
 
 	print("Saving...")
-	with open(args.outFile,'w') as outF:
+	with gzip.open(args.outFile,'wt') as outF:
 		if args.pretty:
 			json.dump(combined,outF,indent=2,sort_keys=True)
 		else:

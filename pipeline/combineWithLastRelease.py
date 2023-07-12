@@ -17,7 +17,7 @@ def main():
 		print(f"Loaded {len(documents)} documents from last release")
 
 	print("Loading current run...")
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		current_run = json.load(f)
 		print(f"Loaded {len(current_run)} documents from current run")
 		for d in current_run:

@@ -4,6 +4,7 @@ import json
 import sys
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer
+import gzip
 
 import sklearn.metrics 
 
@@ -22,7 +23,7 @@ def main():
 
 	params = json.loads(args.params)
 
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 
 	with open(args.categoriesFile) as f:

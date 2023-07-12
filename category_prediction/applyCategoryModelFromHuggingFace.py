@@ -7,6 +7,7 @@ import json
 import os
 import sys
 from collections import Counter
+import gzip
 
 import ktrain
 from transformers import AutoTokenizer, TFAutoModelForSequenceClassification
@@ -33,14 +34,14 @@ def main():
 
 	category_map = {}
 	if args.prevJSON and os.path.isfile(args.prevJSON):
-		with open(args.prevJSON) as f:
+		with gzip.open(args.prevJSON,'rt') as f:
 			prev_documents = json.load(f)
 
 		for d in prev_documents:
 			category_key = (d['title'],d['abstract'],str(d['annotations']))
 			category_map[category_key] = d['categories']
 
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 
 	needs_doing = []
@@ -96,7 +97,7 @@ def main():
 	output_documents = already_done + needs_doing
 
 	print("Saving %d documents..." % len(output_documents))
-	with open(args.outJSON,'w') as f:
+	with gzip.open(args.outJSON,'wt') as f:
 		json.dump(output_documents,f,indent=2,sort_keys=True)
 
 	print("Done")

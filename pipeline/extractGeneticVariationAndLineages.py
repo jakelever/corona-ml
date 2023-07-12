@@ -6,6 +6,7 @@ import os
 
 from intervaltree import IntervalTree
 from collections import defaultdict
+import gzip
 
 aminoAcidInfo = [('ALA','A'),('ARG','R'),('ASN','N'),('ASP','D'),('CYS','C'),('GLU','E'),('GLN','Q'),('GLY','G'),('HIS','H'),('ILE','I'),('LEU','L'),('LYS','K'),('MET','M'),('PHE','F'),('PRO','P'),('SER','S'),('THR','T'),('TRP','W'),('TYR','Y'),('VAL','V'),('ALANINE','A'), ('CYSTEINE','C'), ('ASPARTICACID','D'), ('GLUTAMICACID','E'), ('PHENYLALANINE','F'), ('GLYCINE','G'), ('HISTIDINE','H'), ('ISOLEUCINE','I'), ('LYSINE','K'), ('LEUCINE','L'), ('METHIONINE','M'), ('ASPARAGINE','N'), ('PROLINE','P'), ('GLUTAMINE','Q'), ('ARGININE','R'), ('SERINE','S'), ('THREONINE','T'), ('VALINE','V'), ('TRYPTOPHAN','W'), ('TYROSINE','Y'),('STOP','X'),('TER','X')]
 aminoAcidMap = { big:small for big,small in aminoAcidInfo }
@@ -379,7 +380,7 @@ def main():
 	variants_map = {}
 	viral_lineages_map = {}
 	if args.prevJSON and os.path.isfile(args.prevJSON):
-		with open(args.prevJSON) as f:
+		with gzip.open(args.prevJSON,'rt') as f:
 			prev_documents = json.load(f)
 
 		for d in prev_documents:
@@ -387,7 +388,7 @@ def main():
 			variants_map[key] = d['variants']
 			viral_lineages_map[key] = d['viral_lineages']
 
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 
 	needs_doing = []
@@ -429,7 +430,7 @@ def main():
 	assert all('variants' in d for d in output_documents), "Expected documents to all have variants extracted"
 			
 	print("Saving data...")
-	with open(args.outJSON,'w',encoding='utf8') as f:
+	with gzip.open(args.outJSON,'wt',encoding='utf8') as f:
 		json.dump(output_documents,f,indent=2,sort_keys=True)
 	
 if __name__ == '__main__':

@@ -1,5 +1,6 @@
 import argparse
 import json
+import gzip
 	
 def associate_altmetric_data_with_documents(documents, altmetric_filename, filter_empty):
 	with open(altmetric_filename) as f:
@@ -41,7 +42,7 @@ def main():
 	parser.add_argument('--outData',type=str,required=True,help='JSON file with Altmetric data for documents')
 	args = parser.parse_args()
 	
-	with open(args.documents) as f:
+	with gzip.open(args.documents,'rt') as f:
 		documents = json.load(f)
 		
 	print("Loaded %d documents" % len(documents))
@@ -53,7 +54,7 @@ def main():
 	print("Integrated Altmetric data for %d documents" % altmetric_count)
 		
 	print("Saving data...")
-	with open(args.outData,'w',encoding='utf8') as f:
+	with gzip.open(args.outData,'wt',encoding='utf8') as f:
 		json.dump(documents,f,indent=2,sort_keys=True)
 
 if __name__ == '__main__':

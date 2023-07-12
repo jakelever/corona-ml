@@ -5,6 +5,7 @@ import string
 import re
 from datetime import date
 import calendar
+import gzip
 
 def remove_punctuation(text):
 	exclude = set(string.punctuation)
@@ -17,7 +18,7 @@ def main():
 	args = parser.parse_args()
 
 	print("Loading...")
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 		
 	print("Loaded %d documents" % len(documents))
@@ -229,7 +230,7 @@ def main():
 	print ("Checks PASSED")
 	
 	print("Saving %d documents to JSON file..." % len(merged_documents))
-	with open(args.outJSON,'w') as f:
+	with gzip.open(args.outJSON,'wt') as f:
 		json.dump(merged_documents,f,indent=2,sort_keys=True)
 
 if __name__ == '__main__':

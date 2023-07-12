@@ -2,6 +2,7 @@ import argparse
 import json
 from collections import Counter,defaultdict
 import re
+import gzip
 
 def infer_article_type_from_webdata(documents):
 	articletype_fields = ['DC.Subject', 'DC.Type.articleType', 'DC.subject', 'WT.cg_s', 'WT.z_cg_type', 'WT.z_primary_atype', 'article:section', 'articleType', 'category', 'citation_article_type', 'citation_categories', 'citation_keywords', 'citation_section', 'dc.Type', 'dc.type', 'prism.section', 'wkhealth_toc_section', 'wkhealth_toc_sub_section','article-header__journal','primary-heading']
@@ -107,7 +108,7 @@ def main():
 	args = parser.parse_args()
 	
 	print("Loading documents...")
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 	
 	journalFields = ['citation_journal_title', 'journal', 'journalName', 'journal_title', 'wkhealth_journal_title']
@@ -174,7 +175,7 @@ def main():
 	print("Inferred article types for %d documents" % article_type_count)
 	
 	print("Saving data...")
-	with open(args.outJSON,'w',encoding='utf8') as f:
+	with gzip.open(args.outJSON,'wt',encoding='utf8') as f:
 		json.dump(documents,f)
 
 if __name__ == '__main__':

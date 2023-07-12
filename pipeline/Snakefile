@@ -49,83 +49,83 @@ rule getGeonamesFromWikidata:
 
 rule applySpotfixesAndAddCustomDocs:
 	input: 
-		documents=join(outDir,"alldocuments.json"),
+		documents=join(outDir,"alldocuments.json.gz"),
 		additions="additions.json",
 		spotfixes="spotFixes.json",
-	output: join(outDir,"alldocuments.spotfixed.json")
+	output: join(outDir,"alldocuments.spotfixed.json.gz")
 	shell: "python applySpotfixesAndAddCustomDocs.py --inJSON {input.documents} --additions {input.additions} --spotfixes {input.spotfixes} --outJSON {output}"
 
 rule cleanupDocs:
-	input: join(outDir,"alldocuments.spotfixed.json")
-	output: join(outDir,"alldocuments.cleaned.json")
+	input: join(outDir,"alldocuments.spotfixed.json.gz")
+	output: join(outDir,"alldocuments.cleaned.json.gz")
 	shell: "python cleanupDocs.py --inJSON {input} --outJSON {output}"
 	
 rule mergeDuplicates:
-	input: join(outDir,"alldocuments.cleaned.json")
-	output: join(outDir,"alldocuments.noduplicates.json")
+	input: join(outDir,"alldocuments.cleaned.json.gz")
+	output: join(outDir,"alldocuments.noduplicates.json.gz")
 	shell: "python mergeDuplicates.py --inJSON {input} --outJSON {output}"
 	
 rule integrateAnnotations:
 	input: 
-		json=join(outDir,"alldocuments.noduplicates.json"),
+		json=join(outDir,"alldocuments.noduplicates.json.gz"),
 		annotations="annotations.json"
-	output: join(outDir,"alldocuments.withannotations.json")
+	output: join(outDir,"alldocuments.withannotations.json.gz")
 	shell: "python integrateAnnotations.py --inJSON {input.json} --annotations {input.annotations} --outJSON {output}"
 
 rule doNER:
 	input: 
-		json=join(outDir,"alldocuments.withannotations.json"),
+		json=join(outDir,"alldocuments.withannotations.json.gz"),
 		entities="entities.json",
 		entitiesflag=join(outDir,"terms_complete.txt"),
 		stopwords=join("predefined","stopwords.txt"),
 		removals=join("predefined","removals.tsv")
-	output: join(outDir,"alldocuments.ner.json")
+	output: join(outDir,"alldocuments.ner.json.gz")
 	shell: "python doNER.py --inJSON {input.json} --prevJSON {output}.prev --entities {input.entities} --stopwords {input.stopwords} --removals {input.removals} --outJSON {output} && cp {output} {output}.prev"
 
 rule filterForVirusDocs:
-	input: join(outDir,"alldocuments.ner.json"),
-	output: join(outDir,"alldocuments.onlyviruses.json")
+	input: join(outDir,"alldocuments.ner.json.gz"),
+	output: join(outDir,"alldocuments.onlyviruses.json.gz")
 	shell: "python filterForVirusDocs.py --inJSON {input} --outJSON {output}"
 
 rule extractGeneticVariationAndLineages:
-	input: join(outDir,"alldocuments.onlyviruses.json"),
-	output: join(outDir,"alldocuments.geneticvariation.json")
+	input: join(outDir,"alldocuments.onlyviruses.json.gz"),
+	output: join(outDir,"alldocuments.geneticvariation.json.gz")
 	shell: "python extractGeneticVariationAndLineages.py --stopwords predefined/geneticvariation_stopwords.txt --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
 
 rule applyCategoryModelFromHuggingFace:
-	input: join(outDir,"alldocuments.geneticvariation.json"),
-	output: join(outDir,"alldocuments.categories.json")
+	input: join(outDir,"alldocuments.geneticvariation.json.gz"),
+	output: join(outDir,"alldocuments.categories.json.gz")
 	shell: "python ../category_prediction/applyCategoryModelFromHuggingFace.py --inJSON {input} --prevJSON {output}.prev --outJSON {output} && cp {output} {output}.prev"
 
 rule doExtraCategories:
-	input: join(outDir,"alldocuments.categories.json"),
-	output: join(outDir,"alldocuments.extracategories.json")
+	input: join(outDir,"alldocuments.categories.json.gz"),
+	output: join(outDir,"alldocuments.extracategories.json.gz")
 	shell: "python doExtraCategories.py --inJSON {input} --outJSON {output}"
 
 rule separateArticleTypesAndTopics:
-	input: join(outDir,"alldocuments.extracategories.json"),
-	output: join(outDir,"alldocuments.articletypes_and_topics.json")
+	input: join(outDir,"alldocuments.extracategories.json.gz"),
+	output: join(outDir,"alldocuments.articletypes_and_topics.json.gz")
 	shell: "python separateArticleTypesAndTopics.py --inJSON {input} --outJSON {output}"
 
 rule finalFilter:
-	input: join(outDir,"alldocuments.articletypes_and_topics.json"),
-	output: join(outDir,"alldocuments.filtered.json"),
+	input: join(outDir,"alldocuments.articletypes_and_topics.json.gz"),
+	output: join(outDir,"alldocuments.filtered.json.gz"),
 	shell: "python finalFilter.py --inJSON {input} --outJSON {output}"
 
 rule combineWithLastRelease:
-	input: join(outDir,"alldocuments.filtered.json"),
+	input: join(outDir,"alldocuments.filtered.json.gz"),
 	output: join(outDir,"coronacentral.json.gz")
 	shell: "python combineWithLastRelease.py --inJSON {input} --lastRelease ../last_release/coronacentral.json.gz --outJSONGZ {output}"
 	
 rule recordProcessedFiles:
 	input: 
-		initial=join(outDir,"alldocuments.json"),
+		initial=join(outDir,"alldocuments.json.gz"),
 		final=join(outDir,"coronacentral.json.gz")
 	output: join(outDir,"process_record.json.gz")
 	shell: "python recordProcessedFiles.py --pubmedDir ../data/pubmed_corona/ --initialDocuments {input.initial} --finalRelease {input.final} --outJSONGZ {output}"
 
 rule getAltmetricData:
-	input: join(outDir,"coronacentral.json")
-	output: join(outDir,"altmetric.json")
+	input: join(outDir,"coronacentral.json.gz")
+	output: join(outDir,"altmetric.json.gz")
 	shell: "python ../altmetric/getAltmetricData.py --apiKeyFile ../altmetricApiKey.json --documents {input} --outData {output} && cp {output} {output}.backup"
 

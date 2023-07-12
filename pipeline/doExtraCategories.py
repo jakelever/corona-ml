@@ -2,6 +2,7 @@ import argparse
 import json
 import re
 from collections import Counter
+import gzip
 
 def predictTrial(abstractLower):
     ctrTrialNumber = re.search(r'\bctr[0-9][0-9][0-9][0-9]+\b',abstractLower)
@@ -17,7 +18,7 @@ def main():
 	args = parser.parse_args()
 	
 	print("Loading documents...")
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 
 	beforeCategoryCount = Counter( c for d in documents if 'categories' in d for c in d['categories'] )
@@ -63,7 +64,7 @@ def main():
 	print(diffCount)		
 		
 	print("Saving JSON file...")
-	with open(args.outJSON,'w') as f:
+	with gzip.open(args.outJSON,'wt') as f:
 		json.dump(documents,f,indent=2,sort_keys=True)
 
 if __name__ == '__main__':

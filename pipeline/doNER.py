@@ -6,6 +6,7 @@ from collections import defaultdict,Counter
 import sys
 import os
 import time
+import gzip
 
 def chunks(lst, n):
 	"""Yield successive n-sized chunks from lst."""
@@ -102,14 +103,14 @@ def main():
 
 	ner_map = {}
 	if args.prevJSON and os.path.isfile(args.prevJSON):
-		with open(args.prevJSON) as f:
+		with gzip.open(args.prevJSON,'rt') as f:
 			prev_documents = json.load(f)
 
 		for d in prev_documents:
 			ner_key = (d['title'],d['abstract'])
 			ner_map[ner_key] = d['entities']
 
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 
 	needs_doing = []
@@ -323,7 +324,7 @@ def main():
 	assert all('entities' in d for d in output_documents), "Expected documents to all have entities extracted"
 	
 	print("Saving...")
-	with open(args.outJSON,'w') as f:
+	with gzip.open(args.outJSON,'wt') as f:
 		json.dump(output_documents,f,indent=2,sort_keys=True)
 		
 if __name__ == '__main__':

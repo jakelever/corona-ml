@@ -10,6 +10,7 @@ import sys
 import os
 import re
 from tqdm import tqdm
+import gzip
 
 from bs4 import BeautifulSoup
 
@@ -162,7 +163,7 @@ def main():
 		print("Loading previous output...")
 		sys.stdout.flush()
 
-		with open(args.prevJSON) as f:
+		with gzip.open(args.prevJSON,'rt') as f:
 			prev_documents = json.load(f)
 
 		for d in prev_documents:
@@ -177,7 +178,7 @@ def main():
 	print("Loading documents...")
 	sys.stdout.flush()
 
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 
 	for d in documents:
@@ -232,7 +233,7 @@ def main():
 	
 	print("Saving...")
 	sys.stdout.flush()
-	with open(args.outJSON,'w') as f:
+	with gzip.open(args.outJSON,'wt') as f:
 		json.dump(output_documents,f,indent=2,sort_keys=True)
 
 	print("Done.")

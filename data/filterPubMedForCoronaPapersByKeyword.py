@@ -267,7 +267,7 @@ def filterPubmedFile(inFile,virusKeywordFile,outFile,alreadyProcessedPubmedIDs):
 
 	coronaRegexes = [ re.compile(r'\b%s\b' % k, flags=re.IGNORECASE) for k in coronaKeywords ]
 
-	with open(outFile,'w') as outF:
+	with gzip.open(outFile,'wt') as outF:
 		outF.write('<?xml version="1.0" encoding="utf-8"?>\n')
 		outF.write('<!DOCTYPE PubmedArticleSet PUBLIC "-//NLM//DTD PubMedArticle, 1st January 2019//EN" "http://dtd.nlm.nih.gov/ncbi/pubmed/out/pubmed_190101.dtd">\n')
 		outF.write('<PubmedArticleSet>\n')

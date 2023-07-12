@@ -1,6 +1,7 @@
 import argparse
 import json
 from collections import defaultdict
+import gzip
 
 def main():
 	parser = argparse.ArgumentParser('Remove documents that do not contain virus names or annotations')
@@ -9,7 +10,7 @@ def main():
 	args = parser.parse_args()
 		
 	print("Loading documents...")
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 
 	print("Loaded %d documents" % len(documents))
@@ -26,7 +27,7 @@ def main():
 	print("Filtered to %d documents" % len(documents))
 	
 	print("Saving JSON file...")
-	with open(args.outJSON,'w') as f:
+	with gzip.open(args.outJSON,'wt') as f:
 		json.dump(documents,f,indent=2,sort_keys=True)
 
 if __name__ == '__main__':

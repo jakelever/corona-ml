@@ -1,6 +1,7 @@
 import argparse
 import json
 from collections import Counter
+import gzip
 
 def main():
 	parser = argparse.ArgumentParser('Separate out the predicated categories into article types and topics')
@@ -11,7 +12,7 @@ def main():
 	article_types = {'Research','Meta-analysis','Review','Book chapter','Comment/Editorial','Retracted','CDC Weekly Report','News'}
 
 	print("Loading...")
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 
 	articletype_counts = Counter()
@@ -40,7 +41,7 @@ def main():
 	print("topic_counts:", topic_counts)
 			
 	print("Saving JSON file...")
-	with open(args.outJSON,'w') as f:
+	with gzip.open(args.outJSON,'wt') as f:
 		json.dump(documents,f,indent=2,sort_keys=True)
 	
 if __name__ == '__main__':

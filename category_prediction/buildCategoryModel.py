@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from sklearn.preprocessing import MultiLabelBinarizer
+import gzip
 
 from coronacode import DocumentClassifier
 
@@ -20,7 +21,7 @@ def main():
 
 	params = json.loads(args.params)
 
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 
 	with open(args.categoriesFile) as f:
@@ -59,7 +60,7 @@ def main():
 
 	print("Saving to %s" % args.outModelDir)
 	categories_file = os.path.join(args.outModelDir,'categories.json')
-	with open(categories_file,'w') as f:
+	with gzip.open(categories_file,'wt') as f:
 		json.dump(target_names,f)
 
 	print("Done")

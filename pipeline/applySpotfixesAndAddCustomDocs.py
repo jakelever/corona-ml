@@ -1,5 +1,6 @@
 import argparse
 import json
+import gzip
 
 def main():
 	parser = argparse.ArgumentParser('Apply some minor spotfixes to go in at the beginning of the pipeline')
@@ -10,7 +11,7 @@ def main():
 	args = parser.parse_args()
 	
 	print("Loading documents...")
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 	
 	required_fields = ['cord_uid', 'pubmed_id', 'doi', 'pmcid', 'title', 'abstract', 'publish_day', 'publish_month', 'publish_year', 'authors']
@@ -49,7 +50,7 @@ def main():
 			d[field] = fix_to
 		
 	print("Saving data...")
-	with open(args.outJSON,'w',encoding='utf8') as f:
+	with gzip.open(args.outJSON,'wt',encoding='utf8') as f:
 		json.dump(documents,f)
 
 if __name__ == '__main__':

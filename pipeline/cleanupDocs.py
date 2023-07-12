@@ -4,6 +4,7 @@ import string
 import calendar
 import re
 from datetime import date
+import gzip
 
 def remove_punctuation(text):
 	exclude = set(string.punctuation)
@@ -147,14 +148,14 @@ def main():
 	args = parser.parse_args()
 	
 	print("Loading documents...")
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 		
 	print("Cleaning documents...")
 	cleanup_documents(documents)
 		
 	print("Saving data...")
-	with open(args.outJSON,'w',encoding='utf8') as f:
+	with gzip.open(args.outJSON,'wt',encoding='utf8') as f:
 		json.dump(documents,f)
 
 if __name__ == '__main__':

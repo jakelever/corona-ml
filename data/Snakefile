@@ -9,6 +9,7 @@ with open('pubmed_listing.txt') as f:
 
 with gzip.open('../last_release/process_record.json.gz','rt') as f:
 	processedfilenames = json.load(f)['pubmed_files']
+	processedfilenames = [ re.sub(r'\.gz$','',fn) for fn in processedfilenames ]
 	
 print(sorted(processedfilenames)[-1])
 	
@@ -17,10 +18,12 @@ pubmed_to_process = [ f for f in allpubmedfilenames if not f in processedfilenam
 pubmed_to_process = sorted(pubmed_to_process)
 pubmed_to_process = [ os.path.join('pubmed_corona',fn) for fn in pubmed_to_process ]
 
-rule:
-	input: pubmed_to_process
+pubmed_to_process_gz = [ f"{x}.gz" for x in pubmed_to_process ]
 
 rule:
-	output: "pubmed_corona/{filename}"
+	input: pubmed_to_process_gz
+
+rule:
+	output: "pubmed_corona/{filename}.gz"
 	shell: "bash downloadAndProcessPubmedFile.sh {wildcards.filename} {output}"
 

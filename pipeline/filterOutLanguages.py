@@ -8,6 +8,7 @@ import sys
 from nltk.corpus import stopwords
 import re
 from multiprocessing import Pool
+import gzip
 
 filterREs = None
 def prepare():
@@ -90,7 +91,7 @@ def main():
 	prepare()
 	
 	print("Loading...")
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 		
 	documentsByIdentifier = defaultdict(lambda : None)
@@ -153,11 +154,11 @@ def main():
 			nonenglishDocuments.append(doc)
 			
 	print("Saving file with %d English documents..." % len(englishDocuments))
-	with open(args.outEnglishDocs,'w') as f:
+	with gzip.open(args.outEnglishDocs,'wt') as f:
 		json.dump(englishDocuments,f,indent=2,sort_keys=True)
 		
 	print("Saving file with %d non-English documents..." % len(nonenglishDocuments))
-	with open(args.outNonEnglishDocs,'w') as f:
+	with gzip.open(args.outNonEnglishDocs,'wt') as f:
 		json.dump(nonenglishDocuments,f,indent=2,sort_keys=True)
 		
 	languageCounter = Counter(lang for doc in nonenglishDocuments for lang in doc['languages'])

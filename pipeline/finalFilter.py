@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 from collections import defaultdict
+import gzip
 
 def main():
 	parser = argparse.ArgumentParser('Clean up the associated URLs in documents and remove ones without usable URLs')
@@ -10,7 +11,7 @@ def main():
 	args = parser.parse_args()
 
 	print("Loading...")
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 		
 	filtered = documents
@@ -72,7 +73,7 @@ def main():
 		filtered[i] = d
 			
 	print("Saving JSON file...")
-	with open(args.outJSON,'w') as f:
+	with gzip.open(args.outJSON,'wt') as f:
 		json.dump(filtered,f,indent=2,sort_keys=True)
 	
 if __name__ == '__main__':

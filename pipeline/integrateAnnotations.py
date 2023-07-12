@@ -1,6 +1,7 @@
 import argparse
 import json
 from collections import defaultdict
+import gzip
 
 def main():
 	parser = argparse.ArgumentParser('Annotate documents with publication type (e.g. research article, review, news, etc)')
@@ -17,7 +18,7 @@ def main():
 	annotations_by_pubmed_id = defaultdict(list,annotations['annotations_by_pubmed_id'])
 	
 	print("Loading documents...")
-	with open(args.inJSON) as f:
+	with gzip.open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 	
 	print("Integrating annotations")
@@ -46,7 +47,7 @@ def main():
 	print("Integrated annotations into %d documents" % docCountWithAnnotations)
 	
 	print("Saving JSON file...")
-	with open(args.outJSON,'w') as f:
+	with gzip.open(args.outJSON,'wt') as f:
 		json.dump(documents,f,indent=2,sort_keys=True)
 
 if __name__ == '__main__':

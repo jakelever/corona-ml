@@ -14,7 +14,7 @@ def main():
 	pubmed_files = sorted( [ f for f in os.listdir(args.pubmedDir) if f.startswith('pubmed') ] )
 	
 	print("Loading documents...")
-	with open(args.initialDocuments) as f:
+	with gzip.open(args.initialDocuments,'rt') as f:
 		documents = json.load(f)
 		pubmed_ids = [ d['pubmed_id'] for d in documents if d['pubmed_id'] ]
 	

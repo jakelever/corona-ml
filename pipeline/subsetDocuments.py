@@ -1,5 +1,6 @@
 import argparse
 import json
+import gzip
 
 def main():
 	parser = argparse.ArgumentParser('Extract just a few documents for a test case')
@@ -9,13 +10,13 @@ def main():
 	args = parser.parse_args()
 
 	print("Loading...")
-	with open(args.inJSON) as f:
+	with open(args.inJSON,'rt') as f:
 		documents = json.load(f)
 
 	documents = documents[:args.num]
 			
 	print("Saving JSON file...")
-	with open(args.outJSON,'w') as f:
+	with open(args.outJSON,'wt') as f:
 		json.dump(documents,f,indent=2,sort_keys=True)
 
 if __name__ == '__main__':
