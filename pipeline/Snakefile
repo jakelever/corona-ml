@@ -4,7 +4,7 @@ from os.path import join
 outDir = "data"
 
 rule final_files:
-	input: join(outDir,"coronacentral.json.gz"), join(outDir,"terms_complete.txt")
+	input: join(outDir,"coronacentral.json.gz"), join(outDir,"terms_complete.txt"), join(outDir,"process_record.json.gz")
 
 rule terms_files:
 	input: join(outDir,"terms_drugs.json"), join(outDir,"terms_symptoms.json"), join(outDir,"terms_locations.json"), join(outDir,"terms_medicaldisciplines.json"), join(outDir,"terms_genes_and_proteins.json"), join(outDir,"terms_coronavirus_proteins.json"), join(outDir,"terms_custom.json")
@@ -109,8 +109,18 @@ rule separateArticleTypesAndTopics:
 
 rule finalFilter:
 	input: join(outDir,"alldocuments.articletypes_and_topics.json"),
-	output: join(outDir,"coronacentral.json")
+	output: join(outDir,"alldocuments.filtered.json"),
 	shell: "python finalFilter.py --inJSON {input} --outJSON {output}"
+
+rule combineWithLastRelease:
+	input: join(outDir,"alldocuments.filtered.json"),
+	output: join(outDir,"coronacentral.json")
+	shell: "python combineWithLastRelease.py --inJSON {input} --lastRelease ../last_release/coronacentral.json.gz --outJSON {output}"
+	
+rule recordProcessedFiles:
+	input: join(outDir,"alldocuments.json")
+	output: join(outDir,"process_record.json.gz")
+	shell: "python recordProcessedFiles.py --pubmedDir ../data/pubmed_corona/ --initialDocuments {input} --outJSONGZ {output}"
 
 rule gzip:
 	input: join(outDir,"coronacentral.json")
