@@ -6,6 +6,7 @@ import argparse
 from datetime import datetime, date
 import calendar
 import sys
+import gzip
 
 def now():
 	return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -36,7 +37,7 @@ def pushRecords(mydb,mycursor,sql,records,chunk_size,perc_interval=1.0):
 		
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Load documents into database')
-	parser.add_argument('--json',required=True,type=str,help='JSON file with annotations')
+	parser.add_argument('--jsongz',required=True,type=str,help='JSONGZ file with annotations')
 	parser.add_argument('--db',required=True,type=str,help='JSON with database settings')
 	args = parser.parse_args()
 	
@@ -53,7 +54,7 @@ if __name__ == '__main__':
 	mycursor = mydb.cursor()
 
 
-	with open(args.json) as f:
+	with gzip.open(args.jsongz,'rt') as f:
 		documents = json.load(f)
 			
 	doc_columns = ['document_id', 'pubmed_id', 'cord_uid', 'doi', 'pmcid', 'publish_year', 'publish_month', 'publish_day', 'publish_timestamp', 'title', 'abstract', 'journal', 'url', 'is_preprint', 'annotations_json']
