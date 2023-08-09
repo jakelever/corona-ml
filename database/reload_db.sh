@@ -1,9 +1,9 @@
 #!/bin/bash
 set -ex
 
-#db=aws.json
+db=aws.json
 #db=remote.json
-db=local.json
+#db=local.json
 
 python createDB.py --db $db
 
