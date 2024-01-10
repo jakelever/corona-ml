@@ -1,9 +1,12 @@
+# Update
+
+The CoronaCentral data is [available through Zenodo](https://doi.org/10.5281/zenodo.4383289) and no longer available through the web portal.
+
+---
+
 # CoronaCentral Machine Learning
 
 <p>
-<a href="https://coronacentral.ai/">
-   <img src="https://img.shields.io/badge/corona-central-b01515.svg" />
-</a>
 <a href="https://doi.org/10.5281/zenodo.4383289">
    <img src="https://img.shields.io/badge/data-download-blue.svg" />
 </a>
@@ -18,7 +21,7 @@
 </a>
 </p>
 
-This repository contains the code for text mining the coronavirus literature for [CoronaCentral](https://coronacentral.ai). It manages the download, clean up, categorization (using deep learning) and many more steps to process the coronavirus literature. The output of this is then upload to the CoronaCentral website. The web interface of the website is kept in a [separate Github repo](https://github.com/jakelever/corona-web).
+This repository contains the code for text mining the coronavirus literature for CoronaCentral. It manages the download, clean up, categorization (using deep learning) and many more steps to process the coronavirus literature. The web interface of the website is kept in a [separate Github repo](https://github.com/jakelever/corona-web).
 
 ## Dependencies
 
